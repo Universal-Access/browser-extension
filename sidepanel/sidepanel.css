@@ -553,6 +553,59 @@ a.nlweb-result-name:hover {
   border-color: var(--sp-primary);
 }
 
+/* NLWeb result actions */
+
+.nlweb-result-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.nlweb-read-btn {
+  padding: 5px 12px;
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 32px;
+}
+
+.nlweb-read-btn:hover {
+  background: var(--sp-primary-hover);
+}
+
+/* Collapsed schema data toggle */
+
+.nlweb-result-schema-details {
+  margin-top: 6px;
+}
+
+.nlweb-result-schema-toggle {
+  font-size: 11px;
+  color: var(--sp-text-hint);
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 0;
+  list-style: none;
+}
+
+.nlweb-result-schema-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.nlweb-result-schema-toggle::before {
+  content: '▶ ';
+  font-size: 9px;
+}
+
+.nlweb-result-schema-details[open] > .nlweb-result-schema-toggle::before {
+  content: '▼ ';
+}
+
 .nlweb-error {
   padding: 10px 12px;
   color: var(--sp-error-text);

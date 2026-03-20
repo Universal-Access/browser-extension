@@ -77,13 +77,73 @@ export function createResultCard(item) {
 
   const parsed = tryParseJson(item.schema_object);
   if (parsed) {
+    // Add "Read Accessible" button to open in the overlay renderer
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'nlweb-result-actions';
+
+    const readBtn = document.createElement('button');
+    readBtn.className = 'nlweb-read-btn';
+    readBtn.textContent = '♿ Read Accessible';
+    readBtn.title = 'Open in accessible reader view';
+    readBtn.addEventListener('click', () => {
+      activateNlwebResult(parsed, url);
+    });
+    actionsRow.appendChild(readBtn);
+
+    card.appendChild(actionsRow);
+
+    // Raw schema data (collapsed by default for debugging)
+    const schemaDetails = document.createElement('details');
+    schemaDetails.className = 'nlweb-result-schema-details';
+    const summary = document.createElement('summary');
+    summary.className = 'nlweb-result-schema-toggle';
+    summary.textContent = 'Schema data';
+    schemaDetails.appendChild(summary);
     const schemaContainer = document.createElement('div');
     schemaContainer.className = 'nlweb-result-schema';
     schemaContainer.appendChild(createTreeNode(null, parsed, true));
-    card.appendChild(schemaContainer);
+    schemaDetails.appendChild(schemaContainer);
+    card.appendChild(schemaDetails);
   }
 
   return card;
+}
+
+// Build a synthetic schemaData payload from an NLWeb result's schema_object
+// and send it to the content script for overlay rendering
+function activateNlwebResult(schemaObj, url) {
+  const rawType = schemaObj['@type'] || 'Article';
+  const typeStr = Array.isArray(rawType) ? rawType[0] : rawType;
+  const cleaned = String(typeStr).replace(/^https?:\/\/schema\.org\//, '');
+
+  // Map to our known primary types
+  const ARTICLE_TYPES = ['Article', 'NewsArticle', 'BlogPosting', 'TechArticle', 'ScholarlyArticle', 'Report', 'Review', 'WebPage'];
+  const PRODUCT_TYPES = ['Product', 'SoftwareApplication', 'Service', 'Offer'];
+  const RECIPE_TYPE = 'Recipe';
+  const EVENT_TYPES = ['Event', 'MusicEvent', 'SportsEvent'];
+  const BIZ_TYPES = ['LocalBusiness', 'Restaurant', 'Store', 'Hotel'];
+
+  let primaryType = cleaned;
+  if (ARTICLE_TYPES.includes(cleaned)) primaryType = 'Article';
+  else if (PRODUCT_TYPES.includes(cleaned)) primaryType = 'Product';
+  else if (cleaned === RECIPE_TYPE) primaryType = 'Recipe';
+  else if (EVENT_TYPES.includes(cleaned)) primaryType = 'Event';
+  else if (BIZ_TYPES.includes(cleaned)) primaryType = 'LocalBusiness';
+  else if (cleaned === 'FAQPage') primaryType = 'FAQPage';
+
+  const syntheticData = {
+    jsonLd: [{ data: schemaObj, error: null }],
+    microdata: [],
+    rdfa: [],
+    entities: [{ type: primaryType, rawType: typeStr, source: 'nlweb', data: schemaObj }],
+    primaryType: primaryType,
+    url: url || schemaObj.url || window.location.href
+  };
+
+  chrome.runtime.sendMessage({
+    type: 'ACTIVATE_TRANSFORM',
+    payload: syntheticData
+  });
 }
 
 function createSummaryCard(title, message) {
