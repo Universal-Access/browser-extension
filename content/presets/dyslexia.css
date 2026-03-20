@@ -1,0 +1,76 @@
+/* Universal Access — Dyslexia-Friendly Preset
+   Uses OpenDyslexic font, increased spacing, and reading-optimized layout
+   Based on British Dyslexia Association style guide */
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('../../fonts/OpenDyslexic-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('../../fonts/OpenDyslexic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+#ua-accessible-overlay {
+  --ua-font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+  --ua-font-size-base: 18px;
+  --ua-font-size-sm: 16px;
+  --ua-font-size-lg: 22px;
+  --ua-font-size-xl: 28px;
+  --ua-font-size-xxl: 34px;
+  --ua-line-height: 1.8;
+  --ua-letter-spacing: 0.12em;
+  --ua-word-spacing: 0.16em;
+
+  --ua-color-bg: #fdf6e3;
+  --ua-color-surface: #f5edd6;
+  --ua-color-text: #2d2d2d;
+  --ua-color-text-secondary: #4a4a4a;
+  --ua-color-primary: #2e6da4;
+  --ua-color-primary-light: #dce8f2;
+  --ua-color-accent: #3d8b37;
+  --ua-color-accent-light: #e2f0e1;
+  --ua-color-border: #d4c9a8;
+  --ua-color-border-strong: #b8a97e;
+  --ua-color-overlay-bg: #faf3e0;
+  --ua-color-header-bg: #3b5998;
+  --ua-color-header-text: #ffffff;
+
+  --ua-max-width: 600px;
+}
+
+/* Dyslexia-specific overrides */
+
+#ua-accessible-overlay p,
+#ua-accessible-overlay li,
+#ua-accessible-overlay span,
+#ua-accessible-overlay td {
+  text-align: left !important;
+  max-width: 70ch;
+}
+
+#ua-accessible-overlay .ua-title {
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+#ua-accessible-overlay .ua-step {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+#ua-accessible-overlay .ua-ingredients-list li {
+  padding: 12px 0;
+}
+
+#ua-accessible-overlay .ua-description p,
+#ua-accessible-overlay .ua-article-body p {
+  margin-bottom: 24px;
+}

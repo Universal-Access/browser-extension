@@ -1,4 +1,4 @@
-// Service worker — messaging hub and badge management
+// Service worker — messaging hub, badge management, and state coordination
 
 const tabDataCache = new Map();
 
@@ -25,8 +25,11 @@ function updateBadge(tabId, data) {
 
 // Handle messages from content scripts and side panel
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  const senderTabId = sender.tab ? sender.tab.id : null;
+
+  // --- Schema data from content script ---
   if (message.type === 'SCHEMA_DATA') {
-    const tabId = sender.tab ? sender.tab.id : message.tabId;
+    const tabId = senderTabId || message.tabId;
     if (tabId) {
       tabDataCache.set(tabId, message.payload);
       updateBadge(tabId, message.payload);
@@ -35,14 +38,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         type: 'SCHEMA_UPDATE',
         payload: message.payload,
         tabId
-      }).catch(() => {
-        // Side panel may not be open — ignore
-      });
+      }).catch(() => {});
     }
   }
 
+  // --- Side panel requesting schema data ---
   if (message.type === 'GET_SCHEMA_DATA') {
-    // Side panel requesting data for the active tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         const tabId = tabs[0].id;
@@ -50,10 +51,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (cached) {
           sendResponse(cached);
         } else {
-          // Try to extract from the tab
           chrome.tabs.sendMessage(tabId, { type: 'REQUEST_EXTRACTION' }, (response) => {
             if (chrome.runtime.lastError) {
-              // Content script not available (restricted page)
               sendResponse(null);
             } else {
               sendResponse(response || null);
@@ -64,7 +63,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse(null);
       }
     });
-    return true; // Keep message channel open for async response
+    return true;
+  }
+
+  // --- Activate visual transformation ---
+  if (message.type === 'ACTIVATE_TRANSFORM') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        const tabId = tabs[0].id;
+        const data = message.payload || tabDataCache.get(tabId);
+        chrome.tabs.sendMessage(tabId, {
+          type: 'ACTIVATE_TRANSFORM',
+          payload: data
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Deactivate visual transformation ---
+  if (message.type === 'DEACTIVATE_TRANSFORM') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'DEACTIVATE_TRANSFORM'
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Set accessibility preset ---
+  if (message.type === 'SET_PRESET') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SET_PRESET',
+          preset: message.preset
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
   }
 });
 
