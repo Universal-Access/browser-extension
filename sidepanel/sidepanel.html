@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema.org Explorer</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header>
+    <h1>Schema.org Explorer</h1>
+    <div id="page-url" class="page-url"></div>
+  </header>
+  <main id="content">
+    <div id="empty-state" class="empty-state">
+      <p>No structured data found on this page.</p>
+      <p class="hint">Navigate to a page with Schema.org markup to see results.</p>
+    </div>
+    <section id="section-jsonld" class="schema-section" hidden>
+      <h2 class="section-header" data-toggle="jsonld">
+        <span class="toggle-arrow">&#9654;</span>
+        JSON-LD <span id="count-jsonld" class="count-badge">0</span>
+      </h2>
+      <div id="items-jsonld" class="section-items"></div>
+    </section>
+    <section id="section-microdata" class="schema-section" hidden>
+      <h2 class="section-header" data-toggle="microdata">
+        <span class="toggle-arrow">&#9654;</span>
+        Microdata <span id="count-microdata" class="count-badge">0</span>
+      </h2>
+      <div id="items-microdata" class="section-items"></div>
+    </section>
+    <section id="section-rdfa" class="schema-section" hidden>
+      <h2 class="section-header" data-toggle="rdfa">
+        <span class="toggle-arrow">&#9654;</span>
+        RDFa <span id="count-rdfa" class="count-badge">0</span>
+      </h2>
+      <div id="items-rdfa" class="section-items"></div>
+    </section>
+  </main>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
