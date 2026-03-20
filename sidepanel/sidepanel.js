@@ -1,4 +1,5 @@
-// Side panel — entry point, event listeners, rendering
+// Side panel — control hub for Universal Access
+// Integrates schema display, visual transformations, presets, and NLWeb
 
 import { createTreeNode, renderError } from './tree-renderer.js';
 import {
@@ -9,136 +10,318 @@ import {
   showNlwebError
 } from './nlweb-ui.js';
 
-function renderSection(sectionId, items, isJsonLd = false) {
-  const section = document.getElementById(`section-${sectionId}`);
-  const countEl = document.getElementById(`count-${sectionId}`);
-  const itemsEl = document.getElementById(`items-${sectionId}`);
+(function () {
+  'use strict';
 
-  if (!items || items.length === 0) {
-    section.hidden = true;
-    return;
-  }
+  // --- State ---
+  let currentData = null;
+  let isTransformActive = false;
 
-  section.hidden = false;
-  countEl.textContent = items.length;
-  itemsEl.innerHTML = '';
-
-  items.forEach((item) => {
-    if (isJsonLd) {
-      if (item.error) {
-        itemsEl.appendChild(renderError(item));
-      } else {
-        itemsEl.appendChild(createTreeNode(null, item.data, true));
-      }
-    } else {
-      itemsEl.appendChild(createTreeNode(null, item, true));
-    }
-  });
-}
-
-function renderData(data) {
-  const emptyState = document.getElementById('empty-state');
+  // --- DOM References ---
+  const statusIcon = document.getElementById('status-icon');
+  const statusText = document.getElementById('status-text');
+  const statusBar = document.getElementById('status-indicator');
   const pageUrl = document.getElementById('page-url');
-  const nlwebResults = document.getElementById('nlweb-results');
+  const emptyState = document.getElementById('empty-state');
+  const displaySection = document.getElementById('display-section');
+  const detectedTypeDesc = document.getElementById('detected-type-desc');
+  const btnActivate = document.getElementById('btn-activate');
+  const btnDeactivate = document.getElementById('btn-deactivate');
+  const presetsSection = document.getElementById('presets-section');
+  const navSection = document.getElementById('nav-section');
+  const navLinks = document.getElementById('nav-links');
+  const rawDataSection = document.getElementById('raw-data-section');
 
-  // Reset NLWeb state
-  setNlwebLoading(false);
-  nlwebResults.innerHTML = '';
+  // --- Status Updates ---
 
-  if (!data) {
-    emptyState.hidden = false;
-    pageUrl.textContent = '';
-    document.getElementById('section-jsonld').hidden = true;
-    document.getElementById('section-microdata').hidden = true;
-    document.getElementById('section-rdfa').hidden = true;
-    updateNlwebSection(null);
-    return;
+  function setStatus(icon, text, className) {
+    statusIcon.textContent = icon;
+    statusText.textContent = text;
+    statusBar.className = 'status-bar ' + (className || '');
   }
 
-  pageUrl.textContent = data.url || '';
+  // --- Schema Data Rendering ---
 
-  // Handle NLWeb discovery
-  if (data.nlweb && data.nlweb.endpoint) {
-    updateNlwebSection(data.nlweb.endpoint, data.nlweb.method);
-  } else if (!getNlwebEndpoint()) {
-    updateNlwebSection(null);
-  }
+  function handleSchemaData(data) {
+    currentData = data;
 
-  const hasJsonLd = data.jsonLd && data.jsonLd.length > 0;
-  const hasMicrodata = data.microdata && data.microdata.length > 0;
-  const hasRdfa = data.rdfa && data.rdfa.length > 0;
-  const hasNlweb = !!getNlwebEndpoint();
+    // Reset NLWeb state
+    const nlwebResults = document.getElementById('nlweb-results');
+    setNlwebLoading(false);
+    if (nlwebResults) nlwebResults.innerHTML = '';
 
-  if (!hasJsonLd && !hasMicrodata && !hasRdfa && !hasNlweb) {
-    emptyState.hidden = false;
-  } else {
+    if (!data) {
+      setStatus('📄', 'No structured data found', 'empty');
+      emptyState.hidden = false;
+      displaySection.hidden = true;
+      presetsSection.hidden = true;
+      navSection.hidden = true;
+      rawDataSection.hidden = true;
+      updateNlwebSection(null);
+      pageUrl.textContent = '';
+      return;
+    }
+
+    pageUrl.textContent = data.url || '';
     emptyState.hidden = true;
+
+    // Handle NLWeb discovery
+    if (data.nlweb && data.nlweb.endpoint) {
+      updateNlwebSection(data.nlweb.endpoint, data.nlweb.method);
+    } else if (!getNlwebEndpoint()) {
+      updateNlwebSection(null);
+    }
+
+    const hasEntities = data.entities && data.entities.length > 0;
+    const primaryType = data.primaryType || 'Unknown';
+    const hasNlweb = !!getNlwebEndpoint();
+
+    if (hasEntities && primaryType !== 'Unknown') {
+      const typeEmoji = { Product: '🛍️', Article: '📰', Recipe: '🍳' }[primaryType] || '📦';
+      setStatus(typeEmoji, `${primaryType} detected (${data.entities.length} entities)`, 'found');
+
+      displaySection.hidden = false;
+      presetsSection.hidden = false;
+
+      const typeDescs = {
+        Product: 'View product details in a clean, accessible layout with price, ratings, and description.',
+        Article: 'Read this article in a distraction-free reader mode.',
+        Recipe: 'Follow this recipe step-by-step with ingredient checklist.'
+      };
+      detectedTypeDesc.textContent = typeDescs[primaryType] || `Transform this ${primaryType} into an accessible view.`;
+    } else {
+      const totalCount = (data.jsonLd || []).length + (data.microdata || []).length + (data.rdfa || []).length;
+      if (totalCount > 0 || hasNlweb) {
+        setStatus('📊', `${totalCount} schema items found`, 'found');
+        displaySection.hidden = true;
+        presetsSection.hidden = true;
+      } else {
+        setStatus('📄', 'No structured data found', 'empty');
+        emptyState.hidden = false;
+        displaySection.hidden = true;
+        presetsSection.hidden = true;
+      }
+    }
+
+    // Fetch and render schemamap navigation
+    fetchSchemamapForSidepanel(data);
+
+    // Render raw data sections
+    const hasAnyRaw = (data.jsonLd?.length || 0) + (data.microdata?.length || 0) + (data.rdfa?.length || 0) > 0;
+    rawDataSection.hidden = !hasAnyRaw;
+    if (hasAnyRaw) {
+      renderSection('jsonld', data.jsonLd, true);
+      renderSection('microdata', data.microdata);
+      renderSection('rdfa', data.rdfa);
+    }
   }
 
-  renderSection('jsonld', data.jsonLd, true);
-  renderSection('microdata', data.microdata);
-  renderSection('rdfa', data.rdfa);
-}
+  // --- Schemamap Navigation (Sidepanel) ---
 
-// Section toggle handlers
-document.querySelectorAll('.section-header').forEach((header) => {
-  header.addEventListener('click', () => {
-    header.classList.toggle('open');
+  function fetchSchemamapForSidepanel(schemaData) {
+    const origin = schemaData.url ? new URL(schemaData.url).origin : null;
+    if (!origin) {
+      navSection.hidden = true;
+      return;
+    }
+    chrome.runtime.sendMessage({
+      type: 'GET_SCHEMAMAP',
+      origin: origin,
+      schemaData: schemaData
+    }, (response) => {
+      if (chrome.runtime.lastError || !response || !response.navItems || response.navItems.length === 0) {
+        navSection.hidden = true;
+        return;
+      }
+      navSection.hidden = false;
+      navLinks.innerHTML = '';
+      renderNavLinks(response.navItems, navLinks);
+    });
+  }
+
+  function renderNavLinks(items, container) {
+    for (const item of items) {
+      const li = document.createElement('li');
+      li.className = 'nav-link-item';
+      if (item.url) {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.textContent = item.name || item.url;
+        link.target = '_blank';
+        link.className = 'nav-link';
+        li.appendChild(link);
+      } else {
+        const span = document.createElement('span');
+        span.textContent = item.name;
+        span.className = 'nav-link-label';
+        li.appendChild(span);
+      }
+      if (item.children && item.children.length > 0) {
+        const subList = document.createElement('ul');
+        subList.className = 'nav-link-sublist';
+        renderNavLinks(item.children, subList);
+        li.appendChild(subList);
+      }
+      container.appendChild(li);
+    }
+  }
+
+  // --- Activate / Deactivate ---
+
+  btnActivate.addEventListener('click', () => {
+    if (!currentData) return;
+    chrome.runtime.sendMessage({
+      type: 'ACTIVATE_TRANSFORM',
+      payload: currentData
+    }, () => {
+      isTransformActive = true;
+      btnActivate.hidden = true;
+      btnDeactivate.hidden = false;
+    });
   });
-});
 
-// NLWeb form handler
-document.getElementById('nlweb-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const input = document.getElementById('nlweb-query');
-  const query = input.value.trim();
-  if (!query || !getNlwebEndpoint()) return;
-
-  const results = document.getElementById('nlweb-results');
-  results.innerHTML = '';
-  setNlwebLoading(true);
-
-  chrome.runtime.sendMessage({
-    type: 'NLWEB_QUERY',
-    query,
-    endpoint: getNlwebEndpoint(),
-    mode: 'summarize'
+  btnDeactivate.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'DEACTIVATE_TRANSFORM' }, () => {
+      isTransformActive = false;
+      btnActivate.hidden = false;
+      btnDeactivate.hidden = true;
+    });
   });
-});
 
-// Request data on load
-chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
-  if (chrome.runtime.lastError) {
-    renderData(null);
-    return;
-  }
-  renderData(response);
-});
+  // --- Preset Selection ---
 
-// Listen for live updates
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === 'SCHEMA_UPDATE') {
-    renderData(message.payload);
-  }
+  document.querySelectorAll('.preset-option').forEach((option) => {
+    const radio = option.querySelector('input[type="radio"]');
+    radio.addEventListener('change', () => {
+      document.querySelectorAll('.preset-option').forEach(o => o.classList.remove('active'));
+      option.classList.add('active');
+      chrome.runtime.sendMessage({ type: 'SET_PRESET', preset: radio.value });
+    });
+  });
 
-  if (message.type === 'NLWEB_ENDPOINT') {
-    updateNlwebSection(message.endpoint, message.method);
-  }
+  // Restore saved preset
+  chrome.storage.local.get('uaPreset', (result) => {
+    if (result.uaPreset) {
+      const radio = document.querySelector(`input[name="preset"][value="${result.uaPreset}"]`);
+      if (radio) {
+        radio.checked = true;
+        document.querySelectorAll('.preset-option').forEach(o => o.classList.remove('active'));
+        radio.closest('.preset-option').classList.add('active');
+      }
+    }
+  });
 
-  if (message.type === 'NLWEB_RESULT_CHUNK') {
-    if (message.error) {
-      setNlwebLoading(false);
-      showNlwebError(message.error);
+  // --- Raw Data Tree Rendering ---
+
+  function renderSection(sectionId, items, isJsonLd = false) {
+    const section = document.getElementById(`section-${sectionId}`);
+    const countEl = document.getElementById(`count-${sectionId}`);
+    const itemsEl = document.getElementById(`items-${sectionId}`);
+
+    if (!items || items.length === 0) {
+      section.hidden = true;
       return;
     }
 
-    if (message.done) {
-      setNlwebLoading(false);
+    section.hidden = false;
+    countEl.textContent = items.length;
+    itemsEl.innerHTML = '';
+
+    items.forEach((item) => {
+      if (isJsonLd) {
+        if (item.error) {
+          itemsEl.appendChild(renderError(item));
+        } else {
+          itemsEl.appendChild(createTreeNode(null, item.data, true));
+        }
+      } else {
+        itemsEl.appendChild(createTreeNode(null, item, true));
+      }
+    });
+  }
+
+  // --- Copy JSON ---
+
+  document.getElementById('btn-copy-json').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!currentData) return;
+    const output = {};
+    if (currentData.jsonLd?.length) output.jsonLd = currentData.jsonLd.map(i => i.data || i);
+    if (currentData.microdata?.length) output.microdata = currentData.microdata;
+    if (currentData.rdfa?.length) output.rdfa = currentData.rdfa;
+    if (currentData.entities?.length) output.entities = currentData.entities;
+    output.primaryType = currentData.primaryType || null;
+    output.url = currentData.url || '';
+    const json = JSON.stringify(output, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      const btn = document.getElementById('btn-copy-json');
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+    });
+  });
+
+  // --- Toggle Handlers ---
+
+  document.querySelectorAll('.section-toggle, .subsection-header').forEach((header) => {
+    header.addEventListener('click', () => {
+      header.classList.toggle('open');
+    });
+  });
+
+  // --- NLWeb form handler ---
+
+  document.getElementById('nlweb-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('nlweb-query');
+    const query = input.value.trim();
+    if (!query || !getNlwebEndpoint()) return;
+    const results = document.getElementById('nlweb-results');
+    results.innerHTML = '';
+    setNlwebLoading(true);
+    chrome.runtime.sendMessage({
+      type: 'NLWEB_QUERY',
+      query,
+      endpoint: getNlwebEndpoint(),
+      mode: 'summarize'
+    });
+  });
+
+  // --- Initialize ---
+
+  chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
+    if (chrome.runtime.lastError) {
+      handleSchemaData(null);
       return;
     }
+    handleSchemaData(response);
+  });
 
-    if (message.chunk) {
-      renderNlwebChunk(message.chunk);
+  // Listen for live updates
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'SCHEMA_UPDATE') {
+      handleSchemaData(message.payload);
     }
-  }
-});
+    if (message.type === 'DEACTIVATE_TRANSFORM') {
+      isTransformActive = false;
+      btnActivate.hidden = false;
+      btnDeactivate.hidden = true;
+    }
+    if (message.type === 'NLWEB_ENDPOINT') {
+      updateNlwebSection(message.endpoint, message.method);
+    }
+    if (message.type === 'NLWEB_RESULT_CHUNK') {
+      if (message.error) {
+        setNlwebLoading(false);
+        showNlwebError(message.error);
+        return;
+      }
+      if (message.done) {
+        setNlwebLoading(false);
+        return;
+      }
+      if (message.chunk) {
+        renderNlwebChunk(message.chunk);
+      }
+    }
+  });
+})();

@@ -1,0 +1,683 @@
+/* Universal Access — Base Renderer Styles
+   Uses CSS custom properties for theming by accessibility presets */
+
+:root {
+  --ua-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --ua-font-size-base: 16px;
+  --ua-font-size-sm: 14px;
+  --ua-font-size-lg: 20px;
+  --ua-font-size-xl: 28px;
+  --ua-font-size-xxl: 36px;
+  --ua-line-height: 1.6;
+  --ua-letter-spacing: normal;
+  --ua-word-spacing: normal;
+
+  --ua-color-bg: #ffffff;
+  --ua-color-surface: #f8f9fa;
+  --ua-color-text: #1a1a2e;
+  --ua-color-text-secondary: #555770;
+  --ua-color-primary: #2563eb;
+  --ua-color-primary-light: #dbeafe;
+  --ua-color-accent: #059669;
+  --ua-color-accent-light: #d1fae5;
+  --ua-color-border: #e2e8f0;
+  --ua-color-border-strong: #cbd5e1;
+  --ua-color-star: #f59e0b;
+  --ua-color-overlay-bg: #f1f5f9;
+  --ua-color-header-bg: #1e293b;
+  --ua-color-header-text: #f8fafc;
+
+  --ua-radius: 12px;
+  --ua-radius-sm: 8px;
+  --ua-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --ua-shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+  --ua-transition: 0.2s ease;
+
+  --ua-max-width: 720px;
+  --ua-spacing: 24px;
+  --ua-spacing-sm: 12px;
+  --ua-spacing-lg: 32px;
+
+  --ua-focus-outline: 3px solid var(--ua-color-primary);
+  --ua-focus-offset: 2px;
+}
+
+/* --- Overlay container --- */
+
+#ua-accessible-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: var(--ua-color-overlay-bg);
+  font-family: var(--ua-font-family);
+  font-size: var(--ua-font-size-base);
+  line-height: var(--ua-line-height);
+  letter-spacing: var(--ua-letter-spacing);
+  word-spacing: var(--ua-word-spacing);
+  color: var(--ua-color-text);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#ua-accessible-overlay *,
+#ua-accessible-overlay *::before,
+#ua-accessible-overlay *::after {
+  box-sizing: border-box;
+}
+
+#ua-accessible-overlay :focus-visible {
+  outline: var(--ua-focus-outline);
+  outline-offset: var(--ua-focus-offset);
+}
+
+/* --- Header --- */
+
+.ua-overlay-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--ua-spacing);
+  background: var(--ua-color-header-bg);
+  color: var(--ua-color-header-text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+.ua-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ua-logo {
+  font-size: 22px;
+}
+
+.ua-header-title {
+  font-weight: 700;
+  font-size: var(--ua-font-size-lg);
+}
+
+.ua-type-badge {
+  background: var(--ua-color-primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ua-close-btn {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.3);
+  color: var(--ua-color-header-text);
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--ua-transition);
+}
+
+.ua-close-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.5);
+}
+
+/* --- Content area --- */
+
+.ua-overlay-content {
+  flex: 1;
+  max-width: var(--ua-max-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--ua-spacing-lg) var(--ua-spacing);
+}
+
+/* --- Card --- */
+
+.ua-card {
+  background: var(--ua-color-bg);
+  border-radius: var(--ua-radius);
+  box-shadow: var(--ua-shadow-lg);
+  overflow: hidden;
+}
+
+.ua-card-image {
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+  background: var(--ua-color-surface);
+}
+
+.ua-card-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 400px;
+}
+
+.ua-card-body {
+  padding: var(--ua-spacing-lg);
+}
+
+/* --- Typography --- */
+
+.ua-title {
+  font-size: var(--ua-font-size-xxl);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 var(--ua-spacing-sm);
+  color: var(--ua-color-text);
+}
+
+.ua-description {
+  font-size: var(--ua-font-size-base);
+  color: var(--ua-color-text-secondary);
+  margin: 0 0 var(--ua-spacing);
+}
+
+.ua-description p {
+  margin: 0 0 var(--ua-spacing-sm);
+}
+
+.ua-meta {
+  font-size: var(--ua-font-size-sm);
+  color: var(--ua-color-text-secondary);
+  margin: 4px 0;
+}
+
+/* --- Product specific --- */
+
+.ua-product-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ua-spacing);
+  align-items: center;
+  margin: var(--ua-spacing) 0;
+  padding: var(--ua-spacing);
+  background: var(--ua-color-surface);
+  border-radius: var(--ua-radius-sm);
+  border: 1px solid var(--ua-color-border);
+}
+
+.ua-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ua-price {
+  font-size: var(--ua-font-size-xl);
+  font-weight: 700;
+  color: var(--ua-color-accent);
+}
+
+.ua-availability {
+  font-size: var(--ua-font-size-sm);
+  font-weight: 600;
+}
+
+.ua-rating-value {
+  font-weight: 700;
+  font-size: var(--ua-font-size-base);
+  color: var(--ua-color-text);
+}
+
+.ua-brand {
+  font-style: italic;
+}
+
+.ua-sku {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--ua-color-text-secondary);
+}
+
+/* --- Action buttons --- */
+
+.ua-actions {
+  margin: var(--ua-spacing) 0;
+}
+
+.ua-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  background: var(--ua-color-primary);
+  color: white;
+  font-size: var(--ua-font-size-base);
+  font-weight: 600;
+  font-family: var(--ua-font-family);
+  border: none;
+  border-radius: var(--ua-radius-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--ua-transition);
+  box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+}
+
+.ua-button:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 8px rgba(37,99,235,0.4);
+  transform: translateY(-1px);
+}
+
+/* --- FAQ --- */
+
+.ua-faq-list {
+  margin: 0;
+  padding: 0;
+}
+
+.ua-faq-item {
+  border-bottom: 1px solid var(--ua-color-border);
+  padding: var(--ua-spacing-sm) 0;
+}
+
+.ua-faq-item:last-child {
+  border-bottom: none;
+}
+
+.ua-faq-question {
+  font-weight: 700;
+  font-size: var(--ua-font-size-base);
+  color: var(--ua-color-text);
+  margin: 0 0 8px;
+}
+
+.ua-faq-answer {
+  font-size: var(--ua-font-size-sm);
+  color: var(--ua-color-text-secondary);
+  margin: 0 0 4px 0;
+  line-height: var(--ua-line-height);
+}
+
+.ua-faq-answer a {
+  color: var(--ua-color-primary);
+  text-decoration: underline;
+}
+
+.ua-faq-answer p {
+  margin: 0 0 8px;
+}
+
+/* --- Rating --- */
+
+.ua-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: var(--ua-spacing-sm) 0;
+}
+
+.ua-stars {
+  color: var(--ua-color-star);
+  font-size: var(--ua-font-size-lg);
+  letter-spacing: 2px;
+}
+
+.ua-review-count {
+  font-size: var(--ua-font-size-sm);
+  color: var(--ua-color-text-secondary);
+}
+
+/* --- Article specific --- */
+
+.ua-article-hero {
+  max-height: 350px;
+}
+
+.ua-reader {
+  max-width: 650px;
+}
+
+.ua-article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: var(--ua-font-size-sm);
+  color: var(--ua-color-text-secondary);
+  margin: var(--ua-spacing-sm) 0 var(--ua-spacing);
+  padding-bottom: var(--ua-spacing-sm);
+  border-bottom: 1px solid var(--ua-color-border);
+}
+
+.ua-author {
+  font-weight: 600;
+}
+
+.ua-article-body {
+  font-size: var(--ua-font-size-base);
+  line-height: var(--ua-line-height);
+}
+
+.ua-article-body p {
+  margin: 0 0 var(--ua-spacing);
+}
+
+/* --- Recipe specific --- */
+
+.ua-recipe-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ua-spacing-sm);
+  margin: var(--ua-spacing) 0;
+}
+
+.ua-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--ua-color-surface);
+  border: 1px solid var(--ua-color-border);
+  border-radius: var(--ua-radius-sm);
+  padding: var(--ua-spacing-sm) var(--ua-spacing);
+  min-width: 80px;
+}
+
+.ua-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ua-color-text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.ua-stat-value {
+  font-size: var(--ua-font-size-lg);
+  font-weight: 700;
+  color: var(--ua-color-text);
+}
+
+.ua-tag {
+  display: inline-block;
+  background: var(--ua-color-primary-light);
+  color: var(--ua-color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-right: 6px;
+}
+
+/* --- Sections (ingredients, instructions) --- */
+
+.ua-section {
+  margin: var(--ua-spacing-lg) 0;
+}
+
+.ua-section-title {
+  font-size: var(--ua-font-size-lg);
+  font-weight: 700;
+  margin: 0 0 var(--ua-spacing-sm);
+  color: var(--ua-color-text);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ua-color-primary);
+}
+
+/* Ingredients checklist */
+
+.ua-ingredients-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ua-ingredients-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ua-color-border);
+}
+
+.ua-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: var(--ua-font-size-base);
+}
+
+.ua-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ua-color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ua-checkbox input:checked + span {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Instructions numbered list */
+
+.ua-instructions-list {
+  padding: 0;
+  margin: 0;
+  counter-reset: step;
+  list-style: none;
+}
+
+.ua-step {
+  counter-increment: step;
+  padding: var(--ua-spacing-sm) 0 var(--ua-spacing-sm) 48px;
+  position: relative;
+  border-bottom: 1px solid var(--ua-color-border);
+  min-height: 48px;
+}
+
+.ua-step::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: var(--ua-spacing-sm);
+  width: 32px;
+  height: 32px;
+  background: var(--ua-color-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--ua-font-size-sm);
+}
+
+.ua-step p {
+  margin: 0 0 8px;
+}
+
+/* --- Nutrition table --- */
+
+.ua-nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ua-font-size-sm);
+}
+
+.ua-nutrition-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ua-color-border);
+}
+
+.ua-nutrition-table td:first-child {
+  font-weight: 600;
+  width: 40%;
+  color: var(--ua-color-text);
+}
+
+.ua-nutrition-table td:last-child {
+  color: var(--ua-color-text-secondary);
+}
+
+.ua-nutrition-table tr:nth-child(even) {
+  background: var(--ua-color-surface);
+}
+
+/* --- Site Navigation (schemamap.json) --- */
+
+.ua-nav {
+  position: sticky;
+  top: 48px; /* below header */
+  z-index: 9;
+  background: var(--ua-color-bg);
+  border-bottom: 1px solid var(--ua-color-border);
+  padding: 0 var(--ua-spacing);
+  flex-shrink: 0;
+}
+
+.ua-nav-list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.ua-nav-item {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ua-nav-link {
+  display: inline-block;
+  padding: 10px 14px;
+  font-size: var(--ua-font-size-sm);
+  font-weight: 500;
+  color: var(--ua-color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: var(--ua-radius-sm) var(--ua-radius-sm) 0 0;
+  transition: all var(--ua-transition);
+}
+
+.ua-nav-link:hover {
+  color: var(--ua-color-primary);
+  background: var(--ua-color-surface);
+}
+
+.ua-nav-link[aria-current="page"] {
+  color: var(--ua-color-primary);
+  font-weight: 700;
+  border-bottom: 3px solid var(--ua-color-primary);
+}
+
+.ua-nav-label {
+  display: inline-block;
+  padding: 10px 6px 10px 14px;
+  font-size: var(--ua-font-size-sm);
+  font-weight: 500;
+  color: var(--ua-color-text-secondary);
+  white-space: nowrap;
+}
+
+.ua-nav-has-children {
+  display: flex;
+  align-items: center;
+}
+
+.ua-nav-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 10px 10px 2px;
+  font-size: 10px;
+  color: var(--ua-color-text-secondary);
+  transition: transform var(--ua-transition);
+  font-family: inherit;
+}
+
+.ua-nav-toggle:hover {
+  color: var(--ua-color-primary);
+}
+
+.ua-nav-toggle[aria-expanded="true"] {
+  transform: rotate(180deg);
+}
+
+.ua-nav-submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  background: var(--ua-color-bg);
+  border: 1px solid var(--ua-color-border);
+  border-radius: 0 0 var(--ua-radius-sm) var(--ua-radius-sm);
+  box-shadow: var(--ua-shadow-lg);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  min-width: 180px;
+}
+
+.ua-nav-toggle[aria-expanded="true"] + .ua-nav-submenu {
+  display: block;
+}
+
+.ua-nav-submenu .ua-nav-link {
+  display: block;
+  padding: 8px 16px;
+  border-radius: 0;
+  font-size: var(--ua-font-size-sm);
+}
+
+.ua-nav-submenu .ua-nav-link:hover {
+  background: var(--ua-color-surface);
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 600px) {
+  .ua-card-body {
+    padding: var(--ua-spacing);
+  }
+
+  .ua-title {
+    font-size: var(--ua-font-size-xl);
+  }
+
+  .ua-overlay-content {
+    padding: var(--ua-spacing-sm);
+  }
+
+  .ua-recipe-stats {
+    gap: 8px;
+  }
+
+  .ua-stat {
+    min-width: 70px;
+    padding: 8px 12px;
+  }
+
+  .ua-nav {
+    padding: 0 var(--ua-spacing-sm);
+  }
+
+  .ua-nav-link {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .ua-nav-label {
+    padding: 8px 4px 8px 10px;
+    font-size: 12px;
+  }
+}
