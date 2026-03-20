@@ -1,77 +1,13 @@
-// Side panel rendering logic
+// Side panel — entry point, event listeners, rendering
 
-function createTreeNode(key, value, isRoot = false) {
-  const node = document.createElement('div');
-  node.className = 'tree-node' + (isRoot ? ' root' : '');
-
-  if (value === null || value === undefined) {
-    node.innerHTML = key !== null
-      ? `<span class="tree-key">${escapeHtml(key)}</span>: <span class="tree-value null">null</span>`
-      : `<span class="tree-value null">null</span>`;
-    return node;
-  }
-
-  if (Array.isArray(value)) {
-    const toggle = document.createElement('div');
-    toggle.className = 'tree-toggle';
-    toggle.innerHTML = `<span class="arrow">&#9654;</span> ${key !== null ? `<span class="tree-key">${escapeHtml(key)}</span>` : ''} <span style="color:#666">[${value.length}]</span>`;
-    toggle.addEventListener('click', () => toggle.classList.toggle('open'));
-
-    const children = document.createElement('div');
-    children.className = 'tree-children';
-    value.forEach((item, i) => {
-      children.appendChild(createTreeNode(String(i), item));
-    });
-
-    node.appendChild(toggle);
-    node.appendChild(children);
-    return node;
-  }
-
-  if (typeof value === 'object') {
-    const keys = Object.keys(value);
-    const typeLabel = value['@type'] ? ` (${value['@type']})` : '';
-
-    const toggle = document.createElement('div');
-    toggle.className = 'tree-toggle' + (isRoot ? ' open' : '');
-    toggle.innerHTML = `<span class="arrow">&#9654;</span> ${key !== null ? `<span class="tree-key">${escapeHtml(key)}</span>` : ''} <span style="color:#666">{${keys.length}}${escapeHtml(typeLabel)}</span>`;
-    toggle.addEventListener('click', () => toggle.classList.toggle('open'));
-
-    const children = document.createElement('div');
-    children.className = 'tree-children';
-    keys.forEach((k) => {
-      children.appendChild(createTreeNode(k, value[k]));
-    });
-
-    node.appendChild(toggle);
-    node.appendChild(children);
-    return node;
-  }
-
-  // Leaf value
-  const type = typeof value;
-  const displayValue = type === 'string' ? `"${escapeHtml(value)}"` : escapeHtml(String(value));
-  node.innerHTML = key !== null
-    ? `<span class="tree-key">${escapeHtml(key)}</span>: <span class="tree-value ${type}">${displayValue}</span>`
-    : `<span class="tree-value ${type}">${displayValue}</span>`;
-  return node;
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function renderError(item) {
-  const el = document.createElement('div');
-  el.className = 'schema-error';
-  el.innerHTML = `<div class="error-label">Parse Error: ${escapeHtml(item.error)}</div>`;
-  if (item.raw) {
-    el.innerHTML += `<div class="error-raw">${escapeHtml(item.raw)}</div>`;
-  }
-  return el;
-}
+import { createTreeNode, renderError } from './tree-renderer.js';
+import {
+  getNlwebEndpoint,
+  updateNlwebSection,
+  renderNlwebChunk,
+  setNlwebLoading,
+  showNlwebError
+} from './nlweb-ui.js';
 
 function renderSection(sectionId, items, isJsonLd = false) {
   const section = document.getElementById(`section-${sectionId}`);
@@ -103,6 +39,11 @@ function renderSection(sectionId, items, isJsonLd = false) {
 function renderData(data) {
   const emptyState = document.getElementById('empty-state');
   const pageUrl = document.getElementById('page-url');
+  const nlwebResults = document.getElementById('nlweb-results');
+
+  // Reset NLWeb state
+  setNlwebLoading(false);
+  nlwebResults.innerHTML = '';
 
   if (!data) {
     emptyState.hidden = false;
@@ -110,16 +51,25 @@ function renderData(data) {
     document.getElementById('section-jsonld').hidden = true;
     document.getElementById('section-microdata').hidden = true;
     document.getElementById('section-rdfa').hidden = true;
+    updateNlwebSection(null);
     return;
   }
 
   pageUrl.textContent = data.url || '';
 
+  // Handle NLWeb discovery
+  if (data.nlweb && data.nlweb.endpoint) {
+    updateNlwebSection(data.nlweb.endpoint, data.nlweb.method);
+  } else if (!getNlwebEndpoint()) {
+    updateNlwebSection(null);
+  }
+
   const hasJsonLd = data.jsonLd && data.jsonLd.length > 0;
   const hasMicrodata = data.microdata && data.microdata.length > 0;
   const hasRdfa = data.rdfa && data.rdfa.length > 0;
+  const hasNlweb = !!getNlwebEndpoint();
 
-  if (!hasJsonLd && !hasMicrodata && !hasRdfa) {
+  if (!hasJsonLd && !hasMicrodata && !hasRdfa && !hasNlweb) {
     emptyState.hidden = false;
   } else {
     emptyState.hidden = true;
@@ -137,6 +87,25 @@ document.querySelectorAll('.section-header').forEach((header) => {
   });
 });
 
+// NLWeb form handler
+document.getElementById('nlweb-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = document.getElementById('nlweb-query');
+  const query = input.value.trim();
+  if (!query || !getNlwebEndpoint()) return;
+
+  const results = document.getElementById('nlweb-results');
+  results.innerHTML = '';
+  setNlwebLoading(true);
+
+  chrome.runtime.sendMessage({
+    type: 'NLWEB_QUERY',
+    query,
+    endpoint: getNlwebEndpoint(),
+    mode: 'summarize'
+  });
+});
+
 // Request data on load
 chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
   if (chrome.runtime.lastError) {
@@ -150,5 +119,26 @@ chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'SCHEMA_UPDATE') {
     renderData(message.payload);
+  }
+
+  if (message.type === 'NLWEB_ENDPOINT') {
+    updateNlwebSection(message.endpoint, message.method);
+  }
+
+  if (message.type === 'NLWEB_RESULT_CHUNK') {
+    if (message.error) {
+      setNlwebLoading(false);
+      showNlwebError(message.error);
+      return;
+    }
+
+    if (message.done) {
+      setNlwebLoading(false);
+      return;
+    }
+
+    if (message.chunk) {
+      renderNlwebChunk(message.chunk);
+    }
   }
 });

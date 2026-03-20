@@ -12,6 +12,17 @@
     <div id="page-url" class="page-url"></div>
   </header>
   <main id="content">
+    <section id="nlweb-section" class="nlweb-section" hidden>
+      <div class="nlweb-header">
+        <span class="nlweb-indicator">NLWeb</span>
+        <span id="nlweb-endpoint-info" class="nlweb-endpoint-info"></span>
+      </div>
+      <form id="nlweb-form" class="nlweb-form">
+        <input type="text" id="nlweb-query" placeholder="Ask this site a question..." autocomplete="off" aria-label="Ask this site a question">
+        <button type="submit" id="nlweb-submit">Ask</button>
+      </form>
+      <div id="nlweb-results" class="nlweb-results"></div>
+    </section>
     <div id="empty-state" class="empty-state">
       <p>No structured data found on this page.</p>
       <p class="hint">Navigate to a page with Schema.org markup to see results.</p>
@@ -38,6 +49,6 @@
       <div id="items-rdfa" class="section-items"></div>
     </section>
   </main>
-  <script src="sidepanel.js"></script>
+  <script type="module" src="sidepanel.js"></script>
 </body>
 </html>
