@@ -529,47 +529,7 @@ a.nlweb-result-name:hover {
 .nlweb-summary-actions {
   margin-top: 8px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.nlweb-summary-tts-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.nlweb-voice-select {
-  max-width: 190px;
-  min-height: 30px;
-  border: 1px solid var(--sp-border);
-  border-radius: 4px;
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  font-size: 12px;
-  padding: 4px 6px;
-  font-family: inherit;
-}
-
-.nlweb-speed-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--sp-text-secondary);
-}
-
-.nlweb-speed-input {
-  width: 86px;
-}
-
-.nlweb-speed-value {
-  min-width: 30px;
-  text-align: right;
-  color: var(--sp-text-hint);
+  justify-content: flex-end;
 }
 
 .nlweb-summary-tts-btn {
@@ -598,6 +558,64 @@ a.nlweb-result-name:hover {
   border-color: var(--sp-border);
   color: var(--sp-text-hint);
   cursor: default;
+}
+
+.tts-settings {
+  gap: 6px;
+}
+
+.tts-setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tts-setting-item .preset-label {
+  min-width: 0;
+}
+
+.tts-select {
+  width: 48%;
+  min-width: 150px;
+  min-height: 30px;
+  border: 1px solid var(--sp-border);
+  border-radius: 4px;
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: 12px;
+  padding: 4px 6px;
+  font-family: inherit;
+}
+
+.tts-speed-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 48%;
+  min-width: 150px;
+}
+
+.tts-range {
+  width: 100px;
+}
+
+.tts-speed-value {
+  min-width: 30px;
+  text-align: right;
+  color: var(--sp-text-hint);
+  font-size: 11px;
+}
+
+.tts-autoread {
+  cursor: pointer;
+}
+
+.tts-autoread input[type="checkbox"] {
+  accent-color: var(--sp-primary);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .nlweb-suggested-queries {

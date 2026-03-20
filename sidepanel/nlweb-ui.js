@@ -9,8 +9,10 @@ let activeSummaryButton = null;
 let activeSummaryCard = null;
 const TTS_RATE_STORAGE_KEY = "uaTtsRate";
 const TTS_VOICE_STORAGE_KEY = "uaTtsVoiceURI";
+const TTS_AUTO_READ_STORAGE_KEY = "uaTtsAutoRead";
 let preferredTtsRate = 1;
 let preferredTtsVoiceURI = "";
+let preferredTtsAutoRead = false;
 let voicesListenerRegistered = false;
 
 try {
@@ -19,7 +21,10 @@ try {
     preferredTtsRate = savedRate;
   }
 
-  preferredTtsVoiceURI = window.localStorage?.getItem(TTS_VOICE_STORAGE_KEY) || "";
+  preferredTtsVoiceURI =
+    window.localStorage?.getItem(TTS_VOICE_STORAGE_KEY) || "";
+  preferredTtsAutoRead =
+    window.localStorage?.getItem(TTS_AUTO_READ_STORAGE_KEY) === "true";
 } catch {
   // Ignore storage access errors.
 }
@@ -79,10 +84,16 @@ function getAvailableVoices() {
 function findPreferredVoice(voices) {
   if (!voices.length) return null;
 
-  const byStoredUri = voices.find((voice) => voice.voiceURI === preferredTtsVoiceURI);
+  const byStoredUri = voices.find(
+    (voice) => voice.voiceURI === preferredTtsVoiceURI,
+  );
   if (byStoredUri) return byStoredUri;
 
-  const byEnglish = voices.find((voice) => String(voice.lang || "").toLowerCase().startsWith("en"));
+  const byEnglish = voices.find((voice) =>
+    String(voice.lang || "")
+      .toLowerCase()
+      .startsWith("en"),
+  );
   if (byEnglish) return byEnglish;
 
   return voices[0];
@@ -90,7 +101,9 @@ function findPreferredVoice(voices) {
 
 function getVoiceByUri(voiceUri) {
   if (!voiceUri) return null;
-  return getAvailableVoices().find((voice) => voice.voiceURI === voiceUri) || null;
+  return (
+    getAvailableVoices().find((voice) => voice.voiceURI === voiceUri) || null
+  );
 }
 
 function populateVoiceSelect(select) {
@@ -126,9 +139,10 @@ function populateVoiceSelect(select) {
 }
 
 function refreshAllVoiceSelectors() {
-  document.querySelectorAll(".nlweb-voice-select").forEach((select) => {
+  const select = document.getElementById("nlweb-tts-voice");
+  if (select) {
     populateVoiceSelect(select);
-  });
+  }
 }
 
 function ensureVoiceListenerRegistered() {
@@ -138,6 +152,73 @@ function ensureVoiceListenerRegistered() {
     refreshAllVoiceSelectors();
   });
   voicesListenerRegistered = true;
+}
+
+function getGlobalTtsControls() {
+  return {
+    voiceSelect: document.getElementById("nlweb-tts-voice"),
+    speedInput: document.getElementById("nlweb-tts-rate"),
+    speedValue: document.getElementById("nlweb-tts-rate-value"),
+    autoReadInput: document.getElementById("nlweb-tts-auto"),
+  };
+}
+
+export function initNlwebTtsSettings() {
+  const { voiceSelect, speedInput, speedValue, autoReadInput } =
+    getGlobalTtsControls();
+  if (!voiceSelect || !speedInput || !speedValue || !autoReadInput) return;
+
+  if (!canUseSummaryTts()) {
+    voiceSelect.disabled = true;
+    speedInput.disabled = true;
+    autoReadInput.disabled = true;
+    voiceSelect.innerHTML = "";
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "TTS unavailable";
+    voiceSelect.appendChild(option);
+    return;
+  }
+
+  ensureVoiceListenerRegistered();
+  populateVoiceSelect(voiceSelect);
+  setTimeout(() => populateVoiceSelect(voiceSelect), 0);
+
+  speedInput.value = String(preferredTtsRate);
+  speedValue.textContent = `${preferredTtsRate.toFixed(1)}x`;
+  autoReadInput.checked = preferredTtsAutoRead;
+
+  voiceSelect.addEventListener("change", () => {
+    preferredTtsVoiceURI = voiceSelect.value;
+    try {
+      window.localStorage?.setItem(TTS_VOICE_STORAGE_KEY, preferredTtsVoiceURI);
+    } catch {
+      // Ignore storage access errors.
+    }
+  });
+
+  speedInput.addEventListener("input", () => {
+    const value = Number(speedInput.value);
+    preferredTtsRate = value;
+    speedValue.textContent = `${value.toFixed(1)}x`;
+    try {
+      window.localStorage?.setItem(TTS_RATE_STORAGE_KEY, String(value));
+    } catch {
+      // Ignore storage access errors.
+    }
+  });
+
+  autoReadInput.addEventListener("change", () => {
+    preferredTtsAutoRead = autoReadInput.checked;
+    try {
+      window.localStorage?.setItem(
+        TTS_AUTO_READ_STORAGE_KEY,
+        String(preferredTtsAutoRead),
+      );
+    } catch {
+      // Ignore storage access errors.
+    }
+  });
 }
 
 function stopSummaryTts() {
@@ -168,7 +249,7 @@ function getSummaryCardText(card) {
   return [title, description].filter(Boolean).join(". ").trim();
 }
 
-function startSummaryTts(card, button, voiceSelect, speedInput) {
+function startSummaryTts(card, button) {
   if (!canUseSummaryTts()) return;
 
   const text = getSummaryCardText(card);
@@ -178,6 +259,7 @@ function startSummaryTts(card, button, voiceSelect, speedInput) {
     stopSummaryTts();
   }
 
+  const { voiceSelect, speedInput } = getGlobalTtsControls();
   const utterance = new window.SpeechSynthesisUtterance(text);
   const rate = Number(speedInput?.value || preferredTtsRate || 1);
   utterance.rate = Number.isFinite(rate) ? Math.max(0.5, Math.min(2, rate)) : 1;
@@ -335,57 +417,6 @@ function createSummaryCard(title, message) {
   const actions = document.createElement("div");
   actions.className = "nlweb-summary-actions";
 
-  const controls = document.createElement("div");
-  controls.className = "nlweb-summary-tts-controls";
-
-  const voiceSelect = document.createElement("select");
-  voiceSelect.className = "nlweb-voice-select";
-  voiceSelect.title = "Voice";
-  voiceSelect.setAttribute("aria-label", "Voice");
-
-  const speedWrap = document.createElement("label");
-  speedWrap.className = "nlweb-speed-wrap";
-  speedWrap.textContent = "Speed";
-
-  const speedInput = document.createElement("input");
-  speedInput.className = "nlweb-speed-input";
-  speedInput.type = "range";
-  speedInput.min = "0.5";
-  speedInput.max = "2";
-  speedInput.step = "0.1";
-  speedInput.value = String(preferredTtsRate);
-  speedInput.setAttribute("aria-label", "Voice speed");
-
-  const speedValue = document.createElement("span");
-  speedValue.className = "nlweb-speed-value";
-  speedValue.textContent = `${Number(speedInput.value).toFixed(1)}x`;
-
-  speedInput.addEventListener("input", () => {
-    const value = Number(speedInput.value);
-    preferredTtsRate = value;
-    speedValue.textContent = `${value.toFixed(1)}x`;
-    try {
-      window.localStorage?.setItem(TTS_RATE_STORAGE_KEY, String(value));
-    } catch {
-      // Ignore storage access errors.
-    }
-  });
-
-  voiceSelect.addEventListener("change", () => {
-    preferredTtsVoiceURI = voiceSelect.value;
-    try {
-      window.localStorage?.setItem(TTS_VOICE_STORAGE_KEY, preferredTtsVoiceURI);
-    } catch {
-      // Ignore storage access errors.
-    }
-    refreshAllVoiceSelectors();
-  });
-
-  speedWrap.appendChild(speedInput);
-  speedWrap.appendChild(speedValue);
-  controls.appendChild(voiceSelect);
-  controls.appendChild(speedWrap);
-
   const ttsBtn = document.createElement("button");
   ttsBtn.className = "nlweb-summary-tts-btn";
   ttsBtn.type = "button";
@@ -403,22 +434,13 @@ function createSummaryCard(title, message) {
       return;
     }
 
-    startSummaryTts(card, ttsBtn, voiceSelect, speedInput);
+    startSummaryTts(card, ttsBtn);
   });
 
   if (!canUseSummaryTts()) {
     ttsBtn.disabled = true;
-    voiceSelect.disabled = true;
-    speedInput.disabled = true;
     ttsBtn.title = "Text-to-speech is not supported in this browser.";
   }
-
-  ensureVoiceListenerRegistered();
-  populateVoiceSelect(voiceSelect);
-  // Some browsers populate voices asynchronously after initial render.
-  setTimeout(() => populateVoiceSelect(voiceSelect), 0);
-
-  actions.appendChild(controls);
   actions.appendChild(ttsBtn);
 
   let html = "";
@@ -428,6 +450,13 @@ function createSummaryCard(title, message) {
     html += `<div class="nlweb-result-description">${escapeHtml(message)}</div>`;
   card.innerHTML = html;
   card.appendChild(actions);
+
+  if (canUseSummaryTts() && preferredTtsAutoRead) {
+    setTimeout(() => {
+      startSummaryTts(card, ttsBtn);
+    }, 0);
+  }
+
   return card;
 }
 
