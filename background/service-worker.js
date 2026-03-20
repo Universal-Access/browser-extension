@@ -1,10 +1,16 @@
 // Service worker — messaging hub, state, and tab lifecycle
 
-import { updateBadge } from './badge.js';
-import { tryWellKnownNlweb, resolveNlwebEndpoint, executeNlwebQuery } from './nlweb-client.js';
+import { updateBadge } from "./badge.js";
+import {
+  tryWellKnownNlweb,
+  resolveNlwebEndpoint,
+  executeNlwebQuery,
+} from "./nlweb-client.js";
 
 const tabDataCache = new Map();
 const tabNlwebState = new Map(); // { endpoint, abortController }
+const micSetupPageUrl = chrome.runtime.getURL("setup/setup.html");
+let micSetupTabId = null;
 
 // Open side panel on action click
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
@@ -20,17 +26,19 @@ function broadcastNlwebEndpoint(tabId, endpoint, method) {
     cached.nlweb = { ...(cached.nlweb || {}), endpoint, method };
   }
 
-  chrome.runtime.sendMessage({
-    type: 'NLWEB_ENDPOINT',
-    endpoint,
-    method,
-    tabId
-  }).catch(() => {});
+  chrome.runtime
+    .sendMessage({
+      type: "NLWEB_ENDPOINT",
+      endpoint,
+      method,
+      tabId,
+    })
+    .catch(() => {});
 }
 
 // Handle messages from content scripts and side panel
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'SCHEMA_DATA') {
+  if (message.type === "SCHEMA_DATA") {
     const tabId = sender.tab ? sender.tab.id : message.tabId;
     if (tabId) {
       tabDataCache.set(tabId, message.payload);
@@ -43,7 +51,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       } else if (nlweb?.method) {
         resolveNlwebEndpoint(nlweb, message.payload.url).then((endpoint) => {
           if (endpoint) {
-            broadcastNlwebEndpoint(tabId, endpoint, 'resolved');
+            broadcastNlwebEndpoint(tabId, endpoint, "resolved");
           }
         });
       } else {
@@ -51,21 +59,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (pageUrl) {
           tryWellKnownNlweb(pageUrl).then((endpoint) => {
             if (endpoint) {
-              broadcastNlwebEndpoint(tabId, endpoint, 'well-known');
+              broadcastNlwebEndpoint(tabId, endpoint, "well-known");
             }
           });
         }
       }
 
-      chrome.runtime.sendMessage({
-        type: 'SCHEMA_UPDATE',
-        payload: message.payload,
-        tabId
-      }).catch(() => {});
+      chrome.runtime
+        .sendMessage({
+          type: "SCHEMA_UPDATE",
+          payload: message.payload,
+          tabId,
+        })
+        .catch(() => {});
     }
   }
 
-  if (message.type === 'GET_SCHEMA_DATA') {
+  if (message.type === "GET_SCHEMA_DATA") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         const tabId = tabs[0].id;
@@ -76,31 +86,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Enrich cached data with resolved NLWeb endpoint so the sidepanel
         // gets it in the initial response (no race with delayed broadcast)
         if (cached && nlwebState?.endpoint) {
-          cached.nlweb = { ...(cached.nlweb || {}), endpoint: nlwebState.endpoint, method: 'cached' };
+          cached.nlweb = {
+            ...(cached.nlweb || {}),
+            endpoint: nlwebState.endpoint,
+            method: "cached",
+          };
         }
 
         if (cached) {
           sendResponse(cached);
         } else {
-          chrome.tabs.sendMessage(tabId, { type: 'REQUEST_EXTRACTION' }, (response) => {
-            if (chrome.runtime.lastError) {
-              sendResponse(null);
-            } else {
-              sendResponse(response || null);
-            }
-          });
+          chrome.tabs.sendMessage(
+            tabId,
+            { type: "REQUEST_EXTRACTION" },
+            (response) => {
+              if (chrome.runtime.lastError) {
+                sendResponse(null);
+              } else {
+                sendResponse(response || null);
+              }
+            },
+          );
         }
 
         // Also send as a separate message in case the sidepanel
         // processes SCHEMA_UPDATE before the initial response
         if (nlwebState?.endpoint) {
           setTimeout(() => {
-            chrome.runtime.sendMessage({
-              type: 'NLWEB_ENDPOINT',
-              endpoint: nlwebState.endpoint,
-              method: 'cached',
-              tabId
-            }).catch(() => {});
+            chrome.runtime
+              .sendMessage({
+                type: "NLWEB_ENDPOINT",
+                endpoint: nlwebState.endpoint,
+                method: "cached",
+                tabId,
+              })
+              .catch(() => {});
           }, 100);
         }
       } else {
@@ -110,7 +130,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  if (message.type === 'NLWEB_QUERY') {
+  if (message.type === "NLWEB_QUERY") {
     const { query, endpoint, mode } = message;
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tabId = tabs[0]?.id;
@@ -127,7 +147,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       tabNlwebState.set(tabId, state);
 
       try {
-        await executeNlwebQuery({ query, endpoint, mode, tabId, abortController });
+        await executeNlwebQuery({
+          query,
+          endpoint,
+          mode,
+          tabId,
+          abortController,
+        });
       } finally {
         state.abortController = null;
       }
@@ -135,7 +161,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  if (message.type === 'NLWEB_ABORT') {
+  if (message.type === "NLWEB_ABORT") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tabId = tabs[0]?.id;
       if (tabId) {
@@ -148,67 +174,116 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 
+  if (message.type === "OPEN_MIC_SETUP_TAB") {
+    if (micSetupTabId !== null) {
+      chrome.tabs.get(micSetupTabId, (tab) => {
+        if (!chrome.runtime.lastError && tab?.id) {
+          chrome.tabs.update(tab.id, { active: true }, () => {
+            sendResponse({ ok: true, reused: true, tabId: tab.id });
+          });
+          return;
+        }
+
+        micSetupTabId = null;
+        chrome.tabs.create(
+          { url: micSetupPageUrl, active: true },
+          (createdTab) => {
+            micSetupTabId = createdTab?.id ?? null;
+            sendResponse({
+              ok: true,
+              reused: false,
+              tabId: createdTab?.id ?? null,
+            });
+          },
+        );
+      });
+      return true;
+    }
+
+    chrome.tabs.create({ url: micSetupPageUrl, active: true }, (createdTab) => {
+      micSetupTabId = createdTab?.id ?? null;
+      sendResponse({ ok: true, reused: false, tabId: createdTab?.id ?? null });
+    });
+    return true;
+  }
+
   // --- Activate visual transformation ---
-  if (message.type === 'ACTIVATE_TRANSFORM') {
+  if (message.type === "ACTIVATE_TRANSFORM") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         const tabId = tabs[0].id;
         const data = message.payload || tabDataCache.get(tabId);
-        chrome.tabs.sendMessage(tabId, {
-          type: 'ACTIVATE_TRANSFORM',
-          payload: data
-        }, (response) => {
-          sendResponse(response || { success: false });
-        });
+        chrome.tabs.sendMessage(
+          tabId,
+          {
+            type: "ACTIVATE_TRANSFORM",
+            payload: data,
+          },
+          (response) => {
+            sendResponse(response || { success: false });
+          },
+        );
       }
     });
     return true;
   }
 
   // --- Deactivate visual transformation ---
-  if (message.type === 'DEACTIVATE_TRANSFORM') {
+  if (message.type === "DEACTIVATE_TRANSFORM") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: 'DEACTIVATE_TRANSFORM'
-        }, (response) => {
-          sendResponse(response || { success: false });
-        });
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            type: "DEACTIVATE_TRANSFORM",
+          },
+          (response) => {
+            sendResponse(response || { success: false });
+          },
+        );
       }
     });
     return true;
   }
 
   // --- Set accessibility preset ---
-  if (message.type === 'SET_PRESET') {
+  if (message.type === "SET_PRESET") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: 'SET_PRESET',
-          preset: message.preset
-        }, (response) => {
-          sendResponse(response || { success: false });
-        });
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            type: "SET_PRESET",
+            preset: message.preset,
+          },
+          (response) => {
+            sendResponse(response || { success: false });
+          },
+        );
       }
     });
     return true;
   }
 
   // --- Get schemamap navigation ---
-  if (message.type === 'GET_SCHEMAMAP') {
+  if (message.type === "GET_SCHEMAMAP") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: 'GET_SCHEMAMAP',
-          origin: message.origin,
-          schemaData: message.schemaData
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            sendResponse({ navItems: null });
-          } else {
-            sendResponse(response || { navItems: null });
-          }
-        });
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            type: "GET_SCHEMAMAP",
+            origin: message.origin,
+            schemaData: message.schemaData,
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              sendResponse({ navItems: null });
+            } else {
+              sendResponse(response || { navItems: null });
+            }
+          },
+        );
       } else {
         sendResponse({ navItems: null });
       }
@@ -219,19 +294,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Clear stale cache on navigation
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  if (changeInfo.status === 'loading') {
+  if (changeInfo.status === "loading") {
     tabDataCache.delete(tabId);
     const state = tabNlwebState.get(tabId);
     if (state?.abortController) {
       state.abortController.abort();
     }
     tabNlwebState.delete(tabId);
-    chrome.action.setBadgeText({ text: '', tabId });
+    chrome.action.setBadgeText({ text: "", tabId });
   }
 });
 
 // Clean up on tab close
 chrome.tabs.onRemoved.addListener((tabId) => {
+  if (tabId === micSetupTabId) {
+    micSetupTabId = null;
+  }
+
   tabDataCache.delete(tabId);
   const state = tabNlwebState.get(tabId);
   if (state?.abortController) {

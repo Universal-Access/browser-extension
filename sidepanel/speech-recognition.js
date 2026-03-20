@@ -1,4 +1,5 @@
 function createSpeechRecognitionController(config = {}) {
+  const permissionStorageKey = "uaMicrophonePermissionGranted";
   const inputId = config.inputId || "nlweb-query";
   const micId = config.micId || "nlweb-mic";
   const statusId = config.statusId || "nlweb-stt-status";
@@ -11,6 +12,7 @@ function createSpeechRecognitionController(config = {}) {
   let speechBaseInput = "";
   let speechFinalTranscript = "";
   let speechSessionId = 0;
+  let microphonePermissionGranted = false;
 
   function getInput() {
     return document.getElementById(inputId);
@@ -117,6 +119,72 @@ function createSpeechRecognitionController(config = {}) {
       });
       updateSpeechStatus("Unable to start voice input right now.", true);
     }
+  }
+
+  function loadPermissionFromStorage() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([permissionStorageKey], (result) => {
+        if (chrome.runtime.lastError) {
+          console.log("[stt] failed to read permission storage", {
+            message: chrome.runtime.lastError.message,
+          });
+          resolve(false);
+          return;
+        }
+
+        resolve(Boolean(result[permissionStorageKey]));
+      });
+    });
+  }
+
+  function savePermissionToStorage(value) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set(
+        { [permissionStorageKey]: Boolean(value) },
+        () => {
+          resolve();
+        },
+      );
+    });
+  }
+
+  async function syncPermissionState() {
+    microphonePermissionGranted = await loadPermissionFromStorage();
+    console.log("[stt] synced permission from storage", {
+      granted: microphonePermissionGranted,
+    });
+    return microphonePermissionGranted;
+  }
+
+  function openMicrophoneSetupTab() {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: "OPEN_MIC_SETUP_TAB" }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.log("[stt] failed to open setup tab", {
+            message: chrome.runtime.lastError.message,
+          });
+          resolve({ ok: false });
+          return;
+        }
+
+        console.log("[stt] setup tab response", response || {});
+        resolve(response || { ok: true });
+      });
+    });
+  }
+
+  async function ensureMicrophonePermissionViaSetupTab() {
+    const granted = await syncPermissionState();
+    if (granted) {
+      return true;
+    }
+
+    updateSpeechStatus(
+      "Enable microphone in the setup tab. Opening setup now...",
+      true,
+    );
+    await openMicrophoneSetupTab();
+    return false;
   }
 
   function stop() {
@@ -248,8 +316,10 @@ function createSpeechRecognitionController(config = {}) {
         code === "audio-capture"
       ) {
         speechShouldKeepListening = false;
+        microphonePermissionGranted = false;
+        savePermissionToStorage(false);
         updateSpeechStatus(
-          "Microphone permission denied or unavailable.",
+          "Microphone permission denied. Open setup and enable microphone.",
           true,
         );
         return;
@@ -298,7 +368,7 @@ function createSpeechRecognitionController(config = {}) {
       }
     });
 
-    mic.addEventListener("click", () => {
+    mic.addEventListener("click", async () => {
       if (!speechRecognitionSupported || mic.disabled) return;
 
       if (speechShouldKeepListening || speechIsListening) {
@@ -306,9 +376,29 @@ function createSpeechRecognitionController(config = {}) {
         return;
       }
 
+      const hasPermission = await ensureMicrophonePermissionViaSetupTab();
+      if (!hasPermission) {
+        console.log(
+          "[stt] start canceled due to missing microphone permission",
+        );
+        return;
+      }
+
       updateSpeechStatus("Starting voice input...");
       start();
     });
+
+    window.addEventListener("focus", () => {
+      syncPermissionState().then((granted) => {
+        if (granted && !speechIsListening) {
+          updateSpeechStatus(
+            "Microphone enabled. Click Mic to start voice input.",
+          );
+        }
+      });
+    });
+
+    syncPermissionState();
   }
 
   return {
