@@ -274,8 +274,16 @@
 
   function esc(str) {
     if (str == null) return '';
+    // Decode common entities before textContent escapes them again
+    const decoded = String(str)
+      .replace(/&amp;/g, '&')
+      .replace(/&#8226;/g, '•')
+      .replace(/&#039;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>');
     const div = document.createElement('div');
-    div.textContent = String(str);
+    div.textContent = decoded;
     return div.innerHTML;
   }
 
@@ -317,8 +325,21 @@
     if (!offers) return null;
     const offerList = Array.isArray(offers) ? offers : [offers];
     for (const offer of offerList) {
-      const price = offer?.price || offer?.lowPrice;
-      const currency = offer?.priceCurrency || '';
+      let price = offer?.price || offer?.lowPrice;
+      let currency = offer?.priceCurrency || '';
+
+      // Check priceSpecification
+      if (!price && offer?.priceSpecification) {
+        const specs = Array.isArray(offer.priceSpecification) ? offer.priceSpecification : [offer.priceSpecification];
+        for (const spec of specs) {
+          if (spec.price) {
+            price = spec.price;
+            currency = currency || spec.priceCurrency;
+            break;
+          }
+        }
+      }
+
       if (price) return formatPrice(price, currency);
     }
     return null;
