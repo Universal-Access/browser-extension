@@ -236,6 +236,28 @@
     });
   }
 
+  // --- Copy JSON ---
+
+  document.getElementById('btn-copy-json').addEventListener('click', (e) => {
+    e.stopPropagation(); // don't toggle the section
+    if (!currentData) return;
+
+    const output = {};
+    if (currentData.jsonLd?.length) output.jsonLd = currentData.jsonLd.map(i => i.data || i);
+    if (currentData.microdata?.length) output.microdata = currentData.microdata;
+    if (currentData.rdfa?.length) output.rdfa = currentData.rdfa;
+    if (currentData.entities?.length) output.entities = currentData.entities;
+    output.primaryType = currentData.primaryType || null;
+    output.url = currentData.url || '';
+
+    const json = JSON.stringify(output, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      const btn = document.getElementById('btn-copy-json');
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+    });
+  });
+
   // --- Toggle Handlers ---
 
   document.querySelectorAll('.section-toggle, .subsection-header').forEach((header) => {
