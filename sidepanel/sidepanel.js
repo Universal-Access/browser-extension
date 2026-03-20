@@ -6,8 +6,11 @@ import {
   updateNlwebSection,
   renderNlwebChunk,
   setNlwebLoading,
-  showNlwebError
+  showNlwebError,
+  onLoadingChange
 } from './nlweb-ui.js';
+
+let speechController = null;
 
 function renderSection(sectionId, items, isJsonLd = false) {
   const section = document.getElementById(`section-${sectionId}`);
@@ -21,7 +24,7 @@ function renderSection(sectionId, items, isJsonLd = false) {
 
   section.hidden = false;
   countEl.textContent = items.length;
-  itemsEl.innerHTML = '';
+  itemsEl.innerHTML = "";
 
   items.forEach((item) => {
     if (isJsonLd) {
@@ -37,25 +40,25 @@ function renderSection(sectionId, items, isJsonLd = false) {
 }
 
 function renderData(data) {
-  const emptyState = document.getElementById('empty-state');
-  const pageUrl = document.getElementById('page-url');
-  const nlwebResults = document.getElementById('nlweb-results');
+  const emptyState = document.getElementById("empty-state");
+  const pageUrl = document.getElementById("page-url");
+  const nlwebResults = document.getElementById("nlweb-results");
 
   // Reset NLWeb state
   setNlwebLoading(false);
-  nlwebResults.innerHTML = '';
+  nlwebResults.innerHTML = "";
 
   if (!data) {
     emptyState.hidden = false;
-    pageUrl.textContent = '';
-    document.getElementById('section-jsonld').hidden = true;
-    document.getElementById('section-microdata').hidden = true;
-    document.getElementById('section-rdfa').hidden = true;
+    pageUrl.textContent = "";
+    document.getElementById("section-jsonld").hidden = true;
+    document.getElementById("section-microdata").hidden = true;
+    document.getElementById("section-rdfa").hidden = true;
     updateNlwebSection(null);
     return;
   }
 
-  pageUrl.textContent = data.url || '';
+  pageUrl.textContent = data.url || "";
 
   // Handle NLWeb discovery
   if (data.nlweb && data.nlweb.endpoint) {
@@ -75,39 +78,63 @@ function renderData(data) {
     emptyState.hidden = true;
   }
 
-  renderSection('jsonld', data.jsonLd, true);
-  renderSection('microdata', data.microdata);
-  renderSection('rdfa', data.rdfa);
+  renderSection("jsonld", data.jsonLd, true);
+  renderSection("microdata", data.microdata);
+  renderSection("rdfa", data.rdfa);
 }
 
 // Section toggle handlers
-document.querySelectorAll('.section-header').forEach((header) => {
-  header.addEventListener('click', () => {
-    header.classList.toggle('open');
+document.querySelectorAll(".section-header").forEach((header) => {
+  header.addEventListener("click", () => {
+    header.classList.toggle("open");
   });
+});
+
+// Wire up speech controller integration with NLWeb loading state
+onLoadingChange((loading) => {
+  if (loading && speechController?.isListening()) {
+    speechController.stop();
+  }
+  if (speechController) {
+    speechController.setDisabled(loading);
+  }
 });
 
 // NLWeb form handler
-document.getElementById('nlweb-form').addEventListener('submit', (e) => {
+document.getElementById("nlweb-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  const input = document.getElementById('nlweb-query');
+  const input = document.getElementById("nlweb-query");
   const query = input.value.trim();
   if (!query || !getNlwebEndpoint()) return;
 
-  const results = document.getElementById('nlweb-results');
-  results.innerHTML = '';
+  if (speechController?.isListening()) {
+    speechController.stop();
+  }
+
+  const results = document.getElementById("nlweb-results");
+  results.innerHTML = "";
   setNlwebLoading(true);
 
   chrome.runtime.sendMessage({
-    type: 'NLWEB_QUERY',
+    type: "NLWEB_QUERY",
     query,
     endpoint: getNlwebEndpoint(),
-    mode: 'summarize'
+    mode: "summarize",
   });
 });
 
+if (typeof createSpeechRecognitionController === "function") {
+  speechController = createSpeechRecognitionController({
+    inputId: "nlweb-query",
+    micId: "nlweb-mic",
+    statusId: "nlweb-stt-status",
+    language: "en-US",
+  });
+  speechController.init();
+}
+
 // Request data on load
-chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
+chrome.runtime.sendMessage({ type: "GET_SCHEMA_DATA" }, (response) => {
   if (chrome.runtime.lastError) {
     renderData(null);
     return;
@@ -117,15 +144,15 @@ chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
 
 // Listen for live updates
 chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === 'SCHEMA_UPDATE') {
+  if (message.type === "SCHEMA_UPDATE") {
     renderData(message.payload);
   }
 
-  if (message.type === 'NLWEB_ENDPOINT') {
+  if (message.type === "NLWEB_ENDPOINT") {
     updateNlwebSection(message.endpoint, message.method);
   }
 
-  if (message.type === 'NLWEB_RESULT_CHUNK') {
+  if (message.type === "NLWEB_RESULT_CHUNK") {
     if (message.error) {
       setNlwebLoading(false);
       showNlwebError(message.error);
