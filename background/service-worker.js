@@ -13,6 +13,13 @@ function broadcastNlwebEndpoint(tabId, endpoint, method) {
   const state = tabNlwebState.get(tabId) || {};
   state.endpoint = endpoint;
   tabNlwebState.set(tabId, state);
+
+  // Also update cached schema data so sidepanel gets it on initial load
+  const cached = tabDataCache.get(tabId);
+  if (cached) {
+    cached.nlweb = { ...(cached.nlweb || {}), endpoint, method };
+  }
+
   chrome.runtime.sendMessage({
     type: 'NLWEB_ENDPOINT',
     endpoint,
@@ -63,19 +70,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (tabs[0]) {
         const tabId = tabs[0].id;
 
+        const cached = tabDataCache.get(tabId);
         const nlwebState = tabNlwebState.get(tabId);
-        if (nlwebState?.endpoint) {
-          setTimeout(() => {
-            chrome.runtime.sendMessage({
-              type: 'NLWEB_ENDPOINT',
-              endpoint: nlwebState.endpoint,
-              method: 'cached',
-              tabId
-            }).catch(() => {});
-          }, 50);
+
+        // Enrich cached data with resolved NLWeb endpoint so the sidepanel
+        // gets it in the initial response (no race with delayed broadcast)
+        if (cached && nlwebState?.endpoint) {
+          cached.nlweb = { ...(cached.nlweb || {}), endpoint: nlwebState.endpoint, method: 'cached' };
         }
 
-        const cached = tabDataCache.get(tabId);
         if (cached) {
           sendResponse(cached);
         } else {
@@ -86,6 +89,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               sendResponse(response || null);
             }
           });
+        }
+
+        // Also send as a separate message in case the sidepanel
+        // processes SCHEMA_UPDATE before the initial response
+        if (nlwebState?.endpoint) {
+          setTimeout(() => {
+            chrome.runtime.sendMessage({
+              type: 'NLWEB_ENDPOINT',
+              endpoint: nlwebState.endpoint,
+              method: 'cached',
+              tabId
+            }).catch(() => {});
+          }, 100);
         }
       } else {
         sendResponse(null);
@@ -130,6 +146,74 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       }
     });
+  }
+
+  // --- Activate visual transformation ---
+  if (message.type === 'ACTIVATE_TRANSFORM') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        const tabId = tabs[0].id;
+        const data = message.payload || tabDataCache.get(tabId);
+        chrome.tabs.sendMessage(tabId, {
+          type: 'ACTIVATE_TRANSFORM',
+          payload: data
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Deactivate visual transformation ---
+  if (message.type === 'DEACTIVATE_TRANSFORM') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'DEACTIVATE_TRANSFORM'
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Set accessibility preset ---
+  if (message.type === 'SET_PRESET') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SET_PRESET',
+          preset: message.preset
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Get schemamap navigation ---
+  if (message.type === 'GET_SCHEMAMAP') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'GET_SCHEMAMAP',
+          origin: message.origin,
+          schemaData: message.schemaData
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            sendResponse({ navItems: null });
+          } else {
+            sendResponse(response || { navItems: null });
+          }
+        });
+      } else {
+        sendResponse({ navItems: null });
+      }
+    });
+    return true;
   }
 });
 

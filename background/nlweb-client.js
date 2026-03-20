@@ -61,27 +61,8 @@ export async function resolveNlwebEndpoint(nlweb, pageUrl) {
   return null;
 }
 
-// Parse a line from the stream — handles both NDJSON and SSE formats
-function parseStreamLine(line) {
-  const trimmed = line.trim();
-  if (!trimmed) return null;
-  // SSE format: lines prefixed with "data: "
-  if (trimmed.startsWith('data: ')) {
-    try {
-      return JSON.parse(trimmed.slice(6));
-    } catch {
-      return null;
-    }
-  }
-  // Plain NDJSON
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return null;
-  }
-}
-
 // Execute a streaming NLWeb query, sending chunks via chrome.runtime.sendMessage
+// Handles NDJSON, plain SSE (data: lines), and v0.55 named SSE events (event: + data:)
 export async function executeNlwebQuery({ query, endpoint, mode, tabId, abortController }) {
   try {
     const url = new URL(endpoint);
@@ -107,6 +88,7 @@ export async function executeNlwebQuery({ query, endpoint, mode, tabId, abortCon
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let currentEvent = null;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -117,11 +99,37 @@ export async function executeNlwebQuery({ query, endpoint, mode, tabId, abortCon
       buffer = lines.pop(); // Keep incomplete line in buffer
 
       for (const line of lines) {
-        const chunk = parseStreamLine(line);
-        if (chunk) {
+        const trimmed = line.trim();
+
+        // Blank line resets SSE event context
+        if (!trimmed) {
+          currentEvent = null;
+          continue;
+        }
+
+        // Named SSE event (v0.55): "event: result"
+        if (trimmed.startsWith('event:')) {
+          currentEvent = trimmed.slice(6).trim();
+          continue;
+        }
+
+        // SSE data line: "data: {...}"
+        let parsed = null;
+        if (trimmed.startsWith('data: ')) {
+          try { parsed = JSON.parse(trimmed.slice(6)); } catch { continue; }
+        } else {
+          // Plain NDJSON
+          try { parsed = JSON.parse(trimmed); } catch { continue; }
+        }
+
+        if (parsed) {
+          // Inject event name as message_type for v0.55 named events
+          if (currentEvent && !parsed.message_type) {
+            parsed.message_type = currentEvent;
+          }
           chrome.runtime.sendMessage({
             type: 'NLWEB_RESULT_CHUNK',
-            chunk,
+            chunk: parsed,
             done: false,
             tabId
           }).catch(() => {});
@@ -131,11 +139,20 @@ export async function executeNlwebQuery({ query, endpoint, mode, tabId, abortCon
 
     // Process any remaining buffer
     if (buffer.trim()) {
-      const chunk = parseStreamLine(buffer);
-      if (chunk) {
+      let parsed = null;
+      const trimmed = buffer.trim();
+      if (trimmed.startsWith('data: ')) {
+        try { parsed = JSON.parse(trimmed.slice(6)); } catch { /* ignore */ }
+      } else if (!trimmed.startsWith('event:')) {
+        try { parsed = JSON.parse(trimmed); } catch { /* ignore */ }
+      }
+      if (parsed) {
+        if (currentEvent && !parsed.message_type) {
+          parsed.message_type = currentEvent;
+        }
         chrome.runtime.sendMessage({
           type: 'NLWEB_RESULT_CHUNK',
-          chunk,
+          chunk: parsed,
           done: false,
           tabId
         }).catch(() => {});

@@ -1,17 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "Schema.org Explorer",
+  "name": "Universal Access",
   "version": "1.0.0",
-  "description": "Extract and display Schema.org structured data (JSON-LD, Microdata, RDFa) from any web page.",
-  "permissions": ["sidePanel", "activeTab", "scripting", "microphone"],
-  "host_permissions": ["<all_urls>"],
+  "description": "Transform web pages into clean, accessible interfaces using schema.org structured data.",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "storage",
+    "microphone"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Schema.org Explorer"
+    "default_title": "Universal Access"
   },
   "side_panel": {
     "default_path": "sidepanel/sidepanel.html"
@@ -23,8 +31,26 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/nlweb-discovery.js", "content/extractor.js"],
+      "js": [
+        "content/nlweb-discovery.js",
+        "content/extractor.js",
+        "content/schemamap.js",
+        "content/transformer.js",
+        "content/presets/presets.js"
+      ],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/renderers/base.css",
+        "content/presets/low-vision.css",
+        "content/presets/dyslexia.css",
+        "fonts/OpenDyslexic-Regular.woff2",
+        "fonts/OpenDyslexic-Bold.woff2"
+      ],
+      "matches": ["<all_urls>"]
     }
   ],
   "icons": {

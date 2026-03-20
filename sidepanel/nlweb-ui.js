@@ -77,13 +77,73 @@ export function createResultCard(item) {
 
   const parsed = tryParseJson(item.schema_object);
   if (parsed) {
+    // Add "Read Accessible" button to open in the overlay renderer
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'nlweb-result-actions';
+
+    const readBtn = document.createElement('button');
+    readBtn.className = 'nlweb-read-btn';
+    readBtn.textContent = '♿ Read Accessible';
+    readBtn.title = 'Open in accessible reader view';
+    readBtn.addEventListener('click', () => {
+      activateNlwebResult(parsed, url);
+    });
+    actionsRow.appendChild(readBtn);
+
+    card.appendChild(actionsRow);
+
+    // Raw schema data (collapsed by default for debugging)
+    const schemaDetails = document.createElement('details');
+    schemaDetails.className = 'nlweb-result-schema-details';
+    const summary = document.createElement('summary');
+    summary.className = 'nlweb-result-schema-toggle';
+    summary.textContent = 'Schema data';
+    schemaDetails.appendChild(summary);
     const schemaContainer = document.createElement('div');
     schemaContainer.className = 'nlweb-result-schema';
     schemaContainer.appendChild(createTreeNode(null, parsed, true));
-    card.appendChild(schemaContainer);
+    schemaDetails.appendChild(schemaContainer);
+    card.appendChild(schemaDetails);
   }
 
   return card;
+}
+
+// Build a synthetic schemaData payload from an NLWeb result's schema_object
+// and send it to the content script for overlay rendering
+function activateNlwebResult(schemaObj, url) {
+  const rawType = schemaObj['@type'] || 'Article';
+  const typeStr = Array.isArray(rawType) ? rawType[0] : rawType;
+  const cleaned = String(typeStr).replace(/^https?:\/\/schema\.org\//, '');
+
+  // Map to our known primary types
+  const ARTICLE_TYPES = ['Article', 'NewsArticle', 'BlogPosting', 'TechArticle', 'ScholarlyArticle', 'Report', 'Review', 'WebPage'];
+  const PRODUCT_TYPES = ['Product', 'SoftwareApplication', 'Service', 'Offer'];
+  const RECIPE_TYPE = 'Recipe';
+  const EVENT_TYPES = ['Event', 'MusicEvent', 'SportsEvent'];
+  const BIZ_TYPES = ['LocalBusiness', 'Restaurant', 'Store', 'Hotel'];
+
+  let primaryType = cleaned;
+  if (ARTICLE_TYPES.includes(cleaned)) primaryType = 'Article';
+  else if (PRODUCT_TYPES.includes(cleaned)) primaryType = 'Product';
+  else if (cleaned === RECIPE_TYPE) primaryType = 'Recipe';
+  else if (EVENT_TYPES.includes(cleaned)) primaryType = 'Event';
+  else if (BIZ_TYPES.includes(cleaned)) primaryType = 'LocalBusiness';
+  else if (cleaned === 'FAQPage') primaryType = 'FAQPage';
+
+  const syntheticData = {
+    jsonLd: [{ data: schemaObj, error: null }],
+    microdata: [],
+    rdfa: [],
+    entities: [{ type: primaryType, rawType: typeStr, source: 'nlweb', data: schemaObj }],
+    primaryType: primaryType,
+    url: url || schemaObj.url || window.location.href
+  };
+
+  chrome.runtime.sendMessage({
+    type: 'ACTIVATE_TRANSFORM',
+    payload: syntheticData
+  });
 }
 
 function createSummaryCard(title, message) {
@@ -113,10 +173,53 @@ function createSuggestedQueries(queries) {
   return container;
 }
 
+// Message types that are lifecycle/metadata — skip silently
+const SKIP_MESSAGE_TYPES = new Set([
+  'begin-nlweb-response', 'end-nlweb-response', 'complete',
+  'header', 'api_version', 'status', 'conversation_created',
+  'sites_response', 'conversation_history', 'end-conversation-history',
+  'query_analysis', 'decontextualized_query', 'remember',
+  'multi_site_complete'
+]);
+
 export function renderNlwebChunk(chunk) {
   const results = document.getElementById('nlweb-results');
   const messageType = chunk.message_type;
 
+  // --- Individual result (primary result type in NLWeb protocol) ---
+  if (messageType === 'result') {
+    // v0.55 wraps in { index, item }, legacy sends flat
+    const item = chunk.item || chunk;
+    if (item.name || item.url || item.title) {
+      results.appendChild(createResultCard(item));
+    }
+    return;
+  }
+
+  // --- Generated answer / RAG summary (summarize/generate mode) ---
+  if (messageType === 'nlws') {
+    const answer = chunk.answer || chunk.text || chunk.content || '';
+    const title = chunk.title || 'Answer';
+    if (answer || title) {
+      const firstChild = results.firstChild;
+      const card = createSummaryCard(title, answer);
+      if (firstChild) {
+        results.insertBefore(card, firstChild);
+      } else {
+        results.appendChild(card);
+      }
+    }
+    // Also render any inline result items
+    const items = chunk.items || [];
+    for (const item of items) {
+      if (item.name || item.url) {
+        results.appendChild(createResultCard(item));
+      }
+    }
+    return;
+  }
+
+  // --- Summary (legacy + intermediate summaries) ---
   if (messageType === 'summary' || messageType === 'chat_response') {
     const title = chunk.title || '';
     const message = chunk.message || chunk.summary || chunk.text || chunk.content || '';
@@ -132,6 +235,26 @@ export function renderNlwebChunk(chunk) {
     return;
   }
 
+  // --- Item details ---
+  if (messageType === 'item_details') {
+    if (chunk.name || chunk.url) {
+      results.appendChild(createResultCard(chunk));
+    }
+    return;
+  }
+
+  // --- Intermediate status messages ---
+  if (messageType === 'intermediate_message' || messageType === 'asking_sites') {
+    const text = chunk.message || chunk.text || '';
+    if (text) {
+      // Update the loading indicator text if present
+      const loader = results.querySelector('.nlweb-loading');
+      if (loader) loader.textContent = text;
+    }
+    return;
+  }
+
+  // --- Batch results (legacy / custom servers) ---
   if (messageType === 'result_batch') {
     const items = chunk.results || chunk.items || [];
     for (const item of items) {
@@ -140,6 +263,7 @@ export function renderNlwebChunk(chunk) {
     return;
   }
 
+  // --- Suggested queries ---
   if (messageType === 'similar_results') {
     const queries = chunk.queries || [];
     if (queries.length > 0) {
@@ -148,15 +272,16 @@ export function renderNlwebChunk(chunk) {
     return;
   }
 
+  // --- Error ---
   if (messageType === 'error') {
     showNlwebError(chunk.error || chunk.message || 'Unknown error');
     return;
   }
 
-  // Skip metadata message types
-  if (messageType) return;
+  // --- Skip known metadata/lifecycle types silently ---
+  if (SKIP_MESSAGE_TYPES.has(messageType)) return;
 
-  // Generic: treat the chunk itself as a single result item
+  // --- Unknown message_type — don't silently drop, try to render ---
   if (chunk.name || chunk.title || chunk.url) {
     results.appendChild(createResultCard(chunk));
   }
@@ -193,6 +318,16 @@ export function showNlwebError(message) {
   const results = document.getElementById('nlweb-results');
   const err = document.createElement('div');
   err.className = 'nlweb-error';
-  err.textContent = message;
+  err.innerHTML = `<span>${escapeHtml(message)}</span>`;
+
+  const retryBtn = document.createElement('button');
+  retryBtn.className = 'nlweb-retry-btn';
+  retryBtn.textContent = 'Retry';
+  retryBtn.addEventListener('click', () => {
+    err.remove();
+    document.getElementById('nlweb-form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  });
+  err.appendChild(retryBtn);
+
   results.appendChild(err);
 }
