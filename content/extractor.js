@@ -191,10 +191,13 @@ const WEBPAGE_TYPES = [
 const PRODUCT_TYPES = [
   'Product', 'SoftwareApplication', 'IndividualProduct', 'ProductGroup',
   'MobileApplication', 'WebApplication', 'Service', 'Offer', 'AggregateOffer',
-  'Course', 'Vehicle', 'FoodEstablishment', 'Restaurant', 'BarOrPub', 'CafeOrCoffeeShop',
-  'LocalBusiness', 'Store', 'LodgingBusiness', 'Hotel',
+  'Course', 'Vehicle',
   'Movie', 'TVSeries', 'VideoGame', 'MusicAlbum', 'MusicRecording',
   'CreativeWorkSeason', 'CreativeWorkSeries'
+];
+const LOCAL_BUSINESS_TYPES = [
+  'LocalBusiness', 'Store', 'LodgingBusiness', 'Hotel',
+  'FoodEstablishment', 'Restaurant', 'BarOrPub', 'CafeOrCoffeeShop'
 ];
 const EVENT_TYPES = [
   'Event', 'BusinessEvent', 'ChildrensEvent', 'ComedyEvent', 'CourseInstance',
@@ -223,7 +226,9 @@ function normalizeType(rawType) {
   if (ARTICLE_TYPES.includes(cleaned)) return 'Article';
   if (WEBPAGE_TYPES.includes(cleaned)) return 'Article';
   if (PRODUCT_TYPES.includes(cleaned)) return 'Product';
-  if (EVENT_TYPES.includes(cleaned)) return 'Article';
+  if (LOCAL_BUSINESS_TYPES.includes(cleaned)) return 'LocalBusiness';
+  if (EVENT_TYPES.includes(cleaned)) return 'Event';
+  if (cleaned === 'FAQPage') return 'FAQPage';
   if (cleaned === 'Recipe') return 'Recipe';
   return cleaned;
 }
@@ -271,8 +276,11 @@ function classifyEntities(extractionData) {
   const typeSet = new Set(entities.map(e => e.type));
   let primaryType = 'Unknown';
   if (typeSet.has('Recipe')) primaryType = 'Recipe';
+  else if (typeSet.has('Event')) primaryType = 'Event';
   else if (typeSet.has('Product')) primaryType = 'Product';
+  else if (typeSet.has('LocalBusiness')) primaryType = 'LocalBusiness';
   else if (typeSet.has('Article')) primaryType = 'Article';
+  else if (typeSet.has('FAQPage')) primaryType = 'FAQPage';
   return { entities, primaryType };
 }
 

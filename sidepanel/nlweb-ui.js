@@ -184,6 +184,16 @@ export function showNlwebError(message) {
   const results = document.getElementById('nlweb-results');
   const err = document.createElement('div');
   err.className = 'nlweb-error';
-  err.textContent = message;
+  err.innerHTML = `<span>${escapeHtml(message)}</span>`;
+
+  const retryBtn = document.createElement('button');
+  retryBtn.className = 'nlweb-retry-btn';
+  retryBtn.textContent = 'Retry';
+  retryBtn.addEventListener('click', () => {
+    err.remove();
+    document.getElementById('nlweb-form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  });
+  err.appendChild(retryBtn);
+
   results.appendChild(err);
 }

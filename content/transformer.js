@@ -11,6 +11,7 @@
 
   let currentOverlay = null;
   let originalOverflow = '';
+  let previouslyFocusedElement = null;
 
   // Guard against "Extension context invalidated" errors after extension reload
   function isContextValid() {
@@ -414,6 +415,280 @@
     }
   }
 
+  function renderEvent(entity, schemaData) {
+    try {
+    const { index } = buildGraphIndex(schemaData);
+    const d = resolveEntity(entity.data, index);
+
+    const name = d.name || 'Event';
+    const description = d.description || '';
+    const image = extractImage(d);
+    const startDate = formatDate(d.startDate);
+    const endDate = formatDate(d.endDate);
+    const startTime = d.startDate ? formatTime(d.startDate) : '';
+    const endTime = d.endDate ? formatTime(d.endDate) : '';
+    const location = extractLocation(d);
+    const organizer = d.organizer ? (typeof d.organizer === 'string' ? d.organizer : d.organizer.name || '') : '';
+    const price = extractPrice(d);
+    const url = d.url || '';
+    const status = d.eventStatus ? String(d.eventStatus).replace(/^https?:\/\/schema\.org\//, '') : '';
+    const attendance = d.eventAttendanceMode ? String(d.eventAttendanceMode).replace(/^https?:\/\/schema\.org\//, '') : '';
+
+    const statusLabels = {
+      'EventScheduled': '✓ Scheduled',
+      'EventPostponed': '⏳ Postponed',
+      'EventCancelled': '✗ Cancelled',
+      'EventRescheduled': '🔄 Rescheduled',
+      'EventMovedOnline': '🌐 Moved Online'
+    };
+    const attendanceLabels = {
+      'OfflineEventAttendanceMode': '📍 In Person',
+      'OnlineEventAttendanceMode': '🌐 Online',
+      'MixedEventAttendanceMode': '📍🌐 Hybrid'
+    };
+
+    return `
+      <article class="ua-card ua-event" role="main" aria-label="Event: ${esc(name)}">
+        ${image ? `<div class="ua-card-image"><img src="${esc(image)}" alt="${esc(name)}" loading="lazy"></div>` : ''}
+        <div class="ua-card-body">
+          <h1 class="ua-title">${esc(name)}</h1>
+
+          <div class="ua-event-details">
+            ${startDate ? `
+              <div class="ua-event-date">
+                <span class="ua-event-label">When</span>
+                <span class="ua-event-value">
+                  ${esc(startDate)}${startTime ? ` at ${esc(startTime)}` : ''}${endDate && endDate !== startDate ? ` — ${esc(endDate)}` : ''}${endTime && endDate === startDate ? ` — ${esc(endTime)}` : ''}
+                </span>
+              </div>
+            ` : ''}
+            ${location ? `
+              <div class="ua-event-location">
+                <span class="ua-event-label">Where</span>
+                <span class="ua-event-value">${esc(location)}</span>
+              </div>
+            ` : ''}
+            ${organizer ? `
+              <div class="ua-event-organizer">
+                <span class="ua-event-label">Organizer</span>
+                <span class="ua-event-value">${esc(organizer)}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="ua-event-tags">
+            ${status && statusLabels[status] ? `<span class="ua-tag">${statusLabels[status]}</span>` : ''}
+            ${attendance && attendanceLabels[attendance] ? `<span class="ua-tag">${attendanceLabels[attendance]}</span>` : ''}
+            ${price ? `<span class="ua-tag ua-price">${esc(price)}</span>` : ''}
+          </div>
+
+          ${description ? `<div class="ua-description">${formatText(description)}</div>` : ''}
+
+          ${url ? `<div class="ua-actions">
+            <a href="${esc(url)}" class="ua-button" target="_blank" rel="noopener noreferrer">View Event →</a>
+          </div>` : ''}
+        </div>
+      </article>
+    `;
+    } catch (e) {
+      console.warn('[Universal Access] renderEvent error:', e.message);
+      return renderError(entity?.data?.name, 'Event');
+    }
+  }
+
+  function renderLocalBusiness(entity, schemaData) {
+    try {
+    const { index } = buildGraphIndex(schemaData);
+    const d = resolveEntity(entity.data, index);
+
+    const name = d.name || 'Business';
+    const description = d.description || '';
+    const image = extractImage(d);
+    const rating = extractRating(d);
+    const address = extractAddress(d);
+    const telephone = d.telephone || '';
+    const url = d.url || '';
+    const priceRange = d.priceRange || '';
+    const hours = extractOpeningHours(d);
+    const cuisine = d.servesCuisine || '';
+
+    return `
+      <article class="ua-card ua-business" role="main" aria-label="Business: ${esc(name)}">
+        ${image ? `<div class="ua-card-image"><img src="${esc(image)}" alt="${esc(name)}" loading="lazy"></div>` : ''}
+        <div class="ua-card-body">
+          <h1 class="ua-title">${esc(name)}</h1>
+
+          ${rating ? `
+            <div class="ua-rating" aria-label="Rating: ${rating.value} out of ${rating.best}">
+              <span class="ua-stars">${renderStars(rating.value, rating.best)}</span>
+              <span class="ua-rating-value">${rating.value}/${rating.best}</span>
+              ${rating.count ? `<span class="ua-review-count">(${rating.count} reviews)</span>` : ''}
+            </div>
+          ` : ''}
+
+          ${priceRange || cuisine ? `<p class="ua-meta">
+            ${priceRange ? `<span class="ua-tag">${esc(priceRange)}</span>` : ''}
+            ${cuisine ? `<span class="ua-tag">${esc(Array.isArray(cuisine) ? cuisine.join(', ') : cuisine)}</span>` : ''}
+          </p>` : ''}
+
+          <div class="ua-business-info">
+            ${address ? `<div class="ua-info-row"><span class="ua-info-label">Address</span><span class="ua-info-value">${esc(address)}</span></div>` : ''}
+            ${telephone ? `<div class="ua-info-row"><span class="ua-info-label">Phone</span><a href="tel:${esc(telephone)}" class="ua-info-value ua-phone-link">${esc(telephone)}</a></div>` : ''}
+            ${hours ? `<div class="ua-info-row"><span class="ua-info-label">Hours</span><span class="ua-info-value">${esc(hours)}</span></div>` : ''}
+          </div>
+
+          ${description ? `<div class="ua-description">${formatText(description)}</div>` : ''}
+
+          ${url ? `<div class="ua-actions">
+            <a href="${esc(url)}" class="ua-button" target="_blank" rel="noopener noreferrer">Visit Website →</a>
+          </div>` : ''}
+        </div>
+      </article>
+    `;
+    } catch (e) {
+      console.warn('[Universal Access] renderLocalBusiness error:', e.message);
+      return renderError(entity?.data?.name, 'LocalBusiness');
+    }
+  }
+
+  function renderFAQ(entity, schemaData) {
+    try {
+    const { index, allItems } = buildGraphIndex(schemaData);
+    const d = resolveEntity(entity.data, index);
+
+    const title = d.name || d.headline || 'Frequently Asked Questions';
+
+    // Collect all Question entities
+    const faqs = allItems
+      .filter(item => item && (item['@type'] === 'Question' || (Array.isArray(item['@type']) && item['@type'].includes('Question'))))
+      .map(q => {
+        try {
+          const resolved = resolveEntity(q, index);
+          const answer = resolved.acceptedAnswer || resolved.suggestedAnswer;
+          return {
+            question: resolved.name || resolved.text || '',
+            answer: answer ? (typeof answer === 'object' ? answer.text : answer) : ''
+          };
+        } catch { return null; }
+      })
+      .filter(f => f && f.question);
+
+    // Also check mainEntity for embedded questions
+    if (faqs.length === 0 && d.mainEntity) {
+      const mainEntities = Array.isArray(d.mainEntity) ? d.mainEntity : [d.mainEntity];
+      for (const q of mainEntities) {
+        if (q && q['@type'] === 'Question') {
+          const answer = q.acceptedAnswer || q.suggestedAnswer;
+          faqs.push({
+            question: q.name || q.text || '',
+            answer: answer ? (typeof answer === 'object' ? answer.text : answer) : ''
+          });
+        }
+      }
+    }
+
+    return `
+      <article class="ua-card ua-faq-page" role="main" aria-label="FAQ: ${esc(title)}">
+        <div class="ua-card-body">
+          <h1 class="ua-title">${esc(title)}</h1>
+          ${faqs.length > 0 ? `
+            <div class="ua-faq-accordion">
+              ${faqs.map(f => `
+                <details class="ua-faq-detail">
+                  <summary class="ua-faq-summary">${esc(f.question)}</summary>
+                  ${f.answer ? `<div class="ua-faq-body">${formatText(f.answer)}</div>` : ''}
+                </details>
+              `).join('')}
+            </div>
+          ` : '<p class="ua-description">No questions found in the structured data.</p>'}
+        </div>
+      </article>
+    `;
+    } catch (e) {
+      console.warn('[Universal Access] renderFAQ error:', e.message);
+      return renderError(entity?.data?.name, 'FAQPage');
+    }
+  }
+
+  // --- Supplemental Renderers ---
+
+  function renderBreadcrumb(allItems) {
+    try {
+      const bcList = allItems.find(item =>
+        item && (item['@type'] === 'BreadcrumbList' || (Array.isArray(item['@type']) && item['@type'].includes('BreadcrumbList')))
+      );
+      if (!bcList || !bcList.itemListElement) return '';
+
+      const items = (Array.isArray(bcList.itemListElement) ? bcList.itemListElement : [bcList.itemListElement])
+        .filter(i => i && (i.name || i.item))
+        .sort((a, b) => (a.position || 0) - (b.position || 0))
+        .map(i => ({
+          name: i.name || (typeof i.item === 'string' ? i.item : i.item?.name || ''),
+          url: typeof i.item === 'string' ? i.item : i.item?.url || i.item?.['@id'] || ''
+        }))
+        .filter(i => i.name);
+
+      if (items.length === 0) return '';
+
+      return `
+        <nav class="ua-breadcrumb" aria-label="Breadcrumb">
+          <ol class="ua-breadcrumb-list">
+            ${items.map((item, idx) => `
+              <li class="ua-breadcrumb-item">
+                ${item.url && idx < items.length - 1
+                  ? `<a href="${esc(item.url)}" class="ua-breadcrumb-link">${esc(item.name)}</a>`
+                  : `<span class="ua-breadcrumb-current" aria-current="page">${esc(item.name)}</span>`
+                }
+              </li>
+            `).join('')}
+          </ol>
+        </nav>
+      `;
+    } catch {
+      return '';
+    }
+  }
+
+  function renderItemList(allItems) {
+    try {
+      const itemList = allItems.find(item =>
+        item && (item['@type'] === 'ItemList' || (Array.isArray(item['@type']) && item['@type'].includes('ItemList')))
+      );
+      if (!itemList || !itemList.itemListElement) return '';
+
+      const items = (Array.isArray(itemList.itemListElement) ? itemList.itemListElement : [itemList.itemListElement])
+        .filter(i => i && (i.name || i.url))
+        .sort((a, b) => (a.position || 0) - (b.position || 0))
+        .map(i => ({
+          name: i.name || '',
+          url: i.url || ''
+        }))
+        .filter(i => i.name || i.url);
+
+      if (items.length === 0) return '';
+
+      const listName = itemList.name || 'Related Items';
+
+      return `
+        <section class="ua-item-list" aria-label="${esc(listName)}">
+          <h2 class="ua-section-title">${esc(listName)}</h2>
+          <ol class="ua-item-list-items">
+            ${items.map(item => `
+              <li class="ua-item-list-entry">
+                ${item.url
+                  ? `<a href="${esc(item.url)}" class="ua-item-list-link" target="_blank" rel="noopener noreferrer">${esc(item.name || item.url)}</a>`
+                  : `<span>${esc(item.name)}</span>`
+                }
+              </li>
+            `).join('')}
+          </ol>
+        </section>
+      `;
+    } catch {
+      return '';
+    }
+  }
+
   // --- Data Helpers ---
 
   function esc(str) {
@@ -570,6 +845,76 @@
     }
   }
 
+  function formatTime(dateStr) {
+    if (!dateStr) return '';
+    try {
+      return new Date(dateStr).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  }
+
+  function extractLocation(data) {
+    const loc = data.location;
+    if (!loc) return '';
+    if (typeof loc === 'string') return loc;
+    if (loc.name && loc.address) {
+      const addr = typeof loc.address === 'string' ? loc.address : formatAddressObj(loc.address);
+      return addr ? `${loc.name}, ${addr}` : loc.name;
+    }
+    if (loc.name) return loc.name;
+    if (loc.address) return typeof loc.address === 'string' ? loc.address : formatAddressObj(loc.address);
+    if (loc.url) return loc.url;
+    return '';
+  }
+
+  function formatAddressObj(addr) {
+    if (!addr || typeof addr !== 'object') return '';
+    const parts = [
+      addr.streetAddress,
+      addr.addressLocality,
+      addr.addressRegion,
+      addr.postalCode,
+      addr.addressCountry
+    ].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  function extractAddress(data) {
+    const addr = data.address;
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    return formatAddressObj(addr);
+  }
+
+  function extractOpeningHours(data) {
+    const hours = data.openingHoursSpecification || data.openingHours;
+    if (!hours) return '';
+    if (typeof hours === 'string') return hours;
+    if (Array.isArray(hours)) {
+      if (typeof hours[0] === 'string') return hours.join(', ');
+      const dayNames = { 0: 'Mon', 1: 'Tue', 2: 'Wed', 3: 'Thu', 4: 'Fri', 5: 'Sat', 6: 'Sun',
+        'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed', 'Thursday': 'Thu',
+        'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun',
+        'https://schema.org/Monday': 'Mon', 'https://schema.org/Tuesday': 'Tue',
+        'https://schema.org/Wednesday': 'Wed', 'https://schema.org/Thursday': 'Thu',
+        'https://schema.org/Friday': 'Fri', 'https://schema.org/Saturday': 'Sat',
+        'https://schema.org/Sunday': 'Sun'
+      };
+      return hours.map(h => {
+        if (typeof h === 'string') return h;
+        const days = (Array.isArray(h.dayOfWeek) ? h.dayOfWeek : [h.dayOfWeek])
+          .filter(Boolean)
+          .map(d => dayNames[d] || String(d).replace(/^https?:\/\/schema\.org\//, '').slice(0, 3))
+          .join(', ');
+        const opens = h.opens || '';
+        const closes = h.closes || '';
+        return `${days}: ${opens}–${closes}`;
+      }).join(' | ');
+    }
+    return '';
+  }
+
   function formatDuration(iso) {
     if (!iso) return null;
     const m = String(iso).match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -715,10 +1060,38 @@
     });
   }
 
+  // --- Focus Management ---
+
+  const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function trapFocus(overlay) {
+    overlay.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(overlay.querySelectorAll(FOCUSABLE_SELECTOR));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  }
+
   // --- Overlay Management ---
 
   function createOverlay(html, type, navHtml) {
     removeOverlay();
+
+    // Save focus for restoration on close
+    previouslyFocusedElement = document.activeElement;
 
     // Inject base styles
     if (!document.getElementById(OVERLAY_STYLE_ID)) {
@@ -738,9 +1111,11 @@
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-label', 'Accessible view');
+    overlay.setAttribute('tabindex', '-1');
     overlay.className = `ua-overlay ua-type-${type.toLowerCase()}`;
 
     overlay.innerHTML = `
+      <a href="#ua-main-content" class="ua-skip-link">Skip to content</a>
       <header class="ua-overlay-header">
         <div class="ua-header-left">
           <span class="ua-logo" aria-hidden="true">♿</span>
@@ -750,7 +1125,7 @@
         <button class="ua-close-btn" aria-label="Close accessible view" title="Close accessible view">✕</button>
       </header>
       ${navHtml || ''}
-      <main class="ua-overlay-content">
+      <main class="ua-overlay-content" id="ua-main-content">
         ${html}
       </main>
     `;
@@ -779,6 +1154,7 @@
 
     document.body.appendChild(overlay);
     currentOverlay = overlay;
+    trapFocus(overlay);
     overlay.focus();
   }
 
@@ -788,6 +1164,11 @@
       existing.remove();
       document.body.style.overflow = originalOverflow;
       currentOverlay = null;
+      // Restore focus to the element that was focused before the overlay opened
+      if (previouslyFocusedElement && typeof previouslyFocusedElement.focus === 'function') {
+        previouslyFocusedElement.focus();
+        previouslyFocusedElement = null;
+      }
     }
   }
 
@@ -813,8 +1194,25 @@
         case 'Recipe':
           html = renderRecipe(entity, schemaData);
           break;
+        case 'Event':
+          html = renderEvent(entity, schemaData);
+          break;
+        case 'LocalBusiness':
+          html = renderLocalBusiness(entity, schemaData);
+          break;
+        case 'FAQPage':
+          html = renderFAQ(entity, schemaData);
+          break;
         default:
           html = `<div class="ua-card"><div class="ua-card-body"><h1 class="ua-title">Structured Data Detected</h1><p class="ua-description">Entity type: ${esc(type)}</p></div></div>`;
+      }
+
+      // Supplemental renderers — append breadcrumb and item list if present
+      const { allItems } = buildGraphIndex(schemaData);
+      const breadcrumbHtml = renderBreadcrumb(allItems);
+      const itemListHtml = renderItemList(allItems);
+      if (breadcrumbHtml || itemListHtml) {
+        html = breadcrumbHtml + html + itemListHtml;
       }
 
       // Fetch schemamap navigation (non-blocking — overlay renders even if this fails)

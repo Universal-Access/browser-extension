@@ -12,6 +12,7 @@
     <div class="header-row">
       <span class="logo" aria-hidden="true">♿</span>
       <h1>Universal Access</h1>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Theme: Auto">☀</button>
     </div>
     <div id="page-url" class="page-url"></div>
   </header>
@@ -19,7 +20,7 @@
   <main id="content">
     <!-- Status Section -->
     <section id="status-section" class="panel-section">
-      <div id="status-indicator" class="status-bar">
+      <div id="status-indicator" class="status-bar" role="status" aria-live="polite">
         <span id="status-icon" class="status-icon" aria-hidden="true">🔍</span>
         <span id="status-text" class="status-text">Scanning page…</span>
       </div>
@@ -105,7 +106,7 @@
 
     <!-- Raw Data (collapsible, for debugging) -->
     <section id="raw-data-section" class="panel-section collapsible" hidden>
-      <h2 class="section-title section-toggle" data-toggle="raw">
+      <h2 class="section-title section-toggle" data-toggle="raw" aria-expanded="false" aria-controls="raw-data-content">
         <span class="section-icon" aria-hidden="true">🔧</span>
         Raw Schema Data
         <button id="btn-copy-json" class="btn-copy" title="Copy all schema JSON" aria-label="Copy all schema data as JSON">📋 Copy</button>

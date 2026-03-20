@@ -32,6 +32,41 @@ import {
   const navLinks = document.getElementById('nav-links');
   const rawDataSection = document.getElementById('raw-data-section');
 
+  // --- Theme Toggle ---
+
+  const THEMES = ['auto', 'light', 'dark'];
+  const THEME_ICONS = { auto: '⚙', light: '☀', dark: '🌙' };
+  const THEME_LABELS = { auto: 'Theme: Auto', light: 'Theme: Light', dark: 'Theme: Dark' };
+  let currentTheme = 'auto';
+
+  function applyTheme(theme) {
+    currentTheme = theme;
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+      btn.textContent = THEME_ICONS[theme];
+      btn.title = THEME_LABELS[theme];
+      btn.setAttribute('aria-label', THEME_LABELS[theme]);
+    }
+    if (theme === 'auto') {
+      document.body.removeAttribute('data-theme');
+    } else {
+      document.body.setAttribute('data-theme', theme);
+    }
+    chrome.storage.local.set({ uaTheme: theme });
+  }
+
+  // Restore saved theme
+  chrome.storage.local.get('uaTheme', (result) => {
+    if (result.uaTheme && THEMES.includes(result.uaTheme)) {
+      applyTheme(result.uaTheme);
+    }
+  });
+
+  document.getElementById('theme-toggle')?.addEventListener('click', () => {
+    const nextIdx = (THEMES.indexOf(currentTheme) + 1) % THEMES.length;
+    applyTheme(THEMES[nextIdx]);
+  });
+
   // --- Status Updates ---
 
   function setStatus(icon, text, className) {
@@ -77,7 +112,7 @@ import {
     const hasNlweb = !!getNlwebEndpoint();
 
     if (hasEntities && primaryType !== 'Unknown') {
-      const typeEmoji = { Product: '🛍️', Article: '📰', Recipe: '🍳' }[primaryType] || '📦';
+      const typeEmoji = { Product: '🛍️', Article: '📰', Recipe: '🍳', Event: '📅', LocalBusiness: '🏢', FAQPage: '❓' }[primaryType] || '📦';
       setStatus(typeEmoji, `${primaryType} detected (${data.entities.length} entities)`, 'found');
 
       displaySection.hidden = false;
@@ -86,7 +121,10 @@ import {
       const typeDescs = {
         Product: 'View product details in a clean, accessible layout with price, ratings, and description.',
         Article: 'Read this article in a distraction-free reader mode.',
-        Recipe: 'Follow this recipe step-by-step with ingredient checklist.'
+        Recipe: 'Follow this recipe step-by-step with ingredient checklist.',
+        Event: 'View event details with date, location, and ticketing information.',
+        LocalBusiness: 'See business info with address, hours, phone, and ratings.',
+        FAQPage: 'Browse frequently asked questions in an accessible accordion.'
       };
       detectedTypeDesc.textContent = typeDescs[primaryType] || `Transform this ${primaryType} into an accessible view.`;
     } else {
@@ -265,6 +303,8 @@ import {
   document.querySelectorAll('.section-toggle, .subsection-header').forEach((header) => {
     header.addEventListener('click', () => {
       header.classList.toggle('open');
+      const isOpen = header.classList.contains('open');
+      header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
   });
 
