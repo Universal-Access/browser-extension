@@ -2,9 +2,9 @@
 // Integrates schema display, visual transformations, presets, and NLWeb
 
 import { createTreeNode, renderError } from "./tree-renderer.js";
+import { initTTSSettings } from "./text-to-speech.js";
 import {
   getNlwebEndpoint,
-  initNlwebTtsSettings,
   updateNlwebSection,
   renderNlwebChunk,
   setNlwebLoading,
@@ -75,7 +75,7 @@ import {
     applyTheme(THEMES[nextIdx]);
   });
 
-  initNlwebTtsSettings();
+  initTTSSettings();
 
   // --- STT Integration ---
 
