@@ -127,51 +127,6 @@ function extractRdfa() {
   return items;
 }
 
-function discoverNlweb() {
-
-  // 1. Check <link rel="nlweb"> in document head
-  const link = document.querySelector('link[rel="nlweb"]');
-  if (link && link.href) {
-return { endpoint: link.href, method: 'link-rel' };
-  }
-
-  // 2. Check NLWeb search iframe (WordPress plugin embeds an iframe with the endpoint)
-  const nlwebIframe = document.querySelector('iframe.nlweb-search-iframe, iframe[nlweb-search-iframe]');
-  if (nlwebIframe) {
-    // Derive plugin URL from the iframe src
-    const iframeSrc = nlwebIframe.src || nlwebIframe.getAttribute('src') || '';
-    let pluginUrl = null;
-    if (iframeSrc) {
-      // e.g. ".../wp-content/plugins/nlweb-search/iframe.html" → ".../wp-content/plugins/nlweb-search/"
-      const idx = iframeSrc.lastIndexOf('/');
-      if (idx > 0) pluginUrl = iframeSrc.slice(0, idx + 1);
-    }
-return { endpoint: null, method: 'wp-iframe', pluginUrl };
-  }
-
-  // 3. Check [data-nlweb-search-input] DOM attribute
-  const nlwebInput = document.querySelector('[data-nlweb-search-input]');
-  if (nlwebInput) {
-    // Try to find the plugin URL from nearby script tags
-    const pluginUrl = findPluginUrl();
-return { endpoint: null, method: 'dom-attribute', pluginUrl };
-  }
-
-
-return { endpoint: null, method: null };
-}
-
-function findPluginUrl() {
-  // Look for nlweb-search plugin script/link tags in the page
-  const scripts = document.querySelectorAll('script[src*="nlweb-search"], link[href*="nlweb-search"]');
-  for (const el of scripts) {
-    const url = el.src || el.href || '';
-    const match = url.match(/(https?:\/\/[^"'`\s]*\/wp-content\/plugins\/nlweb-search\/)/);
-    if (match) return match[1];
-  }
-  return null;
-}
-
 function extractAll() {
   return {
     jsonLd: extractJsonLd(),
