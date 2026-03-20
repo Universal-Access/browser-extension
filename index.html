@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal Access</title>
+<style>
+/* ─── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg: #f9f9f7;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --border: #e4e4e0;
+  --border-subtle: #f0f0ec;
+  --text-primary: #1a1a18;
+  --text-secondary: #5c5c58;
+  --text-tertiary: #9a9a94;
+  --accent: #2c5ee8;
+  --accent-hover: #1e4dd4;
+  --accent-subtle: #eef2fd;
+  --success: #1a8a4a;
+  --success-bg: #eef7f2;
+  --warning: #a85f00;
+  --warning-bg: #fff5e6;
+  --danger: #c0392b;
+  --star: #f5a623;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.05);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.06);
+  --shadow-xl: 0 24px 64px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.07);
+
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", Consolas, monospace;
+
+  --font-size-xs:  11px;
+  --font-size-sm:  13px;
+  --font-size-base: 15px;
+  --font-size-md:  17px;
+  --font-size-lg:  20px;
+  --font-size-xl:  24px;
+  --font-size-2xl: 30px;
+  --font-size-3xl: 38px;
+
+  --line-height-tight: 1.25;
+  --line-height-base:  1.55;
+  --line-height-loose: 1.8;
+
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-base:  0;
+  --letter-spacing-wide:  0.03em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --sidebar-width: 380px;
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Low Vision Theme */
+[data-theme="low-vision"] {
+  --bg: #0a0a08;
+  --surface: #1a1a16;
+  --surface-raised: #242420;
+  --border: #3a3a34;
+  --border-subtle: #2e2e28;
+  --text-primary: #f5f5f0;
+  --text-secondary: #c8c8c0;
+  --text-tertiary: #8a8a82;
+  --accent: #6b9fff;
+  --accent-hover: #85aeff;
+  --accent-subtle: #1a2a44;
+  --success: #4cd983;
+  --success-bg: #0e2a1a;
+  --warning: #ffb84d;
+  --warning-bg: #2a1a00;
+  --star: #ffd04d;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.5);
+  --shadow-xl: 0 24px 64px rgba(0,0,0,.6);
+  --font-size-xs:  13px;
+  --font-size-sm:  15px;
+  --font-size-base: 18px;
+  --font-size-md:  21px;
+  --font-size-lg:  25px;
+  --font-size-xl:  30px;
+  --font-size-2xl: 38px;
+  --font-size-3xl: 48px;
+}
+
+/* Dyslexia Theme */
+[data-theme="dyslexia"] {
+  --bg: #fdf8ee;
+  --surface: #fffdf5;
+  --surface-raised: #fffef9;
+  --border: #e8e0cc;
+  --border-subtle: #f2ede0;
+  --text-primary: #2a2010;
+  --text-secondary: #5a4e38;
+  --text-tertiary: #8a7e68;
+  --accent: #1a5cc8;
+  --accent-subtle: #eef2fd;
+  --font-body: "OpenDyslexic", "Comic Sans MS", "Trebuchet MS", sans-serif;
+  --line-height-base: 1.9;
+  --line-height-loose: 2.2;
+  --letter-spacing-base: 0.04em;
+  --letter-spacing-wide: 0.08em;
+  --font-size-base: 16px;
+  --font-size-md:  18px;
+  --font-size-lg:  22px;
+}
+
+/* ─── Reset & Base ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-primary);
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+[data-theme="dyslexia"] body,
+[data-theme="dyslexia"] * {
+  font-family: var(--font-body) !important;
+  text-align: left !important;
+  letter-spacing: var(--letter-spacing-base);
+}
+
+/* Focus styles — always visible */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── BEFORE STATE: Cluttered E-Commerce Page ────────────────────────────── */
+#before-page {
+  position: relative;
+  min-height: calc(100vh - 48px); /* account for detection toolbar height */
+  background: #fff;
+  font-family: Arial, sans-serif;
+  transition: opacity var(--transition-slow), filter var(--transition-slow), transform var(--transition-slow);
+}
+
+#before-page.fading {
+  opacity: 0;
+  filter: blur(8px) saturate(0.3);
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+/* Cluttered store header */
+.store-header {
+  background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+  padding: 0;
+}
+.store-header-top {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(0,0,0,.15);
+  gap: 12px;
+  font-size: 11px;
+  color: rgba(255,255,255,.85);
+}
+.store-header-top span { margin-left: auto; }
+.store-header-main {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 12px;
+}
+.store-logo {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+.store-search {
+  flex: 1;
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 500px;
+}
+.store-search input {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  font-size: 13px;
+}
+.store-search button {
+  background: #ff9f1c;
+  border: none;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  color: #111;
+}
+.store-nav {
+  display: flex;
+  gap: 2px;
+  padding: 4px 16px 6px;
+  overflow-x: auto;
+}
+.store-nav a {
+  color: rgba(255,255,255,.9);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+.store-nav a:hover { background: rgba(255,255,255,.15); }
+
+/* Ad banner */
+.ad-banner {
+  background: repeating-linear-gradient(45deg, #fff9c4, #fff9c4 10px, #fff3b0 10px, #fff3b0 20px);
+  border: 2px solid #f4a621;
+  padding: 8px 16px;
+  font-size: 12px;
+  text-align: center;
+  color: #7a5a00;
+  font-weight: 700;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  padding: 8px 16px;
+  font-size: 11px;
+  color: #666;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Cluttered product layout */
+.clutter-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 200px;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.clutter-images {
+  padding: 8px;
+}
+.clutter-main-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #e8f0fe 0%, #c5d8ff 50%, #d4e4ff 100%);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  position: relative;
+}
+.clutter-main-img .badge-sale {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #e63946;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 2px;
+}
+.clutter-thumbs {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.clutter-thumb {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #f0f4ff, #dce8ff);
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+.clutter-thumb:first-child { border-color: #e63946; }
+
+.clutter-info {
+  padding: 8px 12px;
+}
+.clutter-sponsored {
+  font-size: 10px;
+  color: #999;
+  border: 1px solid #ddd;
+  padding: 1px 4px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.clutter-title {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #0f1111;
+  margin-bottom: 8px;
+}
+.clutter-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.clutter-stars { color: #f5a623; font-size: 14px; }
+.clutter-rating a { color: #c0392b; text-decoration: none; font-size: 12px; }
+.clutter-price-block {
+  background: #fff8e1;
+  border: 1px solid #f5a623;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.clutter-price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+.clutter-price-main { font-size: 24px; font-weight: 700; color: #0f1111; }
+.clutter-price-was { font-size: 12px; color: #999; text-decoration: line-through; }
+.clutter-price-save { font-size: 12px; color: #c0392b; font-weight: 700; }
+.clutter-prime { font-size: 11px; color: #007185; }
+.clutter-coupons {
+  font-size: 11px;
+  background: #e8f5e9;
+  border: 1px dashed #4caf50;
+  padding: 4px 8px;
+  border-radius: 2px;
+  margin-bottom: 8px;
+  color: #2e7d32;
+}
+.clutter-variants { margin-bottom: 10px; }
+.clutter-variants-label { font-size: 12px; color: #555; margin-bottom: 4px; }
+.clutter-variant-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.clutter-variant-btn {
+  border: 1px solid #ccc;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+.clutter-variant-btn.sel { border-color: #e63946; background: #fff5f5; }
+.clutter-qty { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 10px; color: #555; }
+.clutter-qty select { padding: 4px; border: 1px solid #ccc; font-size: 12px; }
+.clutter-add-btn {
+  display: block;
+  width: 100%;
+  padding: 9px;
+  background: #ff9f1c;
+  border: 1px solid #e68a00;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.clutter-buy-btn {
+  display: block;
+  width: 100%;
+  padding: 9px;
+  background: #ff5722;
+  border: 1px solid #e64a19;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.clutter-security { font-size: 10px; color: #555; text-align: center; }
+.clutter-features {
+  font-size: 12px;
+  line-height: 1.7;
+  list-style: disc;
+  padding-left: 16px;
+  color: #333;
+  margin-bottom: 10px;
+}
+.clutter-compare {
+  font-size: 11px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 3px;
+  margin-top: 8px;
+}
+.clutter-compare table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.clutter-compare td { padding: 3px 6px; border-bottom: 1px solid #eee; }
+
+.clutter-sidebar {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.clutter-widget {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 11px;
+}
+.clutter-widget h4 { font-size: 12px; margin-bottom: 6px; color: #333; }
+.clutter-widget-ad {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border: 2px dashed #2196f3;
+  padding: 12px;
+  text-align: center;
+  font-size: 11px;
+  color: #1565c0;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.clutter-sponsored-item {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.clutter-sponsored-item:last-child { border-bottom: none; }
+.clutter-s-img {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.clutter-s-info { flex: 1; }
+.clutter-s-info p { font-size: 10px; color: #333; line-height: 1.3; }
+.clutter-s-info span { font-size: 11px; font-weight: 700; color: #c0392b; }
+
+/* ─── Detection Toolbar ──────────────────────────────────────────────────── */
+/*
+ * Two independent feature slots, each with its own signal and action:
+ *   • NLWeb slot  — site-level; present whenever the site has NLWeb configured
+ *   • Product slot — page-level; present when schema.org/Product is detected
+ * Either or both can appear. A vertical rule separates them when both are shown.
+ *
+ * Accessibility rationale for inline toolbar over a toast:
+ *   • No auto-dismiss — no time pressure for screen reader / switch users
+ *   • role="region" is a named landmark — reachable via shortcut keys
+ *   • tabindex="-1" + JS focus() means keyboard focus arrives here first
+ *   • Spatially fixed at the top — never floats over or obscures content
+ */
+#detection-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 9000;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--space-6);
+  height: 48px;
+  box-shadow: var(--shadow-sm);
+  animation: toolbarSlideIn 350ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes toolbarSlideIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+#detection-toolbar.dismissed {
+  animation: toolbarSlideOut 250ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes toolbarSlideOut {
+  from { transform: translateY(0);     opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
+}
+
+/* Brand mark — always leftmost in the toolbar */
+.dtb-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: var(--space-5);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  margin-right: var(--space-1);
+}
+
+.brand-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.dtb-brand-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* Each feature occupies its own slot */
+.dtb-feature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.dtb-feature:first-child { padding-left: 0; }
+
+/* Vertical rule between features */
+.dtb-rule {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.dtb-feature-icon {
+  font-size: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dtb-feature-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dtb-feature-info strong {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.dtb-feature-info span {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* Feature action buttons */
+.dtb-feature .dtb-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), box-shadow var(--transition);
+  flex-shrink: 0;
+}
+.dtb-feature .dtb-btn-primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-sm); }
+.dtb-feature .dtb-btn-primary:active { transform: scale(0.98); }
+
+.dtb-feature .dtb-btn-secondary {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 5px 12px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.dtb-feature .dtb-btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* Spacer pushes dismiss to far right */
+.dtb-spacer { flex: 1; }
+
+.btn-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  line-height: 1;
+  transition: color var(--transition), background var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-dismiss:hover { color: var(--text-secondary); background: var(--bg); }
+
+/* Keep btn-activate alias so JS still works */
+.btn-activate { /* resolved via .dtb-btn-primary */ }
+
+/* ─── AFTER STATE: Product Mode Overlay ──────────────────────────────────── */
+#product-mode {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 8000;
+  overflow-y: auto;
+  opacity: 0;
+  transform: scale(1.02);
+  pointer-events: none;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+  display: flex;
+  flex-direction: column;
+}
+
+#product-mode.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: all;
+}
+
+/* Topbar */
+.pm-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  height: 52px;
+  gap: var(--space-4);
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.92);
+}
+
+[data-theme="low-vision"] .pm-topbar {
+  background: rgba(26,26,22,.95);
+}
+[data-theme="dyslexia"] .pm-topbar {
+  background: rgba(253,248,238,.95);
+}
+
+.pm-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+.pm-brand .brand-logo {
+  width: 22px;
+  height: 22px;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+
+.pm-source {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pm-source span {
+  background: var(--border-subtle);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.pm-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.pm-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.pm-mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+.pm-mode-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+.pm-mode-btn .icon { font-size: 14px; }
+
+.pm-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+
+.btn-revert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-revert:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn-ai {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-ai:hover { background: var(--accent-hover); }
+.btn-ai.active {
+  background: var(--text-primary);
+}
+
+/* Product Mode Layout */
+.pm-layout {
+  flex: 1;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-8) var(--space-6);
+  gap: var(--space-8);
+  transition: padding-right var(--transition-slow);
+}
+
+.pm-layout.sidebar-open {
+  padding-right: calc(var(--sidebar-width) + var(--space-8) + var(--space-6));
+}
+
+.pm-main { flex: 1; min-width: 0; }
+
+/* ── Hero Section ── */
+.pm-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-10);
+  margin-bottom: var(--space-10);
+  animation: fadeInUp 400ms ease forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pm-gallery {
+  position: relative;
+}
+
+.pm-main-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, #e8f0fe 0%, #c5d8ff 60%, #dce8ff 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 120px;
+  margin-bottom: var(--space-3);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+[data-theme="low-vision"] .pm-main-image {
+  background: linear-gradient(145deg, #1a2a44 0%, #0e1e34 100%);
+}
+[data-theme="dyslexia"] .pm-main-image {
+  background: linear-gradient(145deg, #e8f0fe 0%, #dce8ff 100%);
+}
+
+.pm-main-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,.04));
+  border-radius: var(--radius-lg);
+}
+
+.pm-thumbs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pm-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition);
+  flex-shrink: 0;
+}
+
+.pm-thumb:first-child { border-color: var(--accent); }
+.pm-thumb:hover { border-color: var(--accent); }
+
+.pm-thumb-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.pm-thumb-inner:nth-child(1) { background: linear-gradient(135deg, #e8f0fe, #c5d8ff); }
+
+.pm-thumb:nth-child(1) .pm-thumb-inner { background: linear-gradient(135deg, #e8f0fe, #c5d8ff); }
+.pm-thumb:nth-child(2) .pm-thumb-inner { background: linear-gradient(135deg, #f3e8ff, #dcc5ff); }
+.pm-thumb:nth-child(3) .pm-thumb-inner { background: linear-gradient(135deg, #e8fff0, #c5ffd8); }
+.pm-thumb:nth-child(4) .pm-thumb-inner { background: linear-gradient(135deg, #fff8e8, #ffedc5); }
+
+/* Product summary */
+.pm-summary {}
+
+.pm-category {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--accent);
+  margin-bottom: var(--space-2);
+}
+
+.pm-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-bottom: var(--space-4);
+}
+
+[data-theme="dyslexia"] .pm-title {
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+.pm-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.pm-rating {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pm-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.pm-stars span {
+  font-size: 16px;
+  color: var(--star);
+}
+
+.pm-rating-score {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pm-rating-count {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.pm-availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.pm-availability.in-stock {
+  color: var(--success);
+  background: var(--success-bg);
+}
+
+.pm-availability .dot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+/* Price block */
+.pm-price-block {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.pm-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.pm-price {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1;
+}
+
+.pm-price-original {
+  font-size: var(--font-size-lg);
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.pm-price-save {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--success);
+  background: var(--success-bg);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.pm-price-note {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* Variants */
+.pm-variants {
+  margin-bottom: var(--space-5);
+}
+
+.pm-variants-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pm-variants-label em {
+  font-style: normal;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.pm-color-options {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.pm-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition), border-color var(--transition);
+  position: relative;
+}
+
+.pm-color-swatch:hover { transform: scale(1.15); }
+.pm-color-swatch.sel { border-color: var(--accent); }
+.pm-color-swatch.sel::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+
+.pm-storage-options {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.pm-storage-btn {
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-primary);
+}
+
+.pm-storage-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pm-storage-btn.sel {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* CTA */
+.pm-cta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.btn-primary {
+  padding: 15px 24px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.01em;
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  padding: 14px 24px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-secondary:hover { border-color: var(--text-secondary); background: var(--bg); }
+
+/* ── Sections ── */
+.pm-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: fadeInUp 400ms 100ms ease both;
+}
+
+.pm-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.pm-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+}
+.pm-section-header:hover { background: var(--bg); }
+
+.pm-section-title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pm-section-count {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.pm-section-chevron {
+  font-size: 18px;
+  color: var(--text-tertiary);
+  transition: transform var(--transition);
+  margin-left: var(--space-3);
+}
+.pm-section.open .pm-section-chevron { transform: rotate(180deg); }
+
+.pm-section-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 400ms cubic-bezier(0.4, 0, 0.2, 1), padding var(--transition);
+}
+
+.pm-section.open .pm-section-body {
+  max-height: 3000px;
+}
+
+.pm-section-inner {
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+/* Specs */
+.pm-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.pm-spec-item {
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.pm-spec-key {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.pm-spec-val {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Description */
+.pm-description {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-loose);
+  color: var(--text-secondary);
+  max-width: 68ch;
+}
+
+[data-theme="dyslexia"] .pm-description {
+  font-size: var(--font-size-md);
+  line-height: 2;
+  word-spacing: 0.1em;
+}
+
+.pm-description p { margin-bottom: var(--space-4); }
+.pm-description p:last-child { margin-bottom: 0; }
+
+/* Reviews */
+.pm-review-summary {
+  display: flex;
+  gap: var(--space-8);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.pm-review-score {
+  text-align: center;
+}
+.pm-review-score-num {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.pm-review-score-max {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+.pm-review-score-total {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+}
+
+.pm-review-bars {
+  flex: 1;
+  min-width: 200px;
+}
+.pm-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+.pm-bar-label { width: 30px; text-align: right; flex-shrink: 0; font-weight: 600; }
+.pm-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pm-bar-fill {
+  height: 100%;
+  background: var(--star);
+  border-radius: 3px;
+  transition: width 600ms ease 200ms;
+}
+.pm-bar-pct { width: 32px; flex-shrink: 0; color: var(--text-tertiary); }
+
+.pm-review-highlights {
+  flex: 1;
+  min-width: 200px;
+}
+.pm-review-highlights h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+.pm-highlight-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.pm-highlight-tag {
+  font-size: var(--font-size-xs);
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.pm-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.pm-review-item {
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.pm-review-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.pm-review-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.pm-reviewer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-subtle), var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pm-reviewer-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pm-reviewer-date {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+
+.pm-review-stars { display: flex; gap: 1px; }
+.pm-review-stars span { font-size: 13px; color: var(--star); }
+
+.pm-review-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.pm-review-body {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-loose);
+}
+
+[data-theme="dyslexia"] .pm-review-body {
+  line-height: 2;
+}
+
+/* ─── AI Assistant Sidebar ───────────────────────────────────────────────── */
+#ai-sidebar {
+  position: fixed;
+  top: 52px;
+  right: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 8500;
+  transform: translateX(100%);
+  transition: transform var(--transition-slow);
+  box-shadow: var(--shadow-xl);
+}
+
+#ai-sidebar.open { transform: translateX(0); }
+
+.ai-header {
+  padding: var(--space-5) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.ai-header-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.ai-header-info { flex: 1; }
+.ai-header-info h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.ai-header-info p {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.ai-close {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: color var(--transition);
+}
+.ai-close:hover { color: var(--text-primary); }
+
+
+.ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ai-chip {
+  font-size: var(--font-size-xs);
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.ai-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+
+/* Input */
+.ai-input-area {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.ai-input-row {
+  display: flex;
+  gap: var(--space-2);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 6px 6px 6px 12px;
+  transition: border-color var(--transition);
+}
+.ai-input-row:focus-within { border-color: var(--accent); }
+
+.ai-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  resize: none;
+  outline: none;
+  min-height: 20px;
+  max-height: 120px;
+  padding: 4px 0;
+}
+.ai-input::placeholder { color: var(--text-tertiary); }
+
+.ai-send {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+.ai-send:hover { background: var(--accent-hover); }
+.ai-send:disabled { background: var(--border); cursor: not-allowed; }
+
+.ai-mic {
+  width: 32px; height: 32px;
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  transition: all var(--transition);
+  flex-shrink: 0; align-self: flex-end;
+}
+.ai-mic:hover { border-color: var(--accent); color: var(--accent); }
+.ai-mic.listening {
+  background: #fee2e2;
+  border-color: var(--danger);
+  color: var(--danger);
+  animation: micPulse 1s ease infinite;
+}
+.ai-mic.unsupported { display: none; }
+@keyframes micPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ─── NLWeb Results ──────────────────────────────────────────────────────── */
+.nlweb-results-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+}
+
+#nlweb-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-suggestions-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.nlweb-followups {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.nlweb-results-header {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
+  font-weight: 500;
+}
+
+.nlweb-results {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.nlweb-result-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: border-color var(--transition);
+  animation: fadeInUp 250ms ease both;
+}
+.nlweb-result-card:hover { border-color: var(--accent); }
+.nlweb-result-card.is-current {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+.nlweb-result-card:nth-child(2) { animation-delay: 60ms; }
+.nlweb-result-card:nth-child(3) { animation-delay: 120ms; }
+.nlweb-result-card:nth-child(4) { animation-delay: 180ms; }
+
+.nlweb-result-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 4px;
+}
+.nlweb-result-icon { font-size: 14px; flex-shrink: 0; }
+.nlweb-result-title-text {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  line-height: 1.3;
+}
+.nlweb-result-badge {
+  font-size: var(--font-size-xs);
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.nlweb-result-url {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nlweb-result-excerpt {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.nlweb-result-cta {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.nlweb-result-visit {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  text-decoration: none;
+  transition: background var(--transition);
+}
+.nlweb-result-visit:hover { background: var(--accent-hover); }
+
+.nlweb-result-highlight {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.nlweb-result-highlight:hover { background: var(--accent); color: #fff; }
+
+.nlweb-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+.nlweb-loading-bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--accent-subtle) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  border-radius: 2px;
+  animation: nlwebShimmer 1.2s ease infinite;
+}
+.nlweb-loading-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+@keyframes nlwebShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Highlight overlay ──────────────────────────────────────────────────── */
+.pm-highlight {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-subtle) !important;
+  transition: all var(--transition);
+}
+
+/* ─── Edge case: no schema ───────────────────────────────────────────────── */
+#no-schema-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  z-index: 9999;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: all var(--transition-slow);
+  pointer-events: none;
+  max-width: 380px;
+}
+#no-schema-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+#no-schema-toast .toast-icon { font-size: 20px; }
+
+/* ─── Transition overlay ─────────────────────────────────────────────────── */
+#transition-flash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 7999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+#transition-flash.flash {
+  opacity: 1;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .pm-layout.sidebar-open { padding-right: var(--space-6); }
+  #ai-sidebar { width: min(var(--sidebar-width), 100vw); }
+}
+
+@media (max-width: 860px) {
+  .pm-hero { grid-template-columns: 1fr; gap: var(--space-6); }
+  .pm-main-image { max-width: 420px; margin: 0 auto; }
+  .pm-layout { padding: var(--space-5) var(--space-4); }
+}
+
+@media (max-width: 600px) {
+  .pm-topbar { padding: 0 var(--space-3); gap: var(--space-2); }
+  .pm-source { display: none; }
+  .pm-title { font-size: var(--font-size-xl); }
+  .pm-price { font-size: var(--font-size-2xl); }
+  .clutter-grid { grid-template-columns: 1fr; }
+  .clutter-sidebar { display: none; }
+  #detection-toolbar .dtb-label span { display: none; }
+  #detection-toolbar .dtb-sep { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     Detection Toolbar
+     Two independent feature slots: NLWeb (site-level) + Product (page-level).
+     Either or both can be present. Inline & persistent — no toast needed.
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="detection-toolbar"
+     role="region"
+     aria-label="Universal Access: features available on this page"
+     tabindex="-1">
+
+  <!-- Brand mark -->
+  <div class="dtb-brand" aria-label="Universal Access extension">
+    <svg class="brand-logo" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="20" height="20" rx="5" fill="var(--accent)"/>
+      <!-- Gateway arch mark: open arch suggesting universal, open access -->
+      <path d="M4.5 16V9.5A5.5 5.5 0 0 1 15.5 9.5V16"
+            stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Threshold line grounding the arch -->
+      <line x1="4.5" y1="16" x2="15.5" y2="16"
+            stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <span class="dtb-brand-name">Universal Access</span>
+  </div>
+
+  <!-- NLWeb slot: site has NLWeb configured → chat available everywhere on site -->
+  <div class="dtb-feature" id="dtb-nlweb">
+    <span class="dtb-feature-icon" aria-hidden="true">💬</span>
+    <div class="dtb-feature-info">
+      <strong>NLWeb available</strong>
+      <span>megabuy.com</span>
+    </div>
+    <button class="dtb-btn-secondary" id="btn-open-chat"
+            aria-label="Search megabuy.com with NLWeb"
+            aria-controls="ai-sidebar"
+            aria-expanded="false">
+      Search
+    </button>
+  </div>
+
+  <!-- Vertical rule — only visible when both slots are present -->
+  <div class="dtb-rule" role="separator" aria-hidden="true"></div>
+
+  <!-- Product slot: schema.org/Product detected on this page -->
+  <div class="dtb-feature" id="dtb-product">
+    <span class="dtb-feature-icon" aria-hidden="true">✦</span>
+    <div class="dtb-feature-info">
+      <strong>Product detected</strong>
+      <span>schema.org/Product</span>
+    </div>
+    <button class="dtb-btn-primary" id="btn-activate"
+            aria-label="Switch to Product Mode for a cleaner view">
+      Product Mode
+    </button>
+  </div>
+
+  <div class="dtb-spacer" aria-hidden="true"></div>
+
+  <button class="btn-dismiss" id="btn-dismiss"
+          aria-label="Dismiss Universal Access toolbar">
+    Not now
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BEFORE: Cluttered E-Commerce Page
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="before-page">
+  <header class="store-header">
+    <div class="store-header-top">
+      <span>📦 Free shipping on orders over $35</span>
+      <span>🔔 Today's deals &nbsp;|&nbsp; Sign in &nbsp;|&nbsp; Returns &nbsp;|&nbsp; Help</span>
+    </div>
+    <div class="store-header-main">
+      <div class="store-logo">MegaBuy</div>
+      <div class="store-search">
+        <input type="text" value="Sony WH-1000XM5 headphones" readonly>
+        <button>Search</button>
+      </div>
+      <div style="color:#fff;font-size:22px;margin-left:auto;cursor:pointer">🛒</div>
+    </div>
+    <nav class="store-nav">
+      <a href="#">All</a><a href="#">Today's Deals</a><a href="#">Electronics</a>
+      <a href="#">Computers</a><a href="#">Smart Home</a><a href="#">Music</a>
+      <a href="#">Books</a><a href="#">Sports</a><a href="#">Home & Kitchen</a>
+      <a href="#">Fashion</a><a href="#">Toys</a><a href="#">Automotive</a>
+    </nav>
+  </header>
+
+  <div class="ad-banner">🔥 FLASH SALE — Up to 40% off headphones + FREE 2-day shipping — ends tonight at midnight! 🔥</div>
+  <div class="breadcrumb">Electronics › Audio & Home Theater › Headphones & Earbuds › Over-Ear Headphones › Sony</div>
+
+  <div class="clutter-grid">
+    <!-- Images -->
+    <div class="clutter-images">
+      <div class="clutter-main-img">
+        🎧
+        <div class="badge-sale">-18%</div>
+      </div>
+      <div class="clutter-thumbs">
+        <div class="clutter-thumb"></div>
+        <div class="clutter-thumb"></div>
+        <div class="clutter-thumb"></div>
+        <div class="clutter-thumb"></div>
+        <div class="clutter-thumb"></div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:8px;border:1px dashed #ccc;padding:8px;text-align:center">
+        📷 360° View &nbsp;|&nbsp; 🎬 Watch Video &nbsp;|&nbsp; AR Try-On
+      </div>
+    </div>
+
+    <!-- Product info — dense, cluttered -->
+    <div class="clutter-info">
+      <div class="clutter-sponsored">Sponsored</div>
+      <h1 class="clutter-title">Sony WH-1000XM5 Wireless Industry Leading Noise Canceling Headphones with Auto Noise Canceling Optimizer, Crystal Clear Hands-Free Calling, and Alexa Voice Control, Black — Bundle with Case + Extra Ear Cushions + 2-Year Extended Warranty</h1>
+      <div>
+        <span style="font-size:11px;color:#c0392b;font-weight:700">Visit the Sony Store</span>
+        <span style="font-size:11px;color:#555"> | </span>
+        <span style="font-size:11px;color:#555">Model: WH1000XM5/B</span>
+      </div>
+      <div class="clutter-rating" style="margin-top:6px">
+        <span class="clutter-stars">★★★★½</span>
+        <a href="#">4.3 out of 5 stars</a>
+        <span style="font-size:11px;color:#555">|</span>
+        <a href="#" style="color:#007185;font-size:11px;text-decoration:none">32,847 global ratings</a>
+        <span style="font-size:11px;color:#555">|</span>
+        <a href="#" style="color:#007185;font-size:11px;text-decoration:none">1,204 answered questions</a>
+      </div>
+      <div style="font-size:11px;color:#555;margin:4px 0 8px;display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:3px;font-weight:700">Amazon's Choice</span>
+        <span style="background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:3px;font-weight:700">Best Seller #1 in Headphones</span>
+        <span style="background:#e3f2fd;color:#1565c0;padding:2px 6px;border-radius:3px;font-weight:700">Climate Pledge Friendly</span>
+      </div>
+
+      <div class="clutter-price-block">
+        <div class="clutter-price-row">
+          <span class="clutter-price-main">$279.99</span>
+          <span class="clutter-price-was">List: $349.99</span>
+          <span class="clutter-price-save">Save $70 (20%)</span>
+        </div>
+        <div class="clutter-prime">✓ FREE Returns &nbsp;&nbsp; ✓ FREE Delivery Friday, March 22</div>
+        <div style="font-size:11px;color:#555;margin-top:4px">Or 4 payments of $70.00 with Affirm. <a href="#" style="color:#007185">Learn more</a></div>
+      </div>
+
+      <div class="clutter-coupons">
+        ✂️ Clip the coupon &nbsp;|&nbsp; 5% extra savings with this coupon &nbsp;|&nbsp; <a href="#" style="color:#2e7d32">Apply Coupon</a>
+      </div>
+
+      <div class="clutter-variants">
+        <div class="clutter-variants-label">Color: <strong>Black</strong></div>
+        <div class="clutter-variant-btns">
+          <button class="clutter-variant-btn sel">⬛ Black</button>
+          <button class="clutter-variant-btn">⬜ Silver</button>
+          <button class="clutter-variant-btn">🟤 Midnight Blue</button>
+        </div>
+      </div>
+
+      <div class="clutter-qty">
+        <span>Qty:</span>
+        <select><option>1</option><option>2</option><option>3</option></select>
+      </div>
+
+      <button class="clutter-add-btn">Add to Cart</button>
+      <button class="clutter-buy-btn">Buy Now</button>
+      <div class="clutter-security">🔒 Secure transaction &nbsp;|&nbsp; Ships from Amazon.com &nbsp;|&nbsp; Sold by Sony Direct</div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:12px 0">
+
+      <div style="font-size:12px;color:#333;font-weight:700;margin-bottom:6px">About this item</div>
+      <ul class="clutter-features">
+        <li>Industry-leading noise canceling with Dual Noise Sensor technology</li>
+        <li>Next-level music with our Integrated Processor V1</li>
+        <li>Up to 30 hours battery life with quick charge (3 min charge = 3 hours playback)</li>
+        <li>Crystal clear hands-free calling with 4 beamforming microphones</li>
+        <li>Multipoint connection to two Bluetooth devices simultaneously</li>
+        <li>Speak-to-Chat automatically reduces volume during conversation</li>
+        <li>Premium sound quality with 30mm driver and Precise Voice Pickup Technology</li>
+        <li>Comfortable lightweight design (250g) with soft-fit leather</li>
+        <li>Touch sensor controls and 360 Reality Audio certified</li>
+      </ul>
+
+      <div class="clutter-compare">
+        <strong style="font-size:11px">Compare with similar items</strong>
+        <table>
+          <tr><td><strong>This item</strong></td><td>Sony XM5 Bundle</td></tr>
+          <tr><td>Rating</td><td>★★★★½ (32K)</td></tr>
+          <tr><td>Price</td><td>$279.99</td></tr>
+          <tr><td>Battery</td><td>30 hrs</td></tr>
+          <tr><td>Weight</td><td>250g</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cluttered right sidebar -->
+    <div class="clutter-sidebar">
+      <div class="clutter-widget-ad">📢 ADVERTISEMENT<br><span style="font-size:13px;font-weight:900">Bose QC45<br>$229.99!</span><br><small>Click to save</small></div>
+      <div class="clutter-widget">
+        <h4>Frequently Bought Together</h4>
+        <div class="clutter-sponsored-item">
+          <div class="clutter-s-img"></div>
+          <div class="clutter-s-info"><p>Sony WH-1000XM5 Ear Cushion Replacement</p><span>$24.99</span></div>
+        </div>
+        <div class="clutter-sponsored-item">
+          <div class="clutter-s-img"></div>
+          <div class="clutter-s-info"><p>2-Year Accidental Damage Protection Plan</p><span>$34.99</span></div>
+        </div>
+        <div class="clutter-sponsored-item">
+          <div class="clutter-s-img"></div>
+          <div class="clutter-s-info"><p>USB-C 6ft Braided Charging Cable 2-Pack</p><span>$12.99</span></div>
+        </div>
+        <button style="width:100%;padding:6px;margin-top:8px;font-size:11px;background:#ff9f1c;border:none;cursor:pointer;border-radius:3px;font-weight:700">Add all 3 to cart — $352.97</button>
+      </div>
+      <div class="clutter-widget">
+        <h4>Sponsored Products related to this item</h4>
+        <div class="clutter-sponsored-item">
+          <div class="clutter-s-img" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9)"></div>
+          <div class="clutter-s-info"><p>Jabra Evolve2 85 Wireless Noise-Canceling Headphones</p><span style="color:#c0392b">$249.00</span></div>
+        </div>
+        <div class="clutter-sponsored-item">
+          <div class="clutter-s-img" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2)"></div>
+          <div class="clutter-s-info"><p>Apple AirPods Max — Sky Blue</p><span style="color:#c0392b">$449.99</span></div>
+        </div>
+      </div>
+      <div class="clutter-widget">
+        <h4>Customers who bought this also bought</h4>
+        <div class="clutter-sponsored-item">
+          <div class="clutter-s-img" style="background:linear-gradient(135deg,#e3f2fd,#bbdefb)"></div>
+          <div class="clutter-s-info"><p>Sony LinkBuds S Earbuds, True Wireless</p><span>$148.00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
+    "description": "The Sony WH-1000XM5 headphones deliver Sony's most advanced noise cancellation yet, powered by two processors and eight microphones. The Integrated Processor V1 handles all sound processing in real time, adapting to your environment whether you're on a plane, in a crowded café, or commuting through the city.\n\nRedesigned from the ground up, the XM5 features a lightweight construction at just 250g, with soft-fit leather earpads and a new smooth, one-piece headband. The result is a headphone that feels as refined as it sounds — built for all-day wear.\n\nCrystal clear hands-free calling is enabled by Precise Voice Pickup Technology, which uses four beamforming microphones to focus on your voice and reduce wind noise. Multipoint connectivity allows simultaneous connection to two Bluetooth devices — seamlessly switch between your laptop and phone without re-pairing.",
+    "sku": "WH1000XM5/B",
+    "category": "Over-Ear Headphones",
+    "brand": { "@type": "Brand", "name": "Sony" },
+    "offers": {
+      "@type": "Offer",
+      "price": "279.99",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://megabuy.com/sony-wh1000xm5"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.3",
+      "reviewCount": "32847",
+      "bestRating": "5"
+    },
+    "additionalProperty": [
+      { "@type": "PropertyValue", "name": "Battery Life",    "value": "30 hours" },
+      { "@type": "PropertyValue", "name": "Quick Charge",   "value": "3 min → 3 hrs" },
+      { "@type": "PropertyValue", "name": "Weight",         "value": "250g" },
+      { "@type": "PropertyValue", "name": "Driver Size",    "value": "30mm" },
+      { "@type": "PropertyValue", "name": "Connectivity",   "value": "Bluetooth 5.2" },
+      { "@type": "PropertyValue", "name": "Multipoint",     "value": "2 devices" },
+      { "@type": "PropertyValue", "name": "Microphones",    "value": "4 beamforming" },
+      { "@type": "PropertyValue", "name": "Foldable",       "value": "Yes" },
+      { "@type": "PropertyValue", "name": "Colour Options", "value": "3 colours" }
+    ],
+    "review": [
+      {
+        "@type": "Review",
+        "author": { "@type": "Person", "name": "Marcus K." },
+        "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+        "datePublished": "2025-03-01",
+        "name": "Best noise-canceling headphones I've owned",
+        "reviewBody": "The noise cancellation is genuinely remarkable — I tested these on a transatlantic flight and could barely hear the engines even before playing music. Call quality surprised me the most; colleagues said I sounded like I was in a quiet room. The new design is significantly more comfortable than the XM4 for long sessions."
+      },
+      {
+        "@type": "Review",
+        "author": { "@type": "Person", "name": "Sarah P." },
+        "reviewRating": { "@type": "Rating", "ratingValue": "4", "bestRating": "5" },
+        "datePublished": "2025-02-15",
+        "name": "Excellent, but case feels like a downgrade",
+        "reviewBody": "Sound quality and ANC are both stellar — warm, detailed bass without muddiness, and the ANC handles low-frequency rumble better than anything else in this price range. One gripe: the XM5 doesn't fold flat like the XM4, so the included case is bulkier. Minor issue for most people, but worth knowing if bag space matters."
+      },
+      {
+        "@type": "Review",
+        "author": { "@type": "Person", "name": "Tom R." },
+        "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+        "datePublished": "2025-01-20",
+        "name": "Life-changing for open-plan offices",
+        "reviewBody": "I work in a noisy open-plan office and these have genuinely improved my focus and reduced daily fatigue. The 30-hour battery means I charge weekly, not daily. Multipoint makes switching from my MacBook to my iPhone completely seamless. Worth every cent."
+      }
+    ]
+  }
+  </script>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     AFTER: Product Mode Overlay
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="product-mode" role="main" aria-label="Product Mode — Universal Access">
+
+  <!-- Topbar -->
+  <header class="pm-topbar">
+    <div class="pm-brand" aria-label="Universal Access is active">
+      <svg class="brand-logo" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="20" height="20" rx="5" fill="var(--accent)"/>
+        <path d="M4.5 16V9.5A5.5 5.5 0 0 1 15.5 9.5V16"
+              stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="4.5" y1="16" x2="15.5" y2="16"
+              stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      Universal Access
+    </div>
+
+    <div class="pm-source" aria-label="Source page">
+      <span>megabuy.com/sony-wh1000xm5</span>
+    </div>
+
+    <div class="pm-topbar-actions" role="toolbar" aria-label="Product Mode controls">
+      <button class="pm-mode-btn" id="btn-low-vision" aria-pressed="false" title="Low Vision Mode">
+        <span class="icon" aria-hidden="true">👁</span>
+        Low Vision
+      </button>
+      <button class="pm-mode-btn" id="btn-dyslexia" aria-pressed="false" title="Dyslexia-Friendly Mode">
+        <span class="icon" aria-hidden="true">Aa</span>
+        Dyslexia
+      </button>
+      <div class="pm-divider" role="separator" aria-hidden="true"></div>
+      <!-- NLWeb Chat — site-level feature, persists independently of Product Mode -->
+      <button class="btn-ai" id="btn-ai"
+              aria-expanded="false"
+              aria-controls="ai-sidebar"
+              aria-label="Search megabuy.com with NLWeb">
+        <span aria-hidden="true">🔍</span> NLWeb
+      </button>
+      <button class="btn-revert" id="btn-revert" aria-label="Exit Product Mode and return to original page">
+        ← Original
+      </button>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <div class="pm-layout" id="pm-layout">
+    <div class="pm-main">
+
+      <!-- Hero -->
+      <section class="pm-hero" aria-label="Product overview">
+
+        <!-- Gallery -->
+        <div class="pm-gallery" aria-label="Product images">
+          <div class="pm-main-image" role="img" aria-label="Sony WH-1000XM5 headphones in black">
+            🎧
+          </div>
+          <div class="pm-thumbs" role="list" aria-label="Additional product views">
+            <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 1">
+              <div class="pm-thumb-inner">🎧</div>
+            </div>
+            <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 2">
+              <div class="pm-thumb-inner">📦</div>
+            </div>
+            <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 3">
+              <div class="pm-thumb-inner">🔌</div>
+            </div>
+            <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 4">
+              <div class="pm-thumb-inner">📋</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="pm-summary">
+          <div class="pm-category" aria-label="Category">Over-Ear Headphones · Sony</div>
+
+          <h1 class="pm-title" id="product-title">Sony WH-1000XM5 Wireless Noise-Canceling Headphones</h1>
+
+          <div class="pm-meta">
+            <div class="pm-rating" aria-label="Rating: 4.3 out of 5 stars, 32,847 reviews">
+              <div class="pm-stars" aria-hidden="true">
+                <span>★</span><span>★</span><span>★</span><span>★</span><span>☆</span>
+              </div>
+              <span class="pm-rating-score">4.3</span>
+              <span class="pm-rating-count">32,847 reviews</span>
+            </div>
+            <div class="pm-availability in-stock" role="status" aria-label="In stock">
+              <div class="dot" aria-hidden="true"></div>
+              In Stock
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div class="pm-price-block" aria-label="Pricing">
+            <div class="pm-price-row">
+              <span class="pm-price" aria-label="Current price: $279.99">$279.99</span>
+              <span class="pm-price-original" aria-label="Original price: $349.99">$349.99</span>
+              <span class="pm-price-save" aria-label="You save $70, 20% off">Save $70 (20%)</span>
+            </div>
+            <p class="pm-price-note">Free delivery by Friday, March 22 · Free returns</p>
+          </div>
+
+          <!-- Variants -->
+          <div class="pm-variants" aria-label="Select options">
+            <div class="pm-variants-label">
+              Color: <em id="selected-color">Black</em>
+            </div>
+            <div class="pm-color-options" role="group" aria-labelledby="color-label">
+              <div class="pm-color-swatch sel" style="background:#1a1a18" tabindex="0" role="radio" aria-checked="true" aria-label="Black" onclick="selectColor(this,'Black')"></div>
+              <div class="pm-color-swatch" style="background:#b0b0a8" tabindex="0" role="radio" aria-checked="false" aria-label="Silver" onclick="selectColor(this,'Silver')"></div>
+              <div class="pm-color-swatch" style="background:#1e3a5f" tabindex="0" role="radio" aria-checked="false" aria-label="Midnight Blue" onclick="selectColor(this,'Midnight Blue')"></div>
+            </div>
+
+            <div class="pm-variants-label" style="margin-top:16px">
+              Storage: <em id="selected-storage">Standard</em>
+            </div>
+            <div class="pm-storage-options" role="group" aria-label="Storage options">
+              <button class="pm-storage-btn sel" onclick="selectStorage(this,'Standard')" aria-pressed="true">Standard</button>
+              <button class="pm-storage-btn" onclick="selectStorage(this,'Bundle + Case')" aria-pressed="false">Bundle + Case</button>
+              <button class="pm-storage-btn" onclick="selectStorage(this,'Bundle + Warranty')" aria-pressed="false">Bundle + Warranty</button>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="pm-cta">
+            <button class="btn-primary" aria-label="Add Sony WH-1000XM5 to cart">Add to Cart — $279.99</button>
+            <button class="btn-secondary" aria-label="Buy now">Buy Now</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Structured sections -->
+      <div class="pm-sections" aria-label="Product details">
+
+        <!-- Specs -->
+        <div class="pm-section open" aria-label="Key specifications">
+          <button class="pm-section-header" onclick="toggleSection(this)" aria-expanded="true">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="pm-section-title">Key Specifications</span>
+              <span class="pm-section-count">9 specs</span>
+            </div>
+            <span class="pm-section-chevron" aria-hidden="true">⌃</span>
+          </button>
+          <div class="pm-section-body" id="specs-body">
+            <div class="pm-section-inner">
+              <div class="pm-specs-grid" id="specs-grid">
+                <div class="pm-spec-item"><div class="pm-spec-key">Battery Life</div><div class="pm-spec-val">30 hours</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Quick Charge</div><div class="pm-spec-val">3 min → 3 hrs</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Weight</div><div class="pm-spec-val">250g</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Driver Size</div><div class="pm-spec-val">30mm</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Connectivity</div><div class="pm-spec-val">Bluetooth 5.2</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Multipoint</div><div class="pm-spec-val">2 devices</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Microphones</div><div class="pm-spec-val">4 beamforming</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Foldable</div><div class="pm-spec-val">Yes</div></div>
+                <div class="pm-spec-item"><div class="pm-spec-key">Colour Options</div><div class="pm-spec-val">3 colours</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="pm-section" aria-label="Product description">
+          <button class="pm-section-header" onclick="toggleSection(this)" aria-expanded="false">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="pm-section-title">Description</span>
+            </div>
+            <span class="pm-section-chevron" aria-hidden="true">⌃</span>
+          </button>
+          <div class="pm-section-body">
+            <div class="pm-section-inner">
+              <div class="pm-description">
+                <p>The Sony WH-1000XM5 headphones deliver Sony's most advanced noise cancellation yet, powered by two processors and eight microphones. The Integrated Processor V1 handles all sound processing in real time, adapting to your environment whether you're on a plane, in a crowded café, or commuting through the city.</p>
+                <p>Redesigned from the ground up, the XM5 features a lightweight construction at just 250g, with soft-fit leather earpads and a new smooth, one-piece headband. The result is a headphone that feels as refined as it sounds — built for all-day wear.</p>
+                <p>Crystal clear hands-free calling is enabled by Precise Voice Pickup Technology, which uses four beamforming microphones to focus on your voice and reduce wind noise. Multipoint connectivity allows simultaneous connection to two Bluetooth devices — seamlessly switch between your laptop and phone without re-pairing.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="pm-section" aria-label="Customer reviews">
+          <button class="pm-section-header" onclick="toggleSection(this)" aria-expanded="false">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="pm-section-title">Reviews</span>
+              <span class="pm-section-count">32,847</span>
+            </div>
+            <span class="pm-section-chevron" aria-hidden="true">⌃</span>
+          </button>
+          <div class="pm-section-body">
+            <div class="pm-section-inner">
+
+              <div class="pm-review-summary">
+                <div class="pm-review-score">
+                  <div class="pm-review-score-num">4.3</div>
+                  <div>
+                    <div class="pm-stars" style="justify-content:center" aria-hidden="true">
+                      <span style="font-size:14px;color:var(--star)">★★★★☆</span>
+                    </div>
+                  </div>
+                  <div class="pm-review-score-total">32,847 reviews</div>
+                </div>
+
+                <div class="pm-review-bars" aria-label="Rating breakdown">
+                  <div class="pm-bar-row"><span class="pm-bar-label">5★</span><div class="pm-bar-track"><div class="pm-bar-fill" style="width:58%"></div></div><span class="pm-bar-pct">58%</span></div>
+                  <div class="pm-bar-row"><span class="pm-bar-label">4★</span><div class="pm-bar-track"><div class="pm-bar-fill" style="width:22%"></div></div><span class="pm-bar-pct">22%</span></div>
+                  <div class="pm-bar-row"><span class="pm-bar-label">3★</span><div class="pm-bar-track"><div class="pm-bar-fill" style="width:10%"></div></div><span class="pm-bar-pct">10%</span></div>
+                  <div class="pm-bar-row"><span class="pm-bar-label">2★</span><div class="pm-bar-track"><div class="pm-bar-fill" style="width:5%"></div></div><span class="pm-bar-pct">5%</span></div>
+                  <div class="pm-bar-row"><span class="pm-bar-label">1★</span><div class="pm-bar-track"><div class="pm-bar-fill" style="width:5%"></div></div><span class="pm-bar-pct">5%</span></div>
+                </div>
+
+                <div class="pm-review-highlights">
+                  <h4>Commonly praised</h4>
+                  <div class="pm-highlight-tags">
+                    <span class="pm-highlight-tag">Noise cancellation</span>
+                    <span class="pm-highlight-tag">Sound quality</span>
+                    <span class="pm-highlight-tag">Comfort</span>
+                    <span class="pm-highlight-tag">Battery life</span>
+                    <span class="pm-highlight-tag">Build quality</span>
+                    <span class="pm-highlight-tag">Carrying case</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pm-review-list">
+                <article class="pm-review-item">
+                  <div class="pm-review-header">
+                    <div class="pm-reviewer-avatar" aria-hidden="true">MK</div>
+                    <div>
+                      <div class="pm-reviewer-name">Marcus K.</div>
+                      <div class="pm-review-stars" aria-label="5 out of 5 stars">
+                        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                      </div>
+                    </div>
+                    <div class="pm-reviewer-date">March 2025</div>
+                  </div>
+                  <div class="pm-review-title">Best noise-canceling headphones I've owned</div>
+                  <div class="pm-review-body">The noise cancellation is genuinely remarkable — I tested these on a transatlantic flight and could barely hear the engines even before playing music. Call quality surprised me the most; colleagues said I sounded like I was in a quiet room. The new design is significantly more comfortable than the XM4 for long sessions.</div>
+                </article>
+
+                <article class="pm-review-item">
+                  <div class="pm-review-header">
+                    <div class="pm-reviewer-avatar" aria-hidden="true">SP</div>
+                    <div>
+                      <div class="pm-reviewer-name">Sarah P.</div>
+                      <div class="pm-review-stars" aria-label="4 out of 5 stars">
+                        <span>★</span><span>★</span><span>★</span><span>★</span><span>☆</span>
+                      </div>
+                    </div>
+                    <div class="pm-reviewer-date">February 2025</div>
+                  </div>
+                  <div class="pm-review-title">Excellent, but case feels like a downgrade</div>
+                  <div class="pm-review-body">Sound quality and ANC are both stellar — warm, detailed bass without muddiness, and the ANC handles low-frequency rumble better than anything else in this price range. One gripe: the XM5 doesn't fold flat like the XM4, so the included case is bulkier. Minor issue for most people, but worth knowing if bag space matters.</div>
+                </article>
+
+                <article class="pm-review-item">
+                  <div class="pm-review-header">
+                    <div class="pm-reviewer-avatar" aria-hidden="true">TR</div>
+                    <div>
+                      <div class="pm-reviewer-name">Tom R.</div>
+                      <div class="pm-review-stars" aria-label="5 out of 5 stars">
+                        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                      </div>
+                    </div>
+                    <div class="pm-reviewer-date">January 2025</div>
+                  </div>
+                  <div class="pm-review-title">Life-changing for open-plan offices</div>
+                  <div class="pm-review-body">I work in a noisy open-plan office and these have genuinely improved my focus and reduced daily fatigue. The 30-hour battery means I charge weekly, not daily. Multipoint makes switching from my MacBook to my iPhone completely seamless. Worth every cent.</div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.pm-sections -->
+    </div><!-- /.pm-main -->
+  </div><!-- /.pm-layout -->
+</div><!-- /#product-mode -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     AI Assistant Sidebar
+════════════════════════════════════════════════════════════════════════════ -->
+<aside id="ai-sidebar" role="complementary" aria-label="NLWeb — megabuy.com">
+  <div class="ai-header">
+    <div class="ai-header-icon" aria-hidden="true">🔍</div>
+    <div class="ai-header-info">
+      <h3>NLWeb</h3>
+      <p>megabuy.com</p>
+    </div>
+    <button class="ai-close" id="ai-close" aria-label="Close NLWeb">✕</button>
+  </div>
+
+  <div class="ai-input-area" role="search">
+    <div class="ai-input-row">
+      <textarea class="ai-input" id="ai-input" placeholder="Ask anything on megabuy.com…" rows="1" aria-label="Search megabuy.com"></textarea>
+      <button class="ai-mic" id="ai-mic" aria-label="Use voice input" aria-pressed="false">🎤</button>
+      <button class="ai-send" id="ai-send" aria-label="Search">↑</button>
+    </div>
+  </div>
+
+  <div class="nlweb-results-area" id="nlweb-results" aria-live="polite" aria-label="Search results">
+    <div id="nlweb-empty">
+      <p class="ai-suggestions-label">Suggestions</p>
+      <div class="ai-chips">
+        <button class="ai-chip" data-query="noise canceling headphones">Noise canceling headphones</button>
+        <button class="ai-chip" data-query="battery life">Battery life</button>
+        <button class="ai-chip" data-query="compare headphones">Compare headphones</button>
+        <button class="ai-chip" data-query="headphone reviews">Headphone reviews</button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- No-schema toast -->
+<div id="no-schema-toast" role="alert" aria-live="assertive">
+  <span class="toast-icon">⚠️</span>
+  <div>
+    <strong>No product data found</strong><br>
+    This page doesn't appear to contain a structured product listing.
+  </div>
+</div>
+
+<!-- Transition flash -->
+<div id="transition-flash" aria-hidden="true"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JavaScript
+════════════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+const state = {
+  productMode: false,
+  aiOpen: false,
+  listening: false,
+  theme: 'default', // 'default' | 'low-vision' | 'dyslexia'
+  highlightedEl: null,
+  schemaData: null,
+  detectedType: null,
+  entityCount: 0,
+};
+
+// ── DOM refs ──────────────────────────────────────────────────────────────
+const $before        = document.getElementById('before-page');
+const $productMode   = document.getElementById('product-mode');
+const $toolbar       = document.getElementById('detection-toolbar');
+const $aiSidebar     = document.getElementById('ai-sidebar');
+const $aiInput       = document.getElementById('ai-input');
+const $aiMic         = document.getElementById('ai-mic');
+const $nlwebResults  = document.getElementById('nlweb-results');
+const $nlwebEmpty    = document.getElementById('nlweb-empty');
+const $layout        = document.getElementById('pm-layout');
+const $flash         = document.getElementById('transition-flash');
+
+// Move focus to toolbar on load so keyboard users find it immediately
+$toolbar.focus();
+
+// ── Schema extraction ─────────────────────────────────────────────────────
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }); }
+  catch(e) { return iso; }
+}
+
+function buildGraphIndex(items) {
+  const index = {};
+  items.forEach(item => { if (item && item['@id']) index[item['@id']] = item; });
+  return index;
+}
+
+function resolveRef(ref, index, depth) {
+  if (depth > 5 || !ref || typeof ref !== 'object') return ref;
+  if (ref['@id'] && Object.keys(ref).length === 1) {
+    const target = index[ref['@id']];
+    return target ? resolveEntity(target, index, depth + 1) : ref;
+  }
+  return ref;
+}
+
+function resolveEntity(entity, index, depth) {
+  depth = depth || 0;
+  if (depth > 5 || !entity || typeof entity !== 'object') return entity;
+  const resolved = {};
+  for (const k of Object.keys(entity)) {
+    const v = entity[k];
+    resolved[k] = Array.isArray(v)
+      ? v.map(item => resolveRef(item, index, depth))
+      : resolveRef(v, index, depth);
+  }
+  return resolved;
+}
+
+function extractJsonLd() {
+  const scripts = document.querySelectorAll('#before-page script[type="application/ld+json"]');
+  const items = [];
+  scripts.forEach(s => {
+    try {
+      const parsed = JSON.parse(s.textContent);
+      if (Array.isArray(parsed)) items.push(...parsed);
+      else if (parsed['@graph']) items.push(...parsed['@graph']);
+      else items.push(parsed);
+    } catch(e) {
+      try {
+        const fixed = s.textContent
+          .replace(/^\uFEFF/, '')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/,(\s*[}\]])/g, '$1');
+        const parsed = JSON.parse(fixed);
+        if (parsed['@graph']) items.push(...parsed['@graph']);
+        else items.push(parsed);
+      } catch(e2) {}
+    }
+  });
+  return items;
+}
+
+const ENTITY_TYPE_MAP = {
+  Product: 'Product',
+  Article: 'Article', NewsArticle: 'Article', BlogPosting: 'Article',
+  Recipe: 'Recipe',
+  Event: 'Event',
+  LocalBusiness: 'LocalBusiness', Restaurant: 'LocalBusiness', Store: 'LocalBusiness',
+  FAQPage: 'FAQPage',
+};
+const ENTITY_PRIORITY = ['Recipe','Event','Product','LocalBusiness','Article','FAQPage'];
+
+function classifyEntities(items) {
+  const entities = {};
+  items.forEach(item => {
+    if (!item) return;
+    const rawType = Array.isArray(item['@type']) ? item['@type'][0] : item['@type'];
+    const mapped = ENTITY_TYPE_MAP[rawType];
+    if (mapped) {
+      if (!entities[mapped]) entities[mapped] = [];
+      entities[mapped].push(item);
+    }
+  });
+  const primaryType = ENTITY_PRIORITY.find(t => entities[t]?.length > 0) || null;
+  const count = Object.values(entities).reduce((s, a) => s + a.length, 0);
+  return { entities, primaryType, count };
+}
+
+function extractAll() {
+  const items = extractJsonLd();
+  const index = buildGraphIndex(items);
+  const { entities, primaryType, count } = classifyEntities(items);
+  let primaryEntity = null;
+  if (primaryType && entities[primaryType]?.length > 0) {
+    primaryEntity = resolveEntity(entities[primaryType][0], index);
+  }
+  state.schemaData = { items, index, entities, primaryType, primaryEntity };
+  state.detectedType = primaryType;
+  state.entityCount = count;
+  updateToolbar();
+}
+
+function updateToolbar() {
+  const typeEl = document.querySelector('#dtb-product .dtb-feature-info span');
+  const labelEl = document.querySelector('#dtb-product .dtb-feature-info strong');
+  if (!state.detectedType) return;
+  if (typeEl) typeEl.textContent = `schema.org/${state.detectedType}`;
+  if (labelEl) labelEl.textContent = `${state.detectedType} detected`;
+}
+
+// ── Product renderer ───────────────────────────────────────────────────────
+function extractPrice(entity) {
+  const offers = entity.offers;
+  if (!offers) return null;
+  const offer = Array.isArray(offers) ? offers[0] : offers;
+  return {
+    price: offer.price || offer.lowPrice || null,
+    currency: offer.priceCurrency || 'USD',
+    availability: offer.availability || null,
+  };
+}
+
+function extractRating(entity) {
+  const ar = entity.aggregateRating;
+  if (!ar) return null;
+  return {
+    value: parseFloat(ar.ratingValue || 0),
+    count: parseInt(ar.reviewCount || ar.ratingCount || 0, 10),
+    best: parseFloat(ar.bestRating || 5),
+  };
+}
+
+function extractBrand(entity) {
+  const b = entity.brand;
+  if (!b) return null;
+  return typeof b === 'string' ? b : (b.name || null);
+}
+
+function extractAvailability(entity) {
+  const offers = entity.offers;
+  if (!offers) return null;
+  const offer = Array.isArray(offers) ? offers[0] : offers;
+  const a = String(offer.availability || '');
+  if (a.includes('InStock')) return 'In Stock';
+  if (a.includes('OutOfStock')) return 'Out of Stock';
+  if (a.includes('PreOrder')) return 'Pre-Order';
+  return a.split('/').pop() || null;
+}
+
+function renderStars(value, best) {
+  best = best || 5;
+  const full = Math.floor(value);
+  const empty = Math.floor(best) - full;
+  return '★'.repeat(full) + '☆'.repeat(Math.max(0, empty));
+}
+
+function buildSection(label, countLabel, bodyHtml, isOpen) {
+  return `
+    <div class="pm-section${isOpen ? ' open' : ''}" aria-label="${escapeHtml(label)}">
+      <button class="pm-section-header" onclick="toggleSection(this)" aria-expanded="${isOpen ? 'true' : 'false'}">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="pm-section-title">${escapeHtml(label)}</span>
+          ${countLabel ? `<span class="pm-section-count">${escapeHtml(String(countLabel))}</span>` : ''}
+        </div>
+        <span class="pm-section-chevron" aria-hidden="true">⌃</span>
+      </button>
+      <div class="pm-section-body">
+        <div class="pm-section-inner">${bodyHtml}</div>
+      </div>
+    </div>`;
+}
+
+function renderProduct(entity) {
+  const $main = document.querySelector('.pm-main');
+  if (!$main) return;
+
+  const name         = entity.name || 'Product';
+  const brand        = extractBrand(entity) || '';
+  const category     = entity.category || '';
+  const description  = entity.description || '';
+  const rating       = extractRating(entity);
+  const availability = extractAvailability(entity);
+  const priceData    = extractPrice(entity);
+  const specs        = Array.isArray(entity.additionalProperty) ? entity.additionalProperty : [];
+  const reviews      = Array.isArray(entity.review) ? entity.review : [];
+
+  const categoryLabel = [category, brand].filter(Boolean).join(' · ');
+  const currencySymbol = (priceData?.currency === 'USD') ? '$' : (priceData?.currency || '') + '\u00a0';
+
+  // Price block
+  const priceHtml = priceData?.price ? `
+    <div class="pm-price-block" aria-label="Pricing">
+      <div class="pm-price-row">
+        <span class="pm-price" aria-label="Current price: ${currencySymbol}${escapeHtml(String(priceData.price))}">${currencySymbol}${escapeHtml(String(priceData.price))}</span>
+      </div>
+      <p class="pm-price-note">Free delivery · Free returns</p>
+    </div>` : '';
+
+  // Rating row
+  const stars = rating ? renderStars(rating.value, rating.best) : '';
+  const countStr = rating ? rating.count.toLocaleString() : '';
+  const ratingHtml = rating ? `
+    <div class="pm-rating" aria-label="Rating: ${rating.value} out of ${rating.best} stars, ${countStr} reviews">
+      <div class="pm-stars" aria-hidden="true"><span>${stars}</span></div>
+      <span class="pm-rating-score">${rating.value}</span>
+      <span class="pm-rating-count">${countStr} reviews</span>
+    </div>` : '';
+
+  // Availability
+  const availClass = availability === 'In Stock' ? 'in-stock' : 'out-of-stock';
+  const availHtml = availability ? `
+    <div class="pm-availability ${availClass}" role="status" aria-label="${escapeHtml(availability)}">
+      <div class="dot" aria-hidden="true"></div>
+      ${escapeHtml(availability)}
+    </div>` : '';
+
+  // Specs section
+  const specsBody = specs.length > 0
+    ? `<div class="pm-specs-grid">${specs.map(s =>
+        `<div class="pm-spec-item">
+          <div class="pm-spec-key">${escapeHtml(String(s.name || ''))}</div>
+          <div class="pm-spec-val">${escapeHtml(String(s.value || ''))}</div>
+        </div>`).join('')}</div>`
+    : '';
+  const specsSection = specsBody ? buildSection('Key Specifications', `${specs.length} specs`, specsBody, true) : '';
+
+  // Description section
+  const descBody = description
+    ? `<div class="pm-description">${description.split(/\n\n+/).map(p => `<p>${escapeHtml(p.trim())}</p>`).join('')}</div>`
+    : '';
+  const descSection = descBody ? buildSection('Description', '', descBody, false) : '';
+
+  // Reviews section
+  let reviewsSection = '';
+  if (reviews.length > 0) {
+    const reviewItems = reviews.map(r => {
+      const authorName = typeof r.author === 'string' ? r.author : (r.author?.name || 'Reviewer');
+      const initials   = authorName.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+      const rv         = r.reviewRating?.ratingValue || 5;
+      const rvStars    = '★'.repeat(Math.round(rv)) + '☆'.repeat(Math.max(0, 5 - Math.round(rv)));
+      const dateStr    = r.datePublished ? formatDate(r.datePublished) : '';
+      return `
+        <article class="pm-review-item">
+          <div class="pm-review-header">
+            <div class="pm-reviewer-avatar" aria-hidden="true">${escapeHtml(initials)}</div>
+            <div>
+              <div class="pm-reviewer-name">${escapeHtml(authorName)}</div>
+              <div class="pm-review-stars" aria-label="${rv} out of 5 stars">${rvStars}</div>
+            </div>
+            <div class="pm-reviewer-date">${escapeHtml(dateStr)}</div>
+          </div>
+          ${r.name ? `<div class="pm-review-title">${escapeHtml(r.name)}</div>` : ''}
+          ${r.reviewBody ? `<div class="pm-review-body">${escapeHtml(r.reviewBody)}</div>` : ''}
+        </article>`;
+    }).join('');
+
+    const scoreHtml = rating ? `
+      <div class="pm-review-summary">
+        <div class="pm-review-score">
+          <div class="pm-review-score-num">${rating.value}</div>
+          <div class="pm-stars" style="justify-content:center" aria-hidden="true">
+            <span style="font-size:14px;color:var(--star)">${stars}</span>
+          </div>
+          <div class="pm-review-score-total">${countStr} reviews</div>
+        </div>
+      </div>` : '';
+
+    const reviewsBody = scoreHtml + `<div class="pm-review-list">${reviewItems}</div>`;
+    reviewsSection = buildSection('Reviews', rating ? countStr : String(reviews.length), reviewsBody, false);
+  }
+
+  // CTA
+  const ctaPrice = priceData?.price ? ` — ${currencySymbol}${priceData.price}` : '';
+
+  $main.innerHTML = `
+    <section class="pm-hero" aria-label="Product overview">
+      <div class="pm-gallery" aria-label="Product images">
+        <div class="pm-main-image" role="img" aria-label="${escapeHtml(name)}">🎧</div>
+        <div class="pm-thumbs" role="list" aria-label="Additional product views">
+          <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 1"><div class="pm-thumb-inner">🎧</div></div>
+          <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 2"><div class="pm-thumb-inner">📦</div></div>
+          <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 3"><div class="pm-thumb-inner">🔌</div></div>
+          <div class="pm-thumb" role="listitem" tabindex="0" aria-label="View 4"><div class="pm-thumb-inner">📋</div></div>
+        </div>
+      </div>
+      <div class="pm-summary">
+        ${categoryLabel ? `<div class="pm-category" aria-label="Category">${escapeHtml(categoryLabel)}</div>` : ''}
+        <h1 class="pm-title" id="product-title">${escapeHtml(name)}</h1>
+        <div class="pm-meta">
+          ${ratingHtml}
+          ${availHtml}
+        </div>
+        ${priceHtml}
+        <div class="pm-variants" aria-label="Select options">
+          <div class="pm-variants-label">Color: <em id="selected-color">Black</em></div>
+          <div class="pm-color-options" role="group" aria-label="Color options">
+            <div class="pm-color-swatch sel" style="background:#1a1a18" tabindex="0" role="radio" aria-checked="true"  aria-label="Black"         onclick="selectColor(this,'Black')"></div>
+            <div class="pm-color-swatch"     style="background:#b0b0a8" tabindex="0" role="radio" aria-checked="false" aria-label="Silver"        onclick="selectColor(this,'Silver')"></div>
+            <div class="pm-color-swatch"     style="background:#1e3a5f" tabindex="0" role="radio" aria-checked="false" aria-label="Midnight Blue" onclick="selectColor(this,'Midnight Blue')"></div>
+          </div>
+          <div class="pm-variants-label" style="margin-top:16px">Storage: <em id="selected-storage">Standard</em></div>
+          <div class="pm-storage-options" role="group" aria-label="Storage options">
+            <button class="pm-storage-btn sel" onclick="selectStorage(this,'Standard')"          aria-pressed="true">Standard</button>
+            <button class="pm-storage-btn"     onclick="selectStorage(this,'Bundle + Case')"     aria-pressed="false">Bundle + Case</button>
+            <button class="pm-storage-btn"     onclick="selectStorage(this,'Bundle + Warranty')" aria-pressed="false">Bundle + Warranty</button>
+          </div>
+        </div>
+        <div class="pm-cta">
+          <button class="btn-primary"   aria-label="Add ${escapeHtml(name)} to cart">Add to Cart${escapeHtml(ctaPrice)}</button>
+          <button class="btn-secondary" aria-label="Buy now">Buy Now</button>
+        </div>
+      </div>
+    </section>
+    <div class="pm-sections" aria-label="Product details">
+      ${specsSection}
+      ${descSection}
+      ${reviewsSection}
+    </div>`;
+}
+
+// ── Activate / Deactivate ─────────────────────────────────────────────────
+function activateProductMode() {
+  if (state.productMode) return;
+  state.productMode = true;
+
+  // Render from extracted schema before revealing overlay
+  if (state.schemaData?.primaryEntity) {
+    renderProduct(state.schemaData.primaryEntity);
+  }
+
+  // Slide the toolbar out — it becomes redundant once Product Mode is active
+  $toolbar.classList.add('dismissed');
+  setTimeout(() => { $toolbar.hidden = true; }, 250);
+
+  // Flash transition
+  $flash.classList.add('flash');
+
+  const entityName = state.schemaData?.primaryEntity?.name || 'Product';
+  setTimeout(() => {
+    $before.classList.add('fading');
+    $flash.classList.remove('flash');
+    $productMode.classList.add('active');
+    $productMode.focus();
+    document.title = `Universal Access — ${entityName}`;
+  }, 150);
+}
+
+function deactivateProductMode() {
+  if (!state.productMode) return;
+  state.productMode = false;
+
+  $flash.classList.add('flash');
+  setTimeout(() => {
+    $productMode.classList.remove('active');
+    $before.classList.remove('fading');
+    $flash.classList.remove('flash');
+
+    // Restore toolbar — user is back on original page
+    $toolbar.hidden = false;
+    $toolbar.classList.remove('dismissed');
+    void $toolbar.offsetWidth; // reflow to re-run animation
+    $toolbar.focus();
+    document.title = 'MegaBuy — Sony WH-1000XM5'; // Universal Access inactive
+
+    // Close AI if open
+    if (state.aiOpen) toggleAI();
+  }, 150);
+}
+
+document.getElementById('btn-activate').addEventListener('click', activateProductMode);
+document.getElementById('btn-dismiss').addEventListener('click', () => {
+  $toolbar.classList.add('dismissed');
+  setTimeout(() => { $toolbar.hidden = true; }, 250);
+});
+document.getElementById('btn-revert').addEventListener('click', deactivateProductMode);
+
+// ── Accessibility toggles ─────────────────────────────────────────────────
+function setTheme(theme) {
+  const prev = state.theme;
+  if (prev === theme) {
+    // Toggle off
+    state.theme = 'default';
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('btn-low-vision').classList.remove('active');
+    document.getElementById('btn-low-vision').setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-dyslexia').classList.remove('active');
+    document.getElementById('btn-dyslexia').setAttribute('aria-pressed', 'false');
+  } else {
+    state.theme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    // Reset both
+    document.getElementById('btn-low-vision').classList.remove('active');
+    document.getElementById('btn-low-vision').setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-dyslexia').classList.remove('active');
+    document.getElementById('btn-dyslexia').setAttribute('aria-pressed', 'false');
+    // Set active
+    const activeBtn = theme === 'low-vision' ? 'btn-low-vision' : 'btn-dyslexia';
+    document.getElementById(activeBtn).classList.add('active');
+    document.getElementById(activeBtn).setAttribute('aria-pressed', 'true');
+  }
+}
+
+document.getElementById('btn-low-vision').addEventListener('click', () => setTheme('low-vision'));
+document.getElementById('btn-dyslexia').addEventListener('click', () => setTheme('dyslexia'));
+
+// ── NLWeb Chat sidebar ────────────────────────────────────────────────────
+// Chat is a site-level feature (NLWeb); it's independent of Product Mode.
+// It can be opened from both the detection toolbar and the Product Mode topbar.
+function toggleAI() {
+  state.aiOpen = !state.aiOpen;
+
+  $aiSidebar.classList.toggle('open', state.aiOpen);
+  $layout.classList.toggle('sidebar-open', state.aiOpen);
+
+  // Sync aria-expanded on both trigger buttons
+  const $btnTopbar  = document.getElementById('btn-ai');
+  const $btnToolbar = document.getElementById('btn-open-chat');
+  [$btnTopbar, $btnToolbar].forEach($b => {
+    if ($b) $b.setAttribute('aria-expanded', state.aiOpen);
+  });
+
+  $btnTopbar.classList.toggle('active', state.aiOpen);
+
+  if (state.aiOpen) {
+    setTimeout(() => $aiInput.focus(), 350);
+  }
+}
+
+// Both entry points open the same NLWeb Chat panel
+document.getElementById('btn-ai').addEventListener('click', toggleAI);
+document.getElementById('btn-open-chat').addEventListener('click', () => {
+  if (!state.aiOpen) toggleAI();
+});
+document.getElementById('ai-close').addEventListener('click', toggleAI);
+
+// ── Sections ──────────────────────────────────────────────────────────────
+function toggleSection(header) {
+  const section = header.closest('.pm-section');
+  const isOpen = section.classList.contains('open');
+  section.classList.toggle('open', !isOpen);
+  header.setAttribute('aria-expanded', !isOpen);
+}
+
+// ── Variant selection ─────────────────────────────────────────────────────
+function selectColor(el, name) {
+  document.querySelectorAll('.pm-color-swatch').forEach(s => {
+    s.classList.remove('sel');
+    s.setAttribute('aria-checked', 'false');
+  });
+  el.classList.add('sel');
+  el.setAttribute('aria-checked', 'true');
+  document.getElementById('selected-color').textContent = name;
+}
+
+function selectStorage(el, name) {
+  document.querySelectorAll('.pm-storage-btn').forEach(b => {
+    b.classList.remove('sel');
+    b.setAttribute('aria-pressed', 'false');
+  });
+  el.classList.add('sel');
+  el.setAttribute('aria-pressed', 'true');
+  document.getElementById('selected-storage').textContent = name;
+}
+
+// ── NLWeb search ──────────────────────────────────────────────────────────
+const NLWEB_MOCK_DATA = {
+  'noise canceling headphones': [
+    {
+      title: 'Sony WH-1000XM5 Wireless Headphones',
+      url: 'megabuy.com/sony-wh1000xm5',
+      excerpt: 'Industry-leading noise cancellation with 8 microphones and dual processors. 30-hour battery life with quick charge support. Currently $279.99.',
+      isCurrentPage: true,
+      type: 'Product',
+      icon: '🎧',
+    },
+    {
+      title: 'Bose QuietComfort 45 Headphones',
+      url: 'megabuy.com/bose-qc45',
+      excerpt: 'Legendary Bose noise cancellation, 24-hour battery, foldable design. Balanced sound profile. $249.99.',
+      isCurrentPage: false,
+      type: 'Product',
+      icon: '🎧',
+    },
+    {
+      title: 'Apple AirPods Max',
+      url: 'megabuy.com/airpods-max',
+      excerpt: 'Premium over-ear headphones with computational audio and Transparency mode. Deep Apple ecosystem integration. $449.99.',
+      isCurrentPage: false,
+      type: 'Product',
+      icon: '🎧',
+    },
+  ],
+  'battery life': [
+    {
+      title: 'Sony WH-1000XM5 — Battery & Charging',
+      url: 'megabuy.com/sony-wh1000xm5#specs',
+      excerpt: '30-hour battery life with ANC on. Quick Charge: 3 minutes gives you 3 hours of playback. USB-C charging.',
+      isCurrentPage: true,
+      type: 'Specs',
+      icon: '🔋',
+    },
+    {
+      title: 'Headphone Battery Life Comparison Guide',
+      url: 'megabuy.com/guides/headphone-battery',
+      excerpt: 'Side-by-side battery comparison of all major over-ear headphones. XM5 leads the premium category at 30 hours.',
+      isCurrentPage: false,
+      type: 'Guide',
+      icon: '📋',
+    },
+    {
+      title: 'Sony WH-1000XM5 Customer Reviews',
+      url: 'megabuy.com/sony-wh1000xm5/reviews',
+      excerpt: '32,847 reviews. Reviewers consistently praise the battery longevity — many report getting 28–32 hours of real-world use.',
+      isCurrentPage: false,
+      type: 'Reviews',
+      icon: '⭐',
+    },
+  ],
+  'compare headphones': [
+    {
+      title: 'Sony WH-1000XM5 vs. Bose QC45 vs. AirPods Max',
+      url: 'megabuy.com/guides/compare-premium-headphones',
+      excerpt: 'Full spec-for-spec comparison of the top three premium over-ear headphones of 2024. ANC, sound quality, comfort, battery, and value ratings.',
+      isCurrentPage: false,
+      type: 'Guide',
+      icon: '📊',
+    },
+    {
+      title: 'Sony WH-1000XM5 Wireless Headphones',
+      url: 'megabuy.com/sony-wh1000xm5',
+      excerpt: 'Best-in-class ANC, 30-hour battery, 250g. Currently $279.99 — the top-ranked choice in our premium headphone category.',
+      isCurrentPage: true,
+      type: 'Product',
+      icon: '🎧',
+    },
+    {
+      title: 'Bose QuietComfort 45',
+      url: 'megabuy.com/bose-qc45',
+      excerpt: 'Foldable design, 24-hour battery. Slightly lighter than XM5. Better portability, slightly lower ANC performance.',
+      isCurrentPage: false,
+      type: 'Product',
+      icon: '🎧',
+    },
+    {
+      title: 'Over-Ear Headphones Buying Guide',
+      url: 'megabuy.com/guides/over-ear-headphones',
+      excerpt: 'How to choose between active noise cancellation, sound signature, fit, and budget. Updated March 2024.',
+      isCurrentPage: false,
+      type: 'Guide',
+      icon: '📖',
+    },
+  ],
+  'headphone reviews': [
+    {
+      title: 'Sony WH-1000XM5 Customer Reviews',
+      url: 'megabuy.com/sony-wh1000xm5/reviews',
+      excerpt: '4.3 stars across 32,847 reviews. Top themes: outstanding ANC, comfortable fit, excellent call quality. Main complaint: non-folding case.',
+      isCurrentPage: false,
+      type: 'Reviews',
+      icon: '⭐',
+    },
+    {
+      title: 'Sony WH-1000XM5 Wireless Headphones',
+      url: 'megabuy.com/sony-wh1000xm5',
+      excerpt: 'See aggregated star ratings and review highlights directly on the product page. Expert score: 9.2/10.',
+      isCurrentPage: true,
+      type: 'Product',
+      icon: '🎧',
+    },
+    {
+      title: 'Expert Review: Best Noise-Canceling Headphones 2024',
+      url: 'megabuy.com/editorial/best-anc-headphones',
+      excerpt: '"The XM5 remains our top pick for 2024. Sony has refined everything that made the XM4 great and added a lighter, more comfortable design."',
+      isCurrentPage: false,
+      type: 'Editorial',
+      icon: '✍️',
+    },
+  ],
+};
+
+const NLWEB_FOLLOWUPS = {
+  'noise canceling headphones': [
+    { label: 'Battery life details',      query: 'battery life' },
+    { label: 'Compare all three models',  query: 'compare headphones' },
+    { label: 'Read customer reviews',     query: 'headphone reviews' },
+  ],
+  'battery life': [
+    { label: 'Quick charge time?',        query: 'battery life quick charge' },
+    { label: 'Battery vs Bose QC45',      query: 'compare headphones' },
+    { label: 'Power-saving tips',         query: 'noise canceling headphones' },
+  ],
+  'compare headphones': [
+    { label: 'Which has better ANC?',     query: 'noise canceling headphones' },
+    { label: 'Price difference breakdown', query: 'compare headphones price' },
+    { label: 'Best for travel',           query: 'battery life' },
+  ],
+  'headphone reviews': [
+    { label: 'Top-rated models',          query: 'noise canceling headphones' },
+    { label: 'Compare specs',             query: 'compare headphones' },
+    { label: 'Battery performance',       query: 'battery life' },
+  ],
+};
+
+function clearResults() {
+  Array.from($nlwebResults.children).forEach(child => {
+    if (child.id !== 'nlweb-empty') child.remove();
+  });
+  $nlwebEmpty.hidden = false;
+}
+
+function renderFollowups(key) {
+  const followups = NLWEB_FOLLOWUPS[key];
+  if (!followups) return;
+  const section = document.createElement('div');
+  section.className = 'nlweb-followups';
+  section.innerHTML = '<p class="ai-suggestions-label">Follow up</p>';
+  const chips = document.createElement('div');
+  chips.className = 'ai-chips';
+  followups.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'ai-chip';
+    btn.dataset.query = f.query;
+    btn.textContent = f.label;
+    chips.appendChild(btn);
+  });
+  section.appendChild(chips);
+  $nlwebResults.appendChild(section);
+}
+
+function renderResults(query, results, matchKey) {
+  const loading = $nlwebResults.querySelector('.nlweb-loading');
+  if (loading) loading.remove();
+  $nlwebResults.removeAttribute('aria-busy');
+
+  const header = document.createElement('p');
+  header.className = 'nlweb-results-header';
+  header.textContent = `${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"`;
+  $nlwebResults.appendChild(header);
+
+  const ul = document.createElement('ul');
+  ul.className = 'nlweb-results';
+  ul.setAttribute('aria-label', 'Search results');
+
+  results.forEach(r => {
+    const li = document.createElement('li');
+    li.className = 'nlweb-result-card' + (r.isCurrentPage ? ' is-current' : '');
+
+    const titleRow = document.createElement('div');
+    titleRow.className = 'nlweb-result-title';
+    titleRow.innerHTML =
+      `<span class="nlweb-result-icon" aria-hidden="true">${r.icon}</span>` +
+      `<span class="nlweb-result-title-text">${r.title}</span>` +
+      (r.isCurrentPage ? '<span class="nlweb-result-badge">On this page</span>' : '');
+
+    const url = document.createElement('p');
+    url.className = 'nlweb-result-url';
+    url.textContent = r.url;
+
+    const excerpt = document.createElement('p');
+    excerpt.className = 'nlweb-result-excerpt';
+    excerpt.textContent = r.excerpt;
+
+    const cta = document.createElement('div');
+    cta.className = 'nlweb-result-cta';
+    if (r.isCurrentPage) {
+      const hlBtn = document.createElement('button');
+      hlBtn.className = 'nlweb-result-highlight';
+      hlBtn.textContent = 'Highlight';
+      hlBtn.addEventListener('click', () => highlight('#product-title'));
+      cta.appendChild(hlBtn);
+    } else {
+      const link = document.createElement('a');
+      link.className = 'nlweb-result-visit';
+      link.href = '#';
+      link.textContent = 'Visit →';
+      link.setAttribute('aria-label', `Visit ${r.title}`);
+      cta.appendChild(link);
+    }
+
+    li.appendChild(titleRow);
+    li.appendChild(url);
+    li.appendChild(excerpt);
+    li.appendChild(cta);
+    ul.appendChild(li);
+  });
+
+  $nlwebResults.appendChild(ul);
+  renderFollowups(matchKey || 'noise canceling headphones');
+}
+
+// ── Voice input ───────────────────────────────────────────────────────────
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) {
+  $aiMic.classList.add('unsupported');
+}
+
+function toggleVoice() {
+  if (state.listening) return; // guard against double-tap
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    state.listening = true;
+    $aiMic.classList.add('listening');
+    $aiMic.setAttribute('aria-pressed', 'true');
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    $aiInput.value = transcript;
+    $aiInput.style.height = '';
+    $aiInput.style.height = $aiInput.scrollHeight + 'px';
+  };
+
+  recognition.onend = () => {
+    state.listening = false;
+    $aiMic.classList.remove('listening');
+    $aiMic.setAttribute('aria-pressed', 'false');
+    const text = $aiInput.value.trim();
+    if (text) {
+      $aiInput.value = '';
+      $aiInput.style.height = '';
+      submitNLWebQuery(text);
+    }
+  };
+
+  recognition.onerror = () => {
+    state.listening = false;
+    $aiMic.classList.remove('listening');
+    $aiMic.setAttribute('aria-pressed', 'false');
+  };
+
+  recognition.start();
+}
+
+if (SpeechRecognition) {
+  $aiMic.addEventListener('click', toggleVoice);
+}
+
+function submitNLWebQuery(text) {
+  if (!text.trim()) return;
+
+  $nlwebEmpty.hidden = true;
+  Array.from($nlwebResults.children).forEach(child => {
+    if (child.id !== 'nlweb-empty') child.remove();
+  });
+
+  const loading = document.createElement('div');
+  loading.className = 'nlweb-loading';
+  loading.innerHTML = '<div class="nlweb-loading-bar"></div><p class="nlweb-loading-label">Searching megabuy.com…</p>';
+  $nlwebResults.setAttribute('aria-busy', 'true');
+  $nlwebResults.appendChild(loading);
+
+  const delay = 700 + Math.random() * 400;
+  setTimeout(() => {
+    const key = text.toLowerCase().replace(/[?!.]/g, '').trim();
+    const matchKey = Object.keys(NLWEB_MOCK_DATA).find(
+      k => key.includes(k) || k.split(' ').some(w => key.includes(w))
+    );
+    renderResults(text, NLWEB_MOCK_DATA[matchKey] || NLWEB_MOCK_DATA['noise canceling headphones'], matchKey);
+  }, delay);
+}
+
+function highlight(selector) {
+  // Remove previous
+  if (state.highlightedEl) {
+    state.highlightedEl.classList.remove('pm-highlight');
+    state.highlightedEl = null;
+  }
+  if (!selector) return;
+  const el = document.querySelector(selector);
+  if (!el) return;
+  el.classList.add('pm-highlight');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  state.highlightedEl = el;
+  setTimeout(() => {
+    if (state.highlightedEl === el) {
+      el.classList.remove('pm-highlight');
+      state.highlightedEl = null;
+    }
+  }, 3000);
+}
+
+function askChip(btn) {
+  const query = btn.dataset.query;
+  if (!state.aiOpen) {
+    toggleAI();
+    setTimeout(() => submitNLWebQuery(query), 400);
+  } else {
+    submitNLWebQuery(query);
+  }
+}
+
+// Auto-resize textarea
+$aiInput.addEventListener('input', () => {
+  $aiInput.style.height = 'auto';
+  $aiInput.style.height = Math.min($aiInput.scrollHeight, 120) + 'px';
+});
+
+$aiInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    const text = $aiInput.value.trim();
+    $aiInput.value = '';
+    $aiInput.style.height = '';
+    submitNLWebQuery(text);
+  }
+});
+
+document.getElementById('ai-send').addEventListener('click', () => {
+  const text = $aiInput.value.trim();
+  $aiInput.value = '';
+  $aiInput.style.height = '';
+  submitNLWebQuery(text);
+});
+
+// Event delegation for suggestion chips
+$nlwebResults.addEventListener('click', (e) => {
+  const chip = e.target.closest('.ai-chip[data-query]');
+  if (chip) askChip(chip);
+});
+
+// ── Keyboard nav ──────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (state.aiOpen) toggleAI();
+    else if (state.productMode) deactivateProductMode();
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────
+extractAll();
+</script>
+
+</body>
+</html>
