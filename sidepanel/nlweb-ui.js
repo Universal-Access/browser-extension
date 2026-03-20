@@ -113,10 +113,53 @@ function createSuggestedQueries(queries) {
   return container;
 }
 
+// Message types that are lifecycle/metadata — skip silently
+const SKIP_MESSAGE_TYPES = new Set([
+  'begin-nlweb-response', 'end-nlweb-response', 'complete',
+  'header', 'api_version', 'status', 'conversation_created',
+  'sites_response', 'conversation_history', 'end-conversation-history',
+  'query_analysis', 'decontextualized_query', 'remember',
+  'multi_site_complete'
+]);
+
 export function renderNlwebChunk(chunk) {
   const results = document.getElementById('nlweb-results');
   const messageType = chunk.message_type;
 
+  // --- Individual result (primary result type in NLWeb protocol) ---
+  if (messageType === 'result') {
+    // v0.55 wraps in { index, item }, legacy sends flat
+    const item = chunk.item || chunk;
+    if (item.name || item.url || item.title) {
+      results.appendChild(createResultCard(item));
+    }
+    return;
+  }
+
+  // --- Generated answer / RAG summary (summarize/generate mode) ---
+  if (messageType === 'nlws') {
+    const answer = chunk.answer || chunk.text || chunk.content || '';
+    const title = chunk.title || 'Answer';
+    if (answer || title) {
+      const firstChild = results.firstChild;
+      const card = createSummaryCard(title, answer);
+      if (firstChild) {
+        results.insertBefore(card, firstChild);
+      } else {
+        results.appendChild(card);
+      }
+    }
+    // Also render any inline result items
+    const items = chunk.items || [];
+    for (const item of items) {
+      if (item.name || item.url) {
+        results.appendChild(createResultCard(item));
+      }
+    }
+    return;
+  }
+
+  // --- Summary (legacy + intermediate summaries) ---
   if (messageType === 'summary' || messageType === 'chat_response') {
     const title = chunk.title || '';
     const message = chunk.message || chunk.summary || chunk.text || chunk.content || '';
@@ -132,6 +175,26 @@ export function renderNlwebChunk(chunk) {
     return;
   }
 
+  // --- Item details ---
+  if (messageType === 'item_details') {
+    if (chunk.name || chunk.url) {
+      results.appendChild(createResultCard(chunk));
+    }
+    return;
+  }
+
+  // --- Intermediate status messages ---
+  if (messageType === 'intermediate_message' || messageType === 'asking_sites') {
+    const text = chunk.message || chunk.text || '';
+    if (text) {
+      // Update the loading indicator text if present
+      const loader = results.querySelector('.nlweb-loading');
+      if (loader) loader.textContent = text;
+    }
+    return;
+  }
+
+  // --- Batch results (legacy / custom servers) ---
   if (messageType === 'result_batch') {
     const items = chunk.results || chunk.items || [];
     for (const item of items) {
@@ -140,6 +203,7 @@ export function renderNlwebChunk(chunk) {
     return;
   }
 
+  // --- Suggested queries ---
   if (messageType === 'similar_results') {
     const queries = chunk.queries || [];
     if (queries.length > 0) {
@@ -148,15 +212,16 @@ export function renderNlwebChunk(chunk) {
     return;
   }
 
+  // --- Error ---
   if (messageType === 'error') {
     showNlwebError(chunk.error || chunk.message || 'Unknown error');
     return;
   }
 
-  // Skip metadata message types
-  if (messageType) return;
+  // --- Skip known metadata/lifecycle types silently ---
+  if (SKIP_MESSAGE_TYPES.has(messageType)) return;
 
-  // Generic: treat the chunk itself as a single result item
+  // --- Unknown message_type — don't silently drop, try to render ---
   if (chunk.name || chunk.title || chunk.url) {
     results.appendChild(createResultCard(chunk));
   }
