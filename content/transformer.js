@@ -172,7 +172,7 @@
   }
 
   function renderArticle(entity, schemaData) {
-    const { index } = buildGraphIndex(schemaData);
+    const { index, allItems } = buildGraphIndex(schemaData);
     const d = resolveEntity(entity.data, index);
 
     const headline = d.headline || d.name || 'Article';
@@ -182,6 +182,39 @@
     const image = extractImage(d);
     const body = d.articleBody || d.text || d.description || '';
     const wordCount = d.wordCount || '';
+
+    // Search for Organization data to enrich homepages
+    let orgHtml = '';
+    const org = d.about?.[0] || d.publisher?.[0] || d.about || d.publisher || allItems.find(i => i['@type'] === 'Organization' || (Array.isArray(i['@type']) && i['@type'].includes('Organization')));
+    if (org) {
+      const resolvedOrg = resolveEntity(org, index);
+      const name = resolvedOrg.name;
+      const slogan = resolvedOrg.slogan;
+      const founder = resolvedOrg.founder?.name || resolvedOrg.founder;
+      const employees = resolvedOrg.numberOfEmployees;
+      const socials = extractList(resolvedOrg.sameAs);
+
+      if (name) {
+        orgHtml = `
+          <div class="ua-org-profile" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--ua-color-border);">
+            <h2 class="ua-section-title">About ${esc(name)}</h2>
+            ${slogan ? `<p class="ua-meta" style="font-size: 16px; font-style: italic;">"${esc(slogan)}"</p>` : ''}
+            <ul style="list-style: none; padding: 0; margin: 12px 0;">
+              ${founder ? `<li><strong>Founder:</strong> ${esc(founder)}</li>` : ''}
+              ${employees ? `<li><strong>Employees:</strong> ${esc(employees)}</li>` : ''}
+            </ul>
+            ${socials.length > 0 ? `
+              <div style="margin-top: 12px;">
+                <strong>Links & Socials:</strong>
+                <ul style="padding-left: 20px; font-size: 14px;">
+                  ${socials.map(s => `<li><a href="${esc(s)}" target="_blank" style="color: var(--ua-color-primary);">${esc(s)}</a></li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
 
     return `
       <article class="ua-card ua-article" role="main" aria-label="Article: ${esc(headline)}">
@@ -195,10 +228,12 @@
             ${wordCount ? `<span class="ua-word-count">${esc(wordCount)} words</span>` : ''}
           </div>
           ${body ? `<div class="ua-article-body">${formatText(body)}</div>` : ''}
+          ${orgHtml}
         </div>
       </article>
     `;
   }
+
 
   function renderRecipe(entity, schemaData) {
     const { index } = buildGraphIndex(schemaData);
