@@ -132,7 +132,7 @@ function extractAll() {
     jsonLd: extractJsonLd(),
     microdata: extractMicrodata(),
     rdfa: extractRdfa(),
-    nlweb: discoverNlweb(),
+    nlweb: discoverNlweb(), // NLWeb discovery currently tested against news.microsoft.com
     url: window.location.href
   };
 }
