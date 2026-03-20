@@ -3,14 +3,8 @@
   "name": "Schema.org Explorer",
   "version": "1.0.0",
   "description": "Extract and display Schema.org structured data (JSON-LD, Microdata, RDFa) from any web page.",
-  "permissions": [
-    "sidePanel",
-    "activeTab",
-    "scripting"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["sidePanel", "activeTab", "scripting", "microphone"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",
