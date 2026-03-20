@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Access</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-row">
+      <span class="logo" aria-hidden="true">♿</span>
+      <h1>Universal Access</h1>
+    </div>
+    <div id="page-url" class="page-url"></div>
+  </header>
+
+  <main id="content">
+    <!-- Status Section -->
+    <section id="status-section" class="panel-section">
+      <div id="status-indicator" class="status-bar">
+        <span id="status-icon" class="status-icon" aria-hidden="true">🔍</span>
+        <span id="status-text" class="status-text">Scanning page…</span>
+      </div>
+    </section>
+
+    <!-- Display Mode Section -->
+    <section id="display-section" class="panel-section" hidden>
+      <h2 class="section-title">
+        <span class="section-icon" aria-hidden="true">🎨</span>
+        Smart Visual Adaptation
+      </h2>
+      <p class="section-desc" id="detected-type-desc"></p>
+      <div class="action-buttons">
+        <button id="btn-activate" class="btn btn-primary" aria-label="Activate accessible view">
+          <span class="btn-icon">▶</span> Activate Accessible View
+        </button>
+        <button id="btn-deactivate" class="btn btn-secondary" hidden aria-label="Restore original page">
+          <span class="btn-icon">✕</span> Restore Original
+        </button>
+      </div>
+    </section>
+
+    <!-- Accessibility Presets -->
+    <section id="presets-section" class="panel-section" hidden>
+      <h2 class="section-title">
+        <span class="section-icon" aria-hidden="true">👁</span>
+        Accessibility Preset
+      </h2>
+      <div class="preset-options" role="radiogroup" aria-label="Accessibility preset">
+        <label class="preset-option active">
+          <input type="radio" name="preset" value="none" checked>
+          <span class="preset-label">
+            <span class="preset-name">Default</span>
+            <span class="preset-desc">Standard display</span>
+          </span>
+        </label>
+        <label class="preset-option">
+          <input type="radio" name="preset" value="low-vision">
+          <span class="preset-label">
+            <span class="preset-name">Low Vision</span>
+            <span class="preset-desc">High contrast, large fonts</span>
+          </span>
+        </label>
+        <label class="preset-option">
+          <input type="radio" name="preset" value="dyslexia">
+          <span class="preset-label">
+            <span class="preset-name">Dyslexia</span>
+            <span class="preset-desc">OpenDyslexic font, adjusted spacing</span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" hidden>
+      <div class="empty-icon" aria-hidden="true">📄</div>
+      <p>No structured data found on this page.</p>
+      <p class="hint">Navigate to a page with Schema.org markup to see results.</p>
+    </div>
+
+    <!-- Raw Data (collapsible, for debugging) -->
+    <section id="raw-data-section" class="panel-section collapsible" hidden>
+      <h2 class="section-title section-toggle" data-toggle="raw">
+        <span class="section-icon" aria-hidden="true">🔧</span>
+        Raw Schema Data
+        <span class="toggle-arrow">▶</span>
+      </h2>
+      <div class="collapsible-content" id="raw-data-content">
+        <section id="section-jsonld" class="schema-section" hidden>
+          <h3 class="subsection-header" data-toggle="jsonld">
+            <span class="toggle-arrow">▶</span>
+            JSON-LD <span id="count-jsonld" class="count-badge">0</span>
+          </h3>
+          <div id="items-jsonld" class="section-items"></div>
+        </section>
+        <section id="section-microdata" class="schema-section" hidden>
+          <h3 class="subsection-header" data-toggle="microdata">
+            <span class="toggle-arrow">▶</span>
+            Microdata <span id="count-microdata" class="count-badge">0</span>
+          </h3>
+          <div id="items-microdata" class="section-items"></div>
+        </section>
+        <section id="section-rdfa" class="schema-section" hidden>
+          <h3 class="subsection-header" data-toggle="rdfa">
+            <span class="toggle-arrow">▶</span>
+            RDFa <span id="count-rdfa" class="count-badge">0</span>
+          </h3>
+          <div id="items-rdfa" class="section-items"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
