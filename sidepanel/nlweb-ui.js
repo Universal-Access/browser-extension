@@ -3,6 +3,11 @@
 import { createTreeNode, escapeHtml } from './tree-renderer.js';
 
 let nlwebEndpoint = null;
+let loadingChangeCallback = null;
+
+export function onLoadingChange(callback) {
+  loadingChangeCallback = callback;
+}
 
 export function getNlwebEndpoint() {
   return nlwebEndpoint;
@@ -161,6 +166,10 @@ export function setNlwebLoading(loading) {
   const submit = document.getElementById('nlweb-submit');
   const input = document.getElementById('nlweb-query');
   const results = document.getElementById('nlweb-results');
+
+  if (loadingChangeCallback) {
+    loadingChangeCallback(loading);
+  }
 
   submit.disabled = loading;
   input.disabled = loading;

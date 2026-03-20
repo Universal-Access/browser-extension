@@ -250,7 +250,7 @@ main {
 .tree-key {
   color: var(--sp-tree-key);
   font-weight: 600;
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
   font-size: 12px;
 }
 
@@ -287,7 +287,7 @@ main {
 
 /* Leaf values */
 .tree-value {
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
   font-size: 12px;
 }
 
@@ -325,7 +325,7 @@ main {
 }
 
 .schema-error .error-raw {
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
   font-size: 11px;
   white-space: pre-wrap;
   word-break: break-all;
@@ -401,8 +401,6 @@ main {
 
 .nlweb-form button {
   padding: 6px 14px;
-  background: var(--sp-primary);
-  color: var(--sp-primary-text);
   border: none;
   border-radius: 4px;
   font-size: 13px;
@@ -410,14 +408,51 @@ main {
   cursor: pointer;
 }
 
-.nlweb-form button:hover {
+.nlweb-form button#nlweb-submit {
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+}
+
+.nlweb-form button#nlweb-submit:hover {
   background: var(--sp-primary-hover);
 }
 
-.nlweb-form button:disabled {
+.nlweb-form button#nlweb-submit:disabled {
   background: var(--sp-border-hover);
   color: var(--sp-text-hint);
   cursor: default;
+}
+
+.nlweb-mic-btn {
+  min-width: 44px;
+  background: var(--sp-surface-hover);
+  color: var(--sp-text-secondary);
+}
+
+.nlweb-mic-btn:hover {
+  background: var(--sp-surface-active);
+}
+
+.nlweb-mic-btn.listening {
+  background: #d93025;
+  color: white;
+}
+
+.nlweb-mic-btn:disabled {
+  background: var(--sp-surface-hover);
+  color: var(--sp-text-hint);
+  cursor: default;
+}
+
+.nlweb-stt-status {
+  min-height: 18px;
+  padding: 0 12px 8px;
+  font-size: 11px;
+  color: var(--sp-text-secondary);
+}
+
+.nlweb-stt-status.error {
+  color: var(--sp-error-text);
 }
 
 .nlweb-results {

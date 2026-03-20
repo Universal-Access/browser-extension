@@ -7,7 +7,8 @@ import {
   updateNlwebSection,
   renderNlwebChunk,
   setNlwebLoading,
-  showNlwebError
+  showNlwebError,
+  onLoadingChange
 } from './nlweb-ui.js';
 
 (function () {
@@ -16,6 +17,7 @@ import {
   // --- State ---
   let currentData = null;
   let isTransformActive = false;
+  let speechController = null;
 
   // --- DOM References ---
   const statusIcon = document.getElementById('status-icon');
@@ -65,6 +67,19 @@ import {
   document.getElementById('theme-toggle')?.addEventListener('click', () => {
     const nextIdx = (THEMES.indexOf(currentTheme) + 1) % THEMES.length;
     applyTheme(THEMES[nextIdx]);
+  });
+
+  // --- STT Integration ---
+
+  if (typeof createSpeechRecognitionController === 'function') {
+    speechController = createSpeechRecognitionController({
+      inputId: 'nlweb-query', micId: 'nlweb-mic', statusId: 'nlweb-stt-status', language: 'en-US'
+    });
+    speechController.init();
+  }
+  onLoadingChange((loading) => {
+    if (loading && speechController?.isListening()) speechController.stop();
+    if (speechController) speechController.setDisabled(loading);
   });
 
   // --- Status Updates ---
@@ -315,6 +330,7 @@ import {
     const input = document.getElementById('nlweb-query');
     const query = input.value.trim();
     if (!query || !getNlwebEndpoint()) return;
+    if (speechController?.isListening()) speechController.stop();
     const results = document.getElementById('nlweb-results');
     results.innerHTML = '';
     setNlwebLoading(true);

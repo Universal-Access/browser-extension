@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -92,8 +92,10 @@
       </div>
       <form id="nlweb-form" class="nlweb-form">
         <input type="text" id="nlweb-query" placeholder="Ask this site a question..." autocomplete="off" aria-label="Ask this site a question">
+        <button type="button" id="nlweb-mic" class="nlweb-mic-btn" aria-label="Start voice input" aria-pressed="false">Mic</button>
         <button type="submit" id="nlweb-submit">Ask</button>
       </form>
+      <div id="nlweb-stt-status" class="nlweb-stt-status" aria-live="polite"></div>
       <div id="nlweb-results" class="nlweb-results"></div>
     </section>
 
@@ -138,6 +140,7 @@
     </section>
   </main>
 
+  <script src="speech-recognition.js"></script>
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>
