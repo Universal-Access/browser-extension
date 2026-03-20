@@ -127,13 +127,121 @@ function extractRdfa() {
   return items;
 }
 
+// --- Entity Classification ---
+
+const ARTICLE_TYPES = [
+  'Article', 'NewsArticle', 'BlogPosting', 'TechArticle', 'ScholarlyArticle', 'Report',
+  'SocialMediaPosting', 'DiscussionForumPosting', 'LiveBlogPosting', 'AnalysisNewsArticle',
+  'AskPublicNewsArticle', 'BackgroundNewsArticle', 'OpinionNewsArticle', 'ReportageNewsArticle',
+  'ReviewNewsArticle', 'Review', 'CriticReview', 'UserReview', 'EmployerReview',
+  'Book', 'Chapter', 'Thesis', 'HowTo', 'Guide'
+];
+const WEBPAGE_TYPES = [
+  'WebPage', 'CheckoutPage', 'CollectionPage', 'FAQPage', 'ItemPage',
+  'AboutPage', 'ContactPage', 'ProfilePage', 'SearchResultsPage',
+  'RealEstateListing', 'MedicalWebPage', 'QAPage'
+];
+const PRODUCT_TYPES = [
+  'Product', 'SoftwareApplication', 'IndividualProduct', 'ProductGroup',
+  'MobileApplication', 'WebApplication', 'Service', 'Offer', 'AggregateOffer',
+  'Course', 'Vehicle', 'FoodEstablishment', 'Restaurant', 'BarOrPub', 'CafeOrCoffeeShop',
+  'LocalBusiness', 'Store', 'LodgingBusiness', 'Hotel',
+  'Movie', 'TVSeries', 'VideoGame', 'MusicAlbum', 'MusicRecording',
+  'CreativeWorkSeason', 'CreativeWorkSeries'
+];
+const EVENT_TYPES = [
+  'Event', 'BusinessEvent', 'ChildrensEvent', 'ComedyEvent', 'CourseInstance',
+  'DanceEvent', 'DeliveryEvent', 'EducationEvent', 'EventSeries', 'ExhibitionEvent',
+  'Festival', 'FoodEvent', 'Hackathon', 'LiteraryEvent', 'MusicEvent',
+  'PublicationEvent', 'SaleEvent', 'ScreeningEvent', 'SocialEvent', 'SportsEvent',
+  'TheaterEvent', 'VisualArtsEvent'
+];
+
+function normalizeType(rawType) {
+  if (!rawType) return null;
+  // Handle arrays of types
+  if (Array.isArray(rawType)) {
+    for (const t of rawType) {
+      const n = normalizeType(t);
+      if (n) return n;
+    }
+    return null;
+  }
+  // Strip schema.org prefix
+  const cleaned = String(rawType)
+    .replace(/^https?:\/\/schema\.org\//, '')
+    .trim();
+  if (ARTICLE_TYPES.includes(cleaned)) return 'Article';
+  if (WEBPAGE_TYPES.includes(cleaned)) return 'Article';
+  if (PRODUCT_TYPES.includes(cleaned)) return 'Product';
+  if (EVENT_TYPES.includes(cleaned)) return 'Article';
+  if (cleaned === 'Recipe') return 'Recipe';
+  return cleaned; // return raw for informational purposes
+}
+
+function extractEntitiesFromItem(item, source) {
+  const entities = [];
+  if (!item || typeof item !== 'object') return entities;
+
+  // Handle @graph arrays (common in Yoast output)
+  if (item['@graph'] && Array.isArray(item['@graph'])) {
+    for (const node of item['@graph']) {
+      entities.push(...extractEntitiesFromItem(node, source));
+    }
+    return entities;
+  }
+
+  const rawType = item['@type'] || item.data?.['@type'];
+  const type = normalizeType(rawType);
+  if (type) {
+    entities.push({
+      type,
+      rawType: rawType,
+      source, // 'jsonLd', 'microdata', 'rdfa'
+      data: item.data || item
+    });
+  }
+  return entities;
+}
+
+function classifyEntities(extractionData) {
+  const entities = [];
+
+  // Process JSON-LD items
+  for (const item of (extractionData.jsonLd || [])) {
+    if (item.error) continue;
+    entities.push(...extractEntitiesFromItem(item.data || item, 'jsonLd'));
+  }
+
+  // Process Microdata items
+  for (const item of (extractionData.microdata || [])) {
+    entities.push(...extractEntitiesFromItem(item, 'microdata'));
+  }
+
+  // Process RDFa items
+  for (const item of (extractionData.rdfa || [])) {
+    entities.push(...extractEntitiesFromItem(item, 'rdfa'));
+  }
+
+  // Determine primary type — priority: Recipe > Product > Article
+  const typeSet = new Set(entities.map(e => e.type));
+  let primaryType = 'Unknown';
+  if (typeSet.has('Recipe')) primaryType = 'Recipe';
+  else if (typeSet.has('Product')) primaryType = 'Product';
+  else if (typeSet.has('Article')) primaryType = 'Article';
+
+  return { entities, primaryType };
+}
+
 function extractAll() {
-  return {
+  const raw = {
     jsonLd: extractJsonLd(),
     microdata: extractMicrodata(),
     rdfa: extractRdfa(),
     url: window.location.href
   };
+  const { entities, primaryType } = classifyEntities(raw);
+  return { ...raw, entities, primaryType };
 }
 
 // Send data to service worker on load
