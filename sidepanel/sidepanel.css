@@ -7,7 +7,7 @@
 /* --- Theme Variables (Light) --- */
 
 body {
-  --sp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sp-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --sp-bg: #fafafa;
   --sp-text: #333;
   --sp-text-secondary: #666;
@@ -34,7 +34,7 @@ body {
   --sp-error-bg: #fde7e7;
   --sp-error-border: #f5c6c6;
   --sp-error-text: #c62828;
-  --sp-nlweb-bg: #4CAF50;
+  --sp-nlweb-bg: #4caf50;
   --sp-nlweb-summary-bg: #f0f7ff;
   --sp-focus-ring: 0 0 0 2px rgba(26, 115, 232, 0.15);
   --sp-tree-key: #881391;
@@ -515,11 +515,89 @@ a.nlweb-result-name:hover {
   border-left: 3px solid var(--sp-primary);
 }
 
+.nlweb-summary-card.reading {
+  box-shadow: inset 0 0 0 1px var(--sp-primary);
+}
+
 .nlweb-summary-title {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 4px;
   color: var(--sp-primary);
+}
+
+.nlweb-summary-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nlweb-summary-tts-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nlweb-voice-select {
+  max-width: 190px;
+  min-height: 30px;
+  border: 1px solid var(--sp-border);
+  border-radius: 4px;
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: 12px;
+  padding: 4px 6px;
+  font-family: inherit;
+}
+
+.nlweb-speed-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--sp-text-secondary);
+}
+
+.nlweb-speed-input {
+  width: 86px;
+}
+
+.nlweb-speed-value {
+  min-width: 30px;
+  text-align: right;
+  color: var(--sp-text-hint);
+}
+
+.nlweb-summary-tts-btn {
+  padding: 5px 10px;
+  min-height: 30px;
+  border: 1px solid var(--sp-primary);
+  background: transparent;
+  color: var(--sp-primary);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.nlweb-summary-tts-btn:hover {
+  background: color-mix(in srgb, var(--sp-primary) 12%, transparent);
+}
+
+.nlweb-summary-tts-btn.reading {
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+}
+
+.nlweb-summary-tts-btn:disabled {
+  border-color: var(--sp-border);
+  color: var(--sp-text-hint);
+  cursor: default;
 }
 
 .nlweb-suggested-queries {
@@ -598,12 +676,12 @@ a.nlweb-result-name:hover {
 }
 
 .nlweb-result-schema-toggle::before {
-  content: '▶ ';
+  content: "▶ ";
   font-size: 9px;
 }
 
 .nlweb-result-schema-details[open] > .nlweb-result-schema-toggle::before {
-  content: '▼ ';
+  content: "▼ ";
 }
 
 .nlweb-error {
@@ -651,7 +729,7 @@ a.nlweb-result-name:hover {
 .theme-toggle {
   margin-left: auto;
   background: none;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: inherit;
   font-size: 16px;
   width: 30px;
@@ -667,7 +745,7 @@ a.nlweb-result-name:hover {
 }
 
 .theme-toggle:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .theme-toggle[title]::after {
@@ -684,7 +762,9 @@ a.nlweb-result-name:hover {
   border-radius: 6px;
   background: var(--sp-surface-hover);
   border: 1px solid var(--sp-border);
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .status-bar.found {
@@ -760,7 +840,9 @@ a.nlweb-result-name:hover {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
   min-height: 36px;
 }
 
@@ -826,7 +908,9 @@ a.nlweb-result-name:hover {
   border: 1px solid var(--sp-border);
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   background: var(--sp-surface);
   min-height: 44px;
 }
