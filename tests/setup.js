@@ -9,6 +9,7 @@ function makeChromeMock() {
     },
     runtime: {
       sendMessage: vi.fn().mockResolvedValue(undefined),
+      getURL: vi.fn(path => path),
     },
     storage: {
       local: {
