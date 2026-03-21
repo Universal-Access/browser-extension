@@ -39,6 +39,7 @@ export async function probeSchemaAggregation(origin) {
  * Fetches all Product entities from the schema aggregation NDJSON endpoint.
  * Iterates through paginated pages (/get-schema/product, /get-schema/product/2, etc.)
  * until an empty response or max pages reached.
+ * Currently for Woo products, but also for any framework that uses `product` as the product slug.
  * @param {string} origin - The site origin (e.g. "https://example.com")
  * @returns {Promise<Array>} Array of Product-typed schema entities
  */
