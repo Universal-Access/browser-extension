@@ -4,6 +4,9 @@
 if (typeof window.__uaExtractorLoaded === 'undefined') {
 window.__uaExtractorLoaded = true;
 
+(function () {
+'use strict';
+
 // Attempt moderate fixes on broken JSON before giving up
 function salvageJson(raw) {
   let text = raw;
@@ -343,4 +346,5 @@ try {
   // Extension context already invalidated at registration time
 }
 
+})(); // end IIFE
 } // end __uaExtractorLoaded guard

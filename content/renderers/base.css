@@ -28,25 +28,33 @@
   --ua-letter-spacing: normal;
   --ua-word-spacing: normal;
 
-  --ua-color-bg: #ffffff;
-  --ua-color-surface: #f8f9fa;
-  --ua-color-text: #1a1a2e;
-  --ua-color-text-secondary: #555770;
-  --ua-color-primary: #2563eb;
-  --ua-color-primary-light: #dbeafe;
-  --ua-color-accent: #059669;
-  --ua-color-accent-light: #d1fae5;
-  --ua-color-border: #e2e8f0;
-  --ua-color-border-strong: #cbd5e1;
-  --ua-color-star: #f59e0b;
-  --ua-color-overlay-bg: #f1f5f9;
-  --ua-color-header-bg: #1e293b;
-  --ua-color-header-text: #f8fafc;
+  --ua-color-bg: #FAFAFA;
+  --ua-color-surface: #F0F0F0;
+  --ua-color-text: #222222;
+  --ua-color-text-secondary: #444444;
+  --ua-color-primary: #004CA3;
+  --ua-color-primary-light: #E0ECFF;
+  --ua-color-accent: #007A3D;
+  --ua-color-accent-light: #D4EDDA;
+  --ua-color-border: #CCCCCC;
+  --ua-color-border-strong: #999999;
+  --ua-color-star: #D4A017;
+  --ua-color-overlay-bg: #F5F5F5;
+  --ua-color-header-bg: #1B2A4A;
+  --ua-color-header-text: #FFFFFF;
+
+  --ua-color-link: var(--ua-color-primary);
+  --ua-color-link-hover: #02254F;
+  --ua-color-button-bg: var(--ua-color-primary);
+  --ua-color-button-text: #FFFFFF;
+  --ua-color-button-hover: #02254F;
+  --ua-color-button-buy-bg: var(--ua-color-accent);
+  --ua-color-button-buy-hover: #005C2E;
 
   --ua-radius: 12px;
   --ua-radius-sm: 8px;
-  --ua-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-  --ua-shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+  --ua-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  --ua-shadow-lg: 0 4px 12px rgba(0,0,0,0.12);
   --ua-transition: 0.2s ease;
 
   --ua-max-width: 720px;
@@ -106,9 +114,82 @@
   vertical-align: baseline;
 }
 
+/* Override host page text styles on common elements.
+   Only resets typography — preserves structural props
+   (margin, padding, display, list-style, font-weight, etc.).
+   Uses !important to beat host page rules in the light DOM. */
+#ua-accessible-overlay p,
+#ua-accessible-overlay ul,
+#ua-accessible-overlay ol,
+#ua-accessible-overlay li,
+#ua-accessible-overlay span,
+#ua-accessible-overlay strong,
+#ua-accessible-overlay em,
+#ua-accessible-overlay blockquote,
+#ua-accessible-overlay table,
+#ua-accessible-overlay td,
+#ua-accessible-overlay th {
+  font-family: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  word-spacing: inherit !important;
+  font-size: inherit !important;
+  text-transform: none !important;
+}
+
+/* Reset images — clear host margins/borders */
+#ua-accessible-overlay img {
+  border: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 #ua-accessible-overlay :focus-visible {
   outline: var(--ua-focus-outline);
   outline-offset: var(--ua-focus-offset);
+}
+
+/* --- Global link styling (1px underline → 2px on hover) ---
+   Uses !important to override host page link styles that leak
+   into the overlay via the light DOM. */
+
+#ua-accessible-overlay a {
+  color: var(--ua-color-link, var(--ua-color-primary)) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 1px !important;
+  text-decoration-color: currentColor !important;
+  background: none !important;
+  border: none !important;
+  transition: text-decoration-thickness 0.15s, color 0.15s;
+}
+
+#ua-accessible-overlay a:hover {
+  color: var(--ua-color-link-hover, var(--ua-color-primary)) !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* Button links — no underline */
+#ua-accessible-overlay a.ua-button {
+  text-decoration: none !important;
+  color: var(--ua-color-button-text) !important;
+}
+
+#ua-accessible-overlay a.ua-button:hover {
+  text-decoration: none !important;
+  color: var(--ua-color-button-text) !important;
+}
+
+/* Navigation links — no underline, secondary color (they use hover background instead) */
+#ua-accessible-overlay .ua-nav-link {
+  text-decoration: none !important;
+  color: var(--ua-color-text-secondary) !important;
+}
+
+#ua-accessible-overlay .ua-nav-link:hover {
+  text-decoration: none !important;
+  color: var(--ua-color-primary) !important;
 }
 
 /* --- Header --- */
@@ -137,6 +218,7 @@
   font-size: 22px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .ua-logo .ua-icon {
@@ -164,7 +246,7 @@
 
 .ua-type-badge {
   background: var(--ua-color-primary);
-  color: white;
+  color: var(--ua-color-button-text);
   font-size: 12px;
   font-weight: 600;
   padding: 3px 10px;
@@ -347,8 +429,8 @@
   align-items: center;
   gap: 6px;
   padding: 12px 24px;
-  background: var(--ua-color-primary);
-  color: white;
+  background: var(--ua-color-button-bg);
+  color: var(--ua-color-button-text);
   font-size: var(--ua-font-size-base);
   font-weight: 600;
   font-family: var(--ua-font-family);
@@ -357,23 +439,20 @@
   text-decoration: none;
   cursor: pointer;
   transition: all var(--ua-transition);
-  box-shadow: 0 2px 4px rgba(37,99,235,0.3);
 }
 
 .ua-button:hover {
-  background: var(--ua-color-primary-hover, #1d4ed8);
+  background: var(--ua-color-button-hover, var(--ua-color-primary-hover, #1d4ed8));
   box-shadow: 0 4px 8px rgba(37,99,235,0.4);
   transform: translateY(-1px);
 }
 
 .ua-button-buy {
-  background: #16a34a;
-  box-shadow: 0 2px 4px rgba(22,163,74,0.3);
+  background: var(--ua-color-button-buy-bg);
 }
 
 .ua-button-buy:hover {
-  background: #15803d;
-  box-shadow: 0 4px 8px rgba(22,163,74,0.4);
+  background: var(--ua-color-button-buy-hover);
 }
 
 /* --- FAQ --- */
@@ -406,9 +485,8 @@
   line-height: var(--ua-line-height);
 }
 
-.ua-faq-answer a {
-  color: var(--ua-color-primary);
-  text-decoration: underline;
+#ua-accessible-overlay .ua-faq-answer a {
+  font-weight: 500;
 }
 
 .ua-faq-answer p {
@@ -443,6 +521,34 @@
 
 .ua-reader {
   max-width: 650px;
+}
+
+/* Organization profile (enriched articles) */
+
+.ua-org-profile {
+  margin-top: var(--ua-spacing);
+  padding-top: var(--ua-spacing);
+  border-top: 1px solid var(--ua-color-border);
+}
+
+.ua-org-slogan {
+  font-size: var(--ua-font-size-base);
+  font-style: italic;
+}
+
+.ua-org-details {
+  list-style: none;
+  padding: 0;
+  margin: var(--ua-spacing-sm) 0;
+}
+
+.ua-org-links {
+  margin-top: var(--ua-spacing-sm);
+}
+
+.ua-org-links-list {
+  padding-left: 20px;
+  font-size: var(--ua-font-size-sm);
 }
 
 .ua-article-meta {
@@ -588,7 +694,7 @@
   width: 32px;
   height: 32px;
   background: var(--ua-color-primary);
-  color: white;
+  color: var(--ua-color-button-text);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -787,23 +893,31 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ua-color-bg: #1e1e2e;
-    --ua-color-surface: #2a2a3c;
-    --ua-color-text: #e4e4ef;
-    --ua-color-text-secondary: #a9a9bf;
-    --ua-color-primary: #7aa2f7;
-    --ua-color-primary-light: #292e42;
-    --ua-color-accent: #9ece6a;
-    --ua-color-accent-light: #1e2a1e;
-    --ua-color-border: #414159;
-    --ua-color-border-strong: #565670;
-    --ua-color-star: #e0af68;
-    --ua-color-overlay-bg: #16161e;
-    --ua-color-header-bg: #1a1b26;
-    --ua-color-header-text: #c0caf5;
+    --ua-color-bg: #141A34;
+    --ua-color-surface: #1C2240;
+    --ua-color-text: #D3D3D3;
+    --ua-color-text-secondary: #ABABAB;
+    --ua-color-primary: #C98C00;
+    --ua-color-primary-light: #2A2210;
+    --ua-color-accent: #7ECF8E;
+    --ua-color-accent-light: #253530;
+    --ua-color-border: #3A4070;
+    --ua-color-border-strong: #50568A;
+    --ua-color-star: #E0AF68;
+    --ua-color-overlay-bg: #0F1328;
+    --ua-color-header-bg: #1C2240;
+    --ua-color-header-text: #D3D3D3;
 
-    --ua-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    --ua-shadow-lg: 0 10px 25px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.3);
+    --ua-color-link: #C98C00;
+    --ua-color-link-hover: #FFD982;
+    --ua-color-button-bg: #C98C00;
+    --ua-color-button-text: #141A34;
+    --ua-color-button-hover: #FFD982;
+    --ua-color-button-buy-bg: #7ECF8E;
+    --ua-color-button-buy-hover: #5AB56A;
+
+    --ua-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --ua-shadow-lg: 0 4px 12px rgba(0,0,0,0.25);
   }
 }
 
@@ -831,7 +945,7 @@
   z-index: 100;
   padding: 8px 16px;
   background: var(--ua-color-primary);
-  color: white;
+  color: var(--ua-color-button-text);
   font-size: var(--ua-font-size-sm);
   font-weight: 600;
   text-decoration: none;
@@ -949,14 +1063,12 @@
   color: var(--ua-color-text);
 }
 
-.ua-phone-link {
-  color: var(--ua-color-primary);
-  text-decoration: none;
+#ua-accessible-overlay .ua-phone-link {
   font-weight: 500;
 }
 
-.ua-phone-link:hover {
-  text-decoration: underline;
+#ua-accessible-overlay .ua-phone-link:hover {
+  text-decoration-thickness: 2px;
 }
 
 /* --- FAQ Renderer --- */
@@ -1065,13 +1177,13 @@
   margin-left: 4px;
 }
 
-.ua-breadcrumb-link {
-  color: var(--ua-color-primary);
+#ua-accessible-overlay .ua-breadcrumb-link {
   text-decoration: none;
 }
 
-.ua-breadcrumb-link:hover {
+#ua-accessible-overlay .ua-breadcrumb-link:hover {
   text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
 .ua-breadcrumb-current {
@@ -1111,14 +1223,14 @@
   border-bottom: none;
 }
 
-.ua-item-list-link {
-  color: var(--ua-color-primary);
-  text-decoration: none;
+#ua-accessible-overlay .ua-item-list-link {
   font-weight: 500;
+  text-decoration: none;
 }
 
-.ua-item-list-link:hover {
+#ua-accessible-overlay .ua-item-list-link:hover {
   text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
 /* --- Pagination --- */

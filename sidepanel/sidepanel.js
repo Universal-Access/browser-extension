@@ -62,8 +62,8 @@ import {
     document.getElementById('seg-theme-dark')?.classList.toggle('active', theme === 'dark');
     document.getElementById('seg-theme-dark')?.setAttribute('aria-checked', String(theme === 'dark'));
     chrome.storage.local.set({ uaTheme: theme });
-    // Send effective theme to content script overlay
-    chrome.runtime.sendMessage({ type: 'SET_THEME', theme: effective });
+    // Send raw theme to content script (content script resolves 'auto' itself)
+    chrome.runtime.sendMessage({ type: 'SET_THEME', theme: theme });
   }
 
   // Re-apply when OS preference changes (only matters in auto mode)
@@ -301,6 +301,50 @@ import {
     }
   });
 
+  // --- Sync state from active tab (called on tab switch / page load) ---
+
+  function syncStateFromTab() {
+    chrome.runtime.sendMessage({ type: 'GET_TAB_STATE' }, (response) => {
+      if (chrome.runtime.lastError || !response) return;
+
+      // Sync theme (update UI only — don't re-send to content script)
+      if (response.theme === 'dark' || response.theme === 'light' || response.theme === 'auto') {
+        currentTheme = response.theme;
+        const effective = resolveEffectiveTheme(response.theme);
+        if (effective === 'dark') {
+          document.body.setAttribute('data-theme', 'dark');
+        } else {
+          document.body.removeAttribute('data-theme');
+        }
+        document.getElementById('seg-theme-auto')?.classList.toggle('active', response.theme === 'auto');
+        document.getElementById('seg-theme-auto')?.setAttribute('aria-checked', String(response.theme === 'auto'));
+        document.getElementById('seg-theme-light')?.classList.toggle('active', response.theme === 'light');
+        document.getElementById('seg-theme-light')?.setAttribute('aria-checked', String(response.theme === 'light'));
+        document.getElementById('seg-theme-dark')?.classList.toggle('active', response.theme === 'dark');
+        document.getElementById('seg-theme-dark')?.setAttribute('aria-checked', String(response.theme === 'dark'));
+      }
+
+      // Sync dyslexia (update UI only — don't re-send to content script)
+      if (response.presets) {
+        dyslexiaEnabled = !!response.presets.dyslexia;
+        const toggle = document.getElementById('toggle-dyslexia');
+        if (toggle) toggle.setAttribute('aria-checked', String(dyslexiaEnabled));
+        document.body.classList.toggle('sp-preset-dyslexia', dyslexiaEnabled);
+      }
+
+      // Sync overlay activation state
+      if (response.overlayActive) {
+        isTransformActive = true;
+        btnActivate.hidden = true;
+        btnDeactivate.hidden = false;
+      } else {
+        isTransformActive = false;
+        btnActivate.hidden = false;
+        btnDeactivate.hidden = true;
+      }
+    });
+  }
+
   // --- Raw Data Tree Rendering ---
 
   function renderSection(sectionId, items, isJsonLd = false) {
@@ -433,6 +477,7 @@ import {
 
       if (changeInfo.status === 'complete') {
         refreshSchemaData();
+        syncStateFromTab();
       }
     });
   });
@@ -441,13 +486,11 @@ import {
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'TAB_ACTIVATED') {
       handleSchemaData(message.payload);
-      isTransformActive = false;
-      btnActivate.hidden = false;
-      btnDeactivate.hidden = true;
       showAggregationSection(message.aggregation);
       if (message.nlweb) {
         updateNlwebSection(message.nlweb.endpoint, message.nlweb.method);
       }
+      syncStateFromTab();
     }
     if (message.type === 'SCHEMA_UPDATE') {
       handleSchemaData(message.payload);

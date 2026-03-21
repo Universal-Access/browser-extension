@@ -196,7 +196,7 @@
       <article class="ua-card" role="main">
         <div class="ua-card-body">
           <h1 class="ua-title">${esc(name || type || 'Content')}</h1>
-          <p class="ua-description" style="color: var(--ua-color-text-secondary);">
+          <p class="ua-description">
             Some structured data was found but couldn't be fully rendered. The data may be incomplete or in an unexpected format.
           </p>
         </div>
@@ -303,18 +303,18 @@
 
       if (name) {
         orgHtml = `
-          <div class="ua-org-profile" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--ua-color-border);">
+          <div class="ua-org-profile">
             <h2 class="ua-section-title">About ${esc(name)}</h2>
-            ${slogan ? `<p class="ua-meta" style="font-size: 16px; font-style: italic;">"${esc(slogan)}"</p>` : ''}
-            <ul style="list-style: none; padding: 0; margin: 12px 0;">
+            ${slogan ? `<p class="ua-meta ua-org-slogan">"${esc(slogan)}"</p>` : ''}
+            <ul class="ua-org-details">
               ${founder ? `<li><strong>Founder:</strong> ${esc(founder)}</li>` : ''}
               ${employees ? `<li><strong>Employees:</strong> ${esc(employees)}</li>` : ''}
             </ul>
             ${socials.length > 0 ? `
-              <div style="margin-top: 12px;">
+              <div class="ua-org-links">
                 <strong>Links & Socials:</strong>
-                <ul style="padding-left: 20px; font-size: 14px;">
-                  ${socials.map(s => `<li><a href="${esc(s)}" target="_blank" style="color: var(--ua-color-primary);">${esc(s)}</a></li>`).join('')}
+                <ul class="ua-org-links-list">
+                  ${socials.map(s => `<li><a href="${esc(s)}" target="_blank">${esc(s)}</a></li>`).join('')}
                 </ul>
               </div>
             ` : ''}
