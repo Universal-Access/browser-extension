@@ -33,6 +33,7 @@
       "matches": ["<all_urls>"],
       "js": [
         "content/nlweb-discovery.js",
+        "content/schema-aggregation.js",
         "content/extractor.js",
         "content/schemamap.js",
         "content/transformer.js",

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enable Microphone - Universal Access</title>
+    <link rel="stylesheet" href="setup.css" />
+  </head>
+  <body>
+    <main class="setup-shell">
+      <h1>Enable Microphone</h1>
+      <p class="lead">
+        Universal Access needs microphone access for speech-to-text in the side
+        panel. Permission is saved for this extension origin after you allow it
+        once.
+      </p>
+
+      <div id="status" class="status" role="status" aria-live="polite">
+        Ready to request microphone access.
+      </div>
+
+      <div class="actions">
+        <button id="grant-btn" class="btn primary" type="button">
+          Enable Microphone
+        </button>
+        <button id="retry-btn" class="btn" type="button" hidden>
+          Try Again
+        </button>
+      </div>
+
+      <div id="success" class="success" hidden>
+        Microphone access is enabled. You can return to the side panel and use
+        the Mic button.
+      </div>
+    </main>
+
+    <script src="setup.js"></script>
+  </body>
+</html>

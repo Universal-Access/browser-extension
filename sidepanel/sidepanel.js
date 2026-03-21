@@ -32,6 +32,9 @@ import {
   const presetsSection = document.getElementById('presets-section');
   const navSection = document.getElementById('nav-section');
   const navLinks = document.getElementById('nav-links');
+  const aggregationSection = document.getElementById('aggregation-section');
+  const btnBrowseProducts = document.getElementById('btn-browse-products');
+  const aggregationStatus = document.getElementById('aggregation-status');
   const rawDataSection = document.getElementById('raw-data-section');
 
   // --- Theme Segmented Control (Light / Dark) ---
@@ -358,10 +361,25 @@ import {
     });
   });
 
+  // --- Schema Aggregation ---
+
+  function showAggregationSection(state) {
+    if (state && state.hasProducts) {
+      aggregationSection.hidden = false;
+    } else {
+      aggregationSection.hidden = true;
+    }
+  }
+
+  btnBrowseProducts.addEventListener('click', () => {
+    aggregationStatus.textContent = 'Loading products…';
+    btnBrowseProducts.disabled = true;
+    chrome.runtime.sendMessage({ type: 'FETCH_AGGREGATED_PRODUCTS' });
+  });
+
   // --- Initialize ---
 
   function refreshSchemaData() {
-    // Reset transform state when switching pages
     isTransformActive = false;
     btnActivate.hidden = false;
     btnDeactivate.hidden = true;
@@ -375,13 +393,13 @@ import {
     });
   }
 
-  // Initial load
-  refreshSchemaData();
-
-  // Re-fetch when the user switches to a different tab
-  chrome.tabs.onActivated.addListener(() => {
-    refreshSchemaData();
+  // Initial loads
+  chrome.runtime.sendMessage({ type: 'GET_AGGREGATION_STATE' }, (response) => {
+    if (chrome.runtime.lastError) return;
+    showAggregationSection(response);
   });
+
+  refreshSchemaData();
 
   // Re-fetch when the active tab navigates to a new page
   chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
@@ -389,13 +407,12 @@ import {
       if (!tabs[0] || tabs[0].id !== tabId) return;
 
       if (changeInfo.status === 'loading') {
-        // Immediately clear stale data and show scanning state
         setStatus('🔍', 'Scanning page…', '');
         handleSchemaData(null);
+        showAggregationSection(null);
       }
 
       if (changeInfo.status === 'complete') {
-        // Page finished loading — re-extract schema data
         refreshSchemaData();
       }
     });
@@ -403,6 +420,16 @@ import {
 
   // Listen for live updates
   chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'TAB_ACTIVATED') {
+      handleSchemaData(message.payload);
+      isTransformActive = false;
+      btnActivate.hidden = false;
+      btnDeactivate.hidden = true;
+      showAggregationSection(message.aggregation);
+      if (message.nlweb) {
+        updateNlwebSection(message.nlweb.endpoint, message.nlweb.method);
+      }
+    }
     if (message.type === 'SCHEMA_UPDATE') {
       handleSchemaData(message.payload);
     }
@@ -410,6 +437,26 @@ import {
       isTransformActive = false;
       btnActivate.hidden = false;
       btnDeactivate.hidden = true;
+    }
+    if (message.type === 'SCHEMA_AGGREGATION_AVAILABLE') {
+      showAggregationSection(message);
+    }
+    if (message.type === 'AGGREGATED_PRODUCTS_RESULT') {
+      btnBrowseProducts.disabled = false;
+      if (message.error) {
+        aggregationStatus.textContent = `Error: ${message.error}`;
+        return;
+      }
+      if (!message.products || message.products.length === 0) {
+        aggregationStatus.textContent = 'No products found.';
+        return;
+      }
+      aggregationStatus.textContent = `Found ${message.products.length} products. Opening overlay…`;
+      chrome.runtime.sendMessage({
+        type: 'ACTIVATE_PRODUCT_BROWSE',
+        products: message.products
+      });
+      setTimeout(() => { aggregationStatus.textContent = ''; }, 3000);
     }
     if (message.type === 'NLWEB_ENDPOINT') {
       updateNlwebSection(message.endpoint, message.method);
