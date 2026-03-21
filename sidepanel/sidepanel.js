@@ -378,6 +378,16 @@ import {
 
   // Listen for live updates
   chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'TAB_ACTIVATED') {
+      handleSchemaData(message.payload);
+      isTransformActive = false;
+      btnActivate.hidden = false;
+      btnDeactivate.hidden = true;
+      showAggregationSection(message.aggregation);
+      if (message.nlweb) {
+        updateNlwebSection(message.nlweb.endpoint, message.nlweb.method);
+      }
+    }
     if (message.type === 'SCHEMA_UPDATE') {
       handleSchemaData(message.payload);
     }
