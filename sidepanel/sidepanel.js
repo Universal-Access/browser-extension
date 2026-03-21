@@ -390,7 +390,6 @@ import {
       if (!tabs[0] || tabs[0].id !== tabId) return;
 
       if (changeInfo.status === 'loading') {
-        setStatus('🔍', 'Scanning page…', '');
         handleSchemaData(null);
         showAggregationSection(null);
       }
