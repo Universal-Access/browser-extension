@@ -1,6 +1,6 @@
 /* Universal Access — Accessible View Base Preset
    Applied whenever the accessible overlay is active.
-   Light mode: Soft AAA contrast (#FAFAFA bg / #333333 text, 12.10:1)
+   Light mode: Soft AAA contrast (#FAFAFA bg / #222222 text)
    Dark mode: Low-contrast comfortable reading (#141A34 bg / #D3D3D3 text)
    Atkinson Hyperlegible font, generous spacing, enhanced focus & touch targets */
 
@@ -35,8 +35,8 @@
 
   --ua-color-bg: #FAFAFA;
   --ua-color-surface: #F0F0F0;
-  --ua-color-text: #333333;
-  --ua-color-text-secondary: #3D3D3D;
+  --ua-color-text: #222222;
+  --ua-color-text-secondary: #444444;
   --ua-color-primary: #004CA3;
   --ua-color-primary-light: #E0ECFF;
   --ua-color-accent: #007A3D;
@@ -49,6 +49,11 @@
   --ua-color-header-text: #FFFFFF;
   --ua-color-link: #004CA3;
   --ua-color-link-hover: #02254F;
+  --ua-color-button-bg: #004CA3;
+  --ua-color-button-text: #FFFFFF;
+  --ua-color-button-hover: #02254F;
+  --ua-color-button-buy-bg: #007A3D;
+  --ua-color-button-buy-hover: #005C2E;
 
   --ua-focus-outline: 4px solid #004CA3;
   --ua-focus-offset: 4px;
@@ -78,6 +83,11 @@
   --ua-color-header-text: #D3D3D3;
   --ua-color-link: #C98C00;
   --ua-color-link-hover: #FFD982;
+  --ua-color-button-bg: #C98C00;
+  --ua-color-button-text: #141A34;
+  --ua-color-button-hover: #FFD982;
+  --ua-color-button-buy-bg: #7ECF8E;
+  --ua-color-button-buy-hover: #5AB56A;
 
   --ua-focus-outline: 4px solid #FFD982;
 
