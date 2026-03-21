@@ -696,6 +696,137 @@ a.nlweb-result-name:hover {
   background: var(--sp-primary-hover);
 }
 
+/* Local LLM widget */
+
+.llm-section {
+  margin-bottom: 8px;
+  background: var(--sp-surface);
+  border: 1px solid var(--sp-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.llm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--sp-surface-hover);
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.llm-indicator {
+  background: #0b8043;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.llm-model-badge {
+  font-size: 11px;
+  color: var(--sp-text-secondary);
+}
+
+.llm-status {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--sp-text-hint);
+  border-bottom: 1px solid var(--sp-border-light);
+}
+
+.llm-chat-history {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.llm-message {
+  display: flex;
+}
+
+.llm-message.user {
+  justify-content: flex-end;
+}
+
+.llm-message.assistant {
+  justify-content: flex-start;
+}
+
+.llm-message-bubble {
+  max-width: 90%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.llm-message.user .llm-message-bubble {
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+}
+
+.llm-message.assistant .llm-message-bubble {
+  background: var(--sp-surface-hover);
+  border: 1px solid var(--sp-border-light);
+  color: var(--sp-text-secondary);
+}
+
+.llm-chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--sp-border-light);
+}
+
+.llm-chat-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--sp-border-hover);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: var(--sp-surface);
+  color: var(--sp-text);
+}
+
+.llm-chat-input:focus {
+  border-color: var(--sp-primary);
+  box-shadow: var(--sp-focus-ring);
+}
+
+.llm-chat-input:disabled {
+  background: var(--sp-surface-hover);
+  color: var(--sp-text-hint);
+}
+
+.llm-send-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.llm-send-btn:hover {
+  background: var(--sp-primary-hover);
+}
+
+.llm-send-btn:disabled {
+  background: var(--sp-border-hover);
+  color: var(--sp-text-hint);
+  cursor: default;
+}
+
 /* --- Header --- */
 
 .header-row {

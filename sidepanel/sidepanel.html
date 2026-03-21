@@ -153,6 +153,37 @@
         <div id="nlweb-results" class="nlweb-results"></div>
       </section>
 
+      <!-- Local LLM Chat Widget -->
+      <section id="llm-section" class="llm-section">
+        <div class="llm-header">
+          <span class="llm-indicator">Local LLM</span>
+          <span id="llm-model-badge" class="llm-model-badge">Not loaded</span>
+        </div>
+        <div id="llm-status" class="llm-status" aria-live="polite">
+          Ask a question to start the local model.
+        </div>
+        <div
+          id="llm-chat-history"
+          class="llm-chat-history"
+          role="log"
+          aria-live="polite"
+          aria-label="Local LLM chat history"
+        ></div>
+        <form id="llm-chat-form" class="llm-chat-form">
+          <input
+            type="text"
+            id="llm-chat-input"
+            class="llm-chat-input"
+            placeholder="Ask the local assistant..."
+            autocomplete="off"
+            aria-label="Ask local LLM"
+          />
+          <button type="submit" id="llm-send-btn" class="llm-send-btn">
+            Send
+          </button>
+        </form>
+      </section>
+
       <!-- Empty State -->
       <div id="empty-state" class="empty-state" hidden>
         <div class="empty-icon" aria-hidden="true">📄</div>

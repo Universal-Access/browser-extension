@@ -36,6 +36,12 @@ import * as webllm from "./webllm-chat.js";
   const navSection = document.getElementById("nav-section");
   const navLinks = document.getElementById("nav-links");
   const rawDataSection = document.getElementById("raw-data-section");
+  const llmStatus = document.getElementById("llm-status");
+  const llmModelBadge = document.getElementById("llm-model-badge");
+  const llmChatHistory = document.getElementById("llm-chat-history");
+  const llmChatForm = document.getElementById("llm-chat-form");
+  const llmChatInput = document.getElementById("llm-chat-input");
+  const llmSendBtn = document.getElementById("llm-send-btn");
 
   // --- Theme Toggle ---
 
@@ -92,29 +98,26 @@ import * as webllm from "./webllm-chat.js";
     if (speechController) speechController.setDisabled(loading);
   });
 
-  // --- Local LLM Fallback (used by NLWeb input when endpoint is unavailable) ---
+  // --- Local LLM Chat Widget ---
 
   const defaultLlmModelId = webllm.getAvailableModels()[0]?.id || null;
 
-  function setLoaderText(text) {
-    const loader = document.querySelector("#nlweb-results .nlweb-loading");
-    if (loader) loader.textContent = text;
+  function setLlmStatus(text) {
+    if (llmStatus) llmStatus.textContent = text;
   }
 
-  function createLocalLlmAnswerCard() {
-    const card = document.createElement("div");
-    card.className = "nlweb-result-card nlweb-summary-card";
+  function appendLlmMessage(role, html = "") {
+    const row = document.createElement("div");
+    row.className = `llm-message ${role}`;
 
-    const title = document.createElement("div");
-    title.className = "nlweb-summary-title";
-    title.textContent = "Local LLM";
+    const bubble = document.createElement("div");
+    bubble.className = "llm-message-bubble nlweb-result-description";
+    bubble.innerHTML = html;
 
-    const body = document.createElement("div");
-    body.className = "nlweb-result-description";
-
-    card.appendChild(title);
-    card.appendChild(body);
-    return { card, body };
+    row.appendChild(bubble);
+    llmChatHistory.appendChild(row);
+    llmChatHistory.scrollTop = llmChatHistory.scrollHeight;
+    return bubble;
   }
 
   function renderInlineMarkdown(text) {
@@ -234,10 +237,11 @@ import * as webllm from "./webllm-chat.js";
     }
 
     if (!llmInitPromise) {
+      setLlmStatus("Loading local model...");
       llmInitPromise = webllm
         .initializeEngine(defaultLlmModelId, (progress) => {
           const pct = Number(progress.percent || 0).toFixed(0);
-          setLoaderText(`Loading local model (${pct}%): ${progress.text}`);
+          setLlmStatus(`Loading local model (${pct}%): ${progress.text}`);
         })
         .finally(() => {
           llmInitPromise = null;
@@ -245,12 +249,15 @@ import * as webllm from "./webllm-chat.js";
     }
 
     await llmInitPromise;
+    if (llmModelBadge) {
+      llmModelBadge.textContent = webllm.getCurrentModel() || "Loaded";
+    }
+    setLlmStatus("Model ready.");
   }
 
-  async function runLocalLlmFallbackQuery(query) {
-    const results = document.getElementById("nlweb-results");
-    const { card, body } = createLocalLlmAnswerCard();
-    results.appendChild(card);
+  async function runLocalLlmChatQuery(query) {
+    appendLlmMessage("user", `<p>${escapeHtml(query)}</p>`);
+    const assistantBubble = appendLlmMessage("assistant", "<p>...</p>");
 
     let receivedChunk = false;
     let streamingMarkdown = "";
@@ -258,26 +265,24 @@ import * as webllm from "./webllm-chat.js";
       if (msg.type === "chunk" && msg.content) {
         receivedChunk = true;
         streamingMarkdown += msg.content;
-        body.innerHTML = markdownToHtml(streamingMarkdown);
+        assistantBubble.innerHTML = markdownToHtml(streamingMarkdown);
+        llmChatHistory.scrollTop = llmChatHistory.scrollHeight;
       }
     });
 
-    setLoaderText(
-      webllm.isReady() ?
-        "Generating local answer..."
-      : "Loading local model...",
-    );
-
-    setLoaderText("Extracting page content...");
+    setLlmStatus("Extracting page context...");
     const pageMarkdown = await getActivePageMarkdown();
 
     await ensureLocalLlmReady();
-    setLoaderText("Generating local answer...");
+    setLlmStatus("Generating response...");
     const response = await webllm.sendMessage(query, 512, pageMarkdown);
 
     if (!receivedChunk) {
-      body.innerHTML = markdownToHtml(response.message || "No response.");
+      assistantBubble.innerHTML = markdownToHtml(
+        response.message || "No response.",
+      );
     }
+    setLlmStatus("Ready");
   }
 
   function getActivePageMarkdown() {
@@ -351,12 +356,6 @@ import * as webllm from "./webllm-chat.js";
     const hasEntities = data.entities && data.entities.length > 0;
     const primaryType = data.primaryType || "Unknown";
     const hasNlweb = !!getNlwebEndpoint();
-
-    if (!hasNlweb && data.url && !webllm.isReady() && !llmInitPromise) {
-      ensureLocalLlmReady().catch((err) => {
-        console.warn("[LLM] Preload failed:", err);
-      });
-    }
 
     if (hasEntities && primaryType !== "Unknown") {
       const typeEmoji =
@@ -610,9 +609,13 @@ import * as webllm from "./webllm-chat.js";
       e.preventDefault();
       const input = document.getElementById("nlweb-query");
       const query = input.value.trim();
-      if (!query || llmChatInProgress) return;
+      if (!query) return;
 
       const endpoint = getNlwebEndpoint();
+      if (!endpoint) {
+        showNlwebError("No NLWeb endpoint available for this site.");
+        return;
+      }
       if (speechController?.isListening()) speechController.stop();
 
       const results = document.getElementById("nlweb-results");
@@ -620,27 +623,40 @@ import * as webllm from "./webllm-chat.js";
       setNlwebLoading(true);
       input.value = "";
 
-      if (endpoint) {
-        chrome.runtime.sendMessage({
-          type: "NLWEB_QUERY",
-          query,
-          endpoint,
-          mode: "summarize",
-        });
-        return;
-      }
-
-      llmChatInProgress = true;
-      try {
-        await runLocalLlmFallbackQuery(query);
-      } catch (err) {
-        console.error("[LLM] Fallback query error:", err);
-        showNlwebError(`Local LLM error: ${err.message || "Unknown error"}`);
-      } finally {
-        llmChatInProgress = false;
-        setNlwebLoading(false);
-      }
+      chrome.runtime.sendMessage({
+        type: "NLWEB_QUERY",
+        query,
+        endpoint,
+        mode: "summarize",
+      });
     });
+
+  llmChatForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const query = llmChatInput.value.trim();
+    if (!query || llmChatInProgress) return;
+
+    llmChatInProgress = true;
+    llmChatInput.disabled = true;
+    llmSendBtn.disabled = true;
+    llmChatInput.value = "";
+
+    try {
+      await runLocalLlmChatQuery(query);
+    } catch (err) {
+      console.error("[LLM] Chat widget error:", err);
+      appendLlmMessage(
+        "assistant",
+        `<p>${escapeHtml(`Error: ${err.message || "Unknown error"}`)}</p>`,
+      );
+      setLlmStatus("Error while generating response.");
+    } finally {
+      llmChatInProgress = false;
+      llmChatInput.disabled = false;
+      llmSendBtn.disabled = false;
+      llmChatInput.focus();
+    }
+  });
 
   // --- Initialize ---
 

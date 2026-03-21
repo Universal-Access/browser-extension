@@ -16,13 +16,10 @@ export function getNlwebEndpoint() {
 export function updateNlwebSection(endpoint, method) {
   const section = document.getElementById("nlweb-section");
   const endpointInfo = document.getElementById("nlweb-endpoint-info");
-  const input = document.getElementById("nlweb-query");
-  const submit = document.getElementById("nlweb-submit");
-
-  section.hidden = false;
 
   if (endpoint) {
     nlwebEndpoint = endpoint;
+    section.hidden = false;
     try {
       const url = new URL(endpoint);
       endpointInfo.textContent = url.hostname;
@@ -31,23 +28,11 @@ export function updateNlwebSection(endpoint, method) {
       endpointInfo.textContent = endpoint;
       endpointInfo.title = endpoint;
     }
-    if (input) {
-      input.placeholder = "Ask this site a question...";
-      input.setAttribute("aria-label", "Ask this site a question");
-    }
-    if (submit) submit.textContent = "Ask";
   } else {
     nlwebEndpoint = null;
-    endpointInfo.textContent = "Local LLM fallback";
-    endpointInfo.title = "No NLWeb endpoint detected. Queries use local LLM.";
-    if (input) {
-      input.placeholder = "Ask a question (local LLM fallback)...";
-      input.setAttribute(
-        "aria-label",
-        "Ask a question using local LLM fallback",
-      );
-    }
-    if (submit) submit.textContent = "Ask";
+    section.hidden = true;
+    endpointInfo.textContent = "";
+    endpointInfo.title = "";
   }
 }
 
