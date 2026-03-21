@@ -45,14 +45,14 @@
 
 | Token | Value |
 |---|---|
-| Background | `#141A34` |
+| Background | `#0D1228` |
 | Text | `#D3D3D3` |
 | Link | `#C98C00` |
 | Link hover | `#FFD982` |
 | Link underline | 1px → 2px on hover |
 | Button background | `#C98C00` |
-| Button text | `#141A34` |
-| Button background hover | `#FFD982` |
+| Button text | `#0D1228` |
+| Button background hover | `#A67200` |
 | Button text hover | `#141A34` |
 
 > Links are inline text elements; buttons are filled interactive controls with padding and shape.
