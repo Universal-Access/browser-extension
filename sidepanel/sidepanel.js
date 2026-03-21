@@ -20,10 +20,6 @@ import {
   let speechController = null;
 
   // --- DOM References ---
-  const statusIcon = document.getElementById('status-icon');
-  const statusText = document.getElementById('status-text');
-  const statusBar = document.getElementById('status-indicator');
-  const pageUrl = document.getElementById('page-url');
   const emptyState = document.getElementById('empty-state');
   const displaySection = document.getElementById('display-section');
   const detectedTypeDesc = document.getElementById('detected-type-desc');
@@ -101,20 +97,12 @@ import {
     if (speechController) speechController.setDisabled(loading);
   });
 
-  // --- Status Updates ---
-
-  function setStatus(icon, text, className) {
-    statusIcon.textContent = icon;
-    statusText.textContent = text;
-    statusBar.className = 'status-bar ' + (className || '');
-  }
-
   // --- Icon State Management ---
 
   const headerIcon = document.getElementById('header-icon');
 
   function updateIconState(state) {
-    // Update sidepanel header SVG
+    // Update sidepanel header SVG.
     const svgMap = {
       'on': '../icons/icon-on.svg',
       'detection-no': '../icons/icon-detection-no.svg',
@@ -124,7 +112,7 @@ import {
       headerIcon.src = svgMap[state];
     }
 
-    // Update toolbar icon — send to service worker which has chrome.action access
+    // Update toolbar icon — send to service worker which has chrome.action access.
     chrome.runtime.sendMessage({ type: 'SET_ICON_STATE', state }).catch(() => {});
   }
 
@@ -139,19 +127,16 @@ import {
     if (nlwebResults) nlwebResults.innerHTML = '';
 
     if (!data) {
-      setStatus('📄', 'No structured data found', 'empty');
       emptyState.hidden = false;
       displaySection.hidden = true;
       presetsSection.hidden = true;
       navSection.hidden = true;
       rawDataSection.hidden = true;
       updateNlwebSection(null);
-      pageUrl.textContent = '';
       updateIconState('detection-no');
       return;
     }
 
-    pageUrl.textContent = data.url || '';
     emptyState.hidden = true;
 
     // Handle NLWeb discovery
@@ -166,9 +151,6 @@ import {
     const hasNlweb = !!getNlwebEndpoint();
 
     if (hasEntities && primaryType !== 'Unknown') {
-      const typeEmoji = { Product: '🛍️', Article: '📰', Recipe: '🍳', Event: '📅', LocalBusiness: '🏢', FAQPage: '❓' }[primaryType] || '📦';
-      setStatus(typeEmoji, `${primaryType} detected (${data.entities.length} entities)`, 'found');
-
       displaySection.hidden = false;
       presetsSection.hidden = false;
 
@@ -185,12 +167,10 @@ import {
     } else {
       const totalCount = (data.jsonLd || []).length + (data.microdata || []).length + (data.rdfa || []).length;
       if (totalCount > 0 || hasNlweb) {
-        setStatus('📊', `${totalCount} schema items found`, 'found');
         displaySection.hidden = true;
         presetsSection.hidden = true;
         updateIconState('detection-no');
       } else {
-        setStatus('📄', 'No structured data found', 'empty');
         emptyState.hidden = false;
         displaySection.hidden = true;
         presetsSection.hidden = true;
@@ -445,7 +425,6 @@ import {
       if (!tabs[0] || tabs[0].id !== tabId) return;
 
       if (changeInfo.status === 'loading') {
-        setStatus('🔍', 'Scanning page…', '');
         updateIconState('on');
         handleSchemaData(null);
         showAggregationSection(null);
