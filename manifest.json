@@ -6,9 +6,9 @@
   "permissions": [
     "sidePanel",
     "activeTab",
+    "tabs",
     "scripting",
-    "storage",
-    "microphone"
+    "storage"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -33,6 +33,7 @@
       "matches": ["<all_urls>"],
       "js": [
         "content/nlweb-discovery.js",
+        "content/schema-aggregation.js",
         "content/extractor.js",
         "content/schemamap.js",
         "content/transformer.js",
