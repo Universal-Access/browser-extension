@@ -27,10 +27,6 @@ body {
   --sp-header-text: white;
   --sp-badge-bg: #1a73e8;
   --sp-badge-text: white;
-  --sp-status-found-bg: #e8f5e9;
-  --sp-status-found-border: #a5d6a7;
-  --sp-status-empty-bg: #fff3e0;
-  --sp-status-empty-border: #ffe0b2;
   --sp-error-bg: #fde7e7;
   --sp-error-border: #f5c6c6;
   --sp-error-text: #c62828;
@@ -75,10 +71,6 @@ body {
     --sp-header-text: #c0caf5;
     --sp-badge-bg: #7aa2f7;
     --sp-badge-text: #1a1b26;
-    --sp-status-found-bg: #1e2a1e;
-    --sp-status-found-border: #3d6b3d;
-    --sp-status-empty-bg: #2a2318;
-    --sp-status-empty-border: #665530;
     --sp-error-bg: #2d1b1b;
     --sp-error-border: #5c3030;
     --sp-error-text: #f7768e;
@@ -117,10 +109,6 @@ body[data-theme="dark"] {
   --sp-header-text: #c0caf5;
   --sp-badge-bg: #7aa2f7;
   --sp-badge-text: #1a1b26;
-  --sp-status-found-bg: #1e2a1e;
-  --sp-status-found-border: #3d6b3d;
-  --sp-status-empty-bg: #2a2318;
-  --sp-status-empty-border: #665530;
   --sp-error-bg: #2d1b1b;
   --sp-error-border: #5c3030;
   --sp-error-text: #f7768e;
@@ -672,41 +660,6 @@ a.nlweb-result-name:hover {
 
 .theme-toggle[title]::after {
   content: none;
-}
-
-/* --- Status Bar --- */
-
-.status-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: var(--sp-surface-hover);
-  border: 1px solid var(--sp-border);
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.status-bar.found {
-  background: var(--sp-status-found-bg);
-  border-color: var(--sp-status-found-border);
-}
-
-.status-bar.empty {
-  background: var(--sp-status-empty-bg);
-  border-color: var(--sp-status-empty-border);
-}
-
-.status-icon {
-  font-size: 16px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.status-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--sp-text);
 }
 
 /* --- Panel Sections --- */

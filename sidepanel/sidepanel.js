@@ -20,9 +20,6 @@ import {
   let speechController = null;
 
   // --- DOM References ---
-  const statusIcon = document.getElementById('status-icon');
-  const statusText = document.getElementById('status-text');
-  const statusBar = document.getElementById('status-indicator');
   const pageUrl = document.getElementById('page-url');
   const emptyState = document.getElementById('empty-state');
   const displaySection = document.getElementById('display-section');
@@ -85,14 +82,6 @@ import {
     if (speechController) speechController.setDisabled(loading);
   });
 
-  // --- Status Updates ---
-
-  function setStatus(icon, text, className) {
-    statusIcon.textContent = icon;
-    statusText.textContent = text;
-    statusBar.className = 'status-bar ' + (className || '');
-  }
-
   // --- Schema Data Rendering ---
 
   function handleSchemaData(data) {
@@ -104,7 +93,6 @@ import {
     if (nlwebResults) nlwebResults.innerHTML = '';
 
     if (!data) {
-      setStatus('📄', 'No structured data found', 'empty');
       emptyState.hidden = false;
       displaySection.hidden = true;
       presetsSection.hidden = true;
@@ -130,9 +118,6 @@ import {
     const hasNlweb = !!getNlwebEndpoint();
 
     if (hasEntities && primaryType !== 'Unknown') {
-      const typeEmoji = { Product: '🛍️', Article: '📰', Recipe: '🍳', Event: '📅', LocalBusiness: '🏢', FAQPage: '❓' }[primaryType] || '📦';
-      setStatus(typeEmoji, `${primaryType} detected (${data.entities.length} entities)`, 'found');
-
       displaySection.hidden = false;
       presetsSection.hidden = false;
 
@@ -148,11 +133,9 @@ import {
     } else {
       const totalCount = (data.jsonLd || []).length + (data.microdata || []).length + (data.rdfa || []).length;
       if (totalCount > 0 || hasNlweb) {
-        setStatus('📊', `${totalCount} schema items found`, 'found');
         displaySection.hidden = true;
         presetsSection.hidden = true;
       } else {
-        setStatus('📄', 'No structured data found', 'empty');
         emptyState.hidden = false;
         displaySection.hidden = true;
         presetsSection.hidden = true;
