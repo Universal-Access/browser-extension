@@ -21,7 +21,6 @@ import {
   let speechController = null;
 
   // --- DOM References ---
-  const pageUrl = document.getElementById('page-url');
   const emptyState = document.getElementById('empty-state');
   const displaySection = document.getElementById('display-section');
   const detectedTypeDesc = document.getElementById('detected-type-desc');
@@ -35,39 +34,54 @@ import {
   const aggregationStatus = document.getElementById('aggregation-status');
   const rawDataSection = document.getElementById('raw-data-section');
 
-  // --- Theme Segmented Control (Light / Dark) ---
+  // --- Theme Segmented Control (Auto / Light / Dark) ---
 
-  let currentTheme = 'light';
+  let currentTheme = 'auto';
+  const osDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function resolveEffectiveTheme(theme) {
+    if (theme === 'auto') {
+      return osDarkQuery.matches ? 'dark' : 'light';
+    }
+    return theme;
+  }
 
   function applyTheme(theme) {
     currentTheme = theme;
-    if (theme === 'dark') {
+    const effective = resolveEffectiveTheme(theme);
+    if (effective === 'dark') {
       document.body.setAttribute('data-theme', 'dark');
     } else {
       document.body.removeAttribute('data-theme');
     }
     // Update segmented control UI
+    document.getElementById('seg-theme-auto')?.classList.toggle('active', theme === 'auto');
+    document.getElementById('seg-theme-auto')?.setAttribute('aria-checked', String(theme === 'auto'));
     document.getElementById('seg-theme-light')?.classList.toggle('active', theme === 'light');
     document.getElementById('seg-theme-light')?.setAttribute('aria-checked', String(theme === 'light'));
     document.getElementById('seg-theme-dark')?.classList.toggle('active', theme === 'dark');
     document.getElementById('seg-theme-dark')?.setAttribute('aria-checked', String(theme === 'dark'));
     chrome.storage.local.set({ uaTheme: theme });
-    // Send theme to content script overlay
-    chrome.runtime.sendMessage({ type: 'SET_THEME', theme: theme });
+    // Send effective theme to content script overlay
+    chrome.runtime.sendMessage({ type: 'SET_THEME', theme: effective });
   }
 
-  // Restore saved theme, or default to OS preference
+  // Re-apply when OS preference changes (only matters in auto mode)
+  osDarkQuery.addEventListener('change', () => {
+    if (currentTheme === 'auto') applyTheme('auto');
+  });
+
+  // Restore saved theme, or default to auto
   chrome.storage.local.get('uaTheme', (result) => {
-    if (result.uaTheme === 'dark' || result.uaTheme === 'light') {
+    if (result.uaTheme === 'dark' || result.uaTheme === 'light' || result.uaTheme === 'auto') {
       applyTheme(result.uaTheme);
     } else {
-      // No saved preference — use OS setting as default
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      applyTheme(prefersDark ? 'dark' : 'light');
+      applyTheme('auto');
     }
   });
 
   // Theme segmented control click handlers
+  document.getElementById('seg-theme-auto')?.addEventListener('click', () => applyTheme('auto'));
   document.getElementById('seg-theme-light')?.addEventListener('click', () => applyTheme('light'));
   document.getElementById('seg-theme-dark')?.addEventListener('click', () => applyTheme('dark'));
 
@@ -83,6 +97,25 @@ import {
     if (loading && speechController?.isListening()) speechController.stop();
     if (speechController) speechController.setDisabled(loading);
   });
+
+  // --- Icon State Management ---
+
+  const headerIcon = document.getElementById('header-icon');
+
+  function updateIconState(state) {
+    // Update sidepanel header SVG.
+    const svgMap = {
+      'on': '../icons/icon-on.svg',
+      'detection-no': '../icons/icon-detection-no.svg',
+      'detection-yes': '../icons/icon-detection-yes.svg'
+    };
+    if (headerIcon && svgMap[state]) {
+      headerIcon.src = svgMap[state];
+    }
+
+    // Update toolbar icon — send to service worker which has chrome.action access.
+    chrome.runtime.sendMessage({ type: 'SET_ICON_STATE', state }).catch(() => {});
+  }
 
   // --- Schema Data Rendering ---
 
@@ -101,11 +134,10 @@ import {
       navSection.hidden = true;
       rawDataSection.hidden = true;
       updateNlwebSection(null);
-      pageUrl.textContent = '';
+      updateIconState('detection-no');
       return;
     }
 
-    pageUrl.textContent = data.url || '';
     emptyState.hidden = true;
 
     // Handle NLWeb discovery
@@ -132,15 +164,18 @@ import {
         FAQPage: 'Browse frequently asked questions in an accessible accordion.'
       };
       detectedTypeDesc.textContent = typeDescs[primaryType] || `Transform this ${primaryType} into an accessible view.`;
+      updateIconState('detection-yes');
     } else {
       const totalCount = (data.jsonLd || []).length + (data.microdata || []).length + (data.rdfa || []).length;
       if (totalCount > 0 || hasNlweb) {
         displaySection.hidden = true;
         presetsSection.hidden = true;
+        updateIconState('detection-no');
       } else {
         emptyState.hidden = false;
         displaySection.hidden = true;
         presetsSection.hidden = true;
+        updateIconState('detection-no');
       }
     }
 
@@ -238,7 +273,6 @@ import {
     const toggle = document.getElementById('toggle-dyslexia');
     if (toggle) toggle.setAttribute('aria-checked', String(enabled));
     document.body.classList.toggle('sp-preset-dyslexia', enabled);
-    // Send to content script
     chrome.runtime.sendMessage({ type: 'SET_PRESETS', presets: { dyslexia: enabled } });
     chrome.storage.local.set({ uaPresets: { dyslexia: enabled } });
   }
@@ -378,6 +412,7 @@ import {
   }
 
   // Initial loads
+  updateIconState('on');
   chrome.runtime.sendMessage({ type: 'GET_AGGREGATION_STATE' }, (response) => {
     if (chrome.runtime.lastError) return;
     showAggregationSection(response);
@@ -391,6 +426,7 @@ import {
       if (!tabs[0] || tabs[0].id !== tabId) return;
 
       if (changeInfo.status === 'loading') {
+        updateIconState('on');
         handleSchemaData(null);
         showAggregationSection(null);
       }
@@ -443,6 +479,7 @@ import {
     }
     if (message.type === 'NLWEB_ENDPOINT') {
       updateNlwebSection(message.endpoint, message.method);
+      if (message.endpoint) updateIconState('detection-yes');
     }
     if (message.type === 'NLWEB_RESULT_CHUNK') {
       if (message.error) {

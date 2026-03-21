@@ -84,7 +84,7 @@ export function createResultCard(item) {
 
     const readBtn = document.createElement('button');
     readBtn.className = 'nlweb-read-btn';
-    readBtn.innerHTML = iconAccessibility() + ' Read Accessible';
+    readBtn.textContent = 'Read Accessible';
     readBtn.title = 'Open in accessible reader view';
     readBtn.addEventListener('click', () => {
       activateNlwebResult(parsed, url);

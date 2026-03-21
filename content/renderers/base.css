@@ -1,13 +1,29 @@
 /* Universal Access — Base Renderer Styles
    Uses CSS custom properties for theming by accessibility presets */
 
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('../../fonts/AtkinsonHyperlegible-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('../../fonts/AtkinsonHyperlegible-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --ua-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --ua-font-size-base: 16px;
-  --ua-font-size-sm: 14px;
-  --ua-font-size-lg: 20px;
-  --ua-font-size-xl: 28px;
-  --ua-font-size-xxl: 36px;
+  --ua-font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+  --ua-font-size-base: 18px;
+  --ua-font-size-sm: 16px;
+  --ua-font-size-lg: 22px;
+  --ua-font-size-xl: 30px;
+  --ua-font-size-xxl: 38px;
   --ua-line-height: 1.6;
   --ua-letter-spacing: normal;
   --ua-word-spacing: normal;
@@ -293,7 +309,7 @@
 }
 
 .ua-button:hover {
-  background: #1d4ed8;
+  background: var(--ua-color-primary-hover, #1d4ed8);
   box-shadow: 0 4px 8px rgba(37,99,235,0.4);
   transform: translateY(-1px);
 }

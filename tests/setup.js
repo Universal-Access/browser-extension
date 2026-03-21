@@ -3,6 +3,7 @@ import { beforeEach, vi } from 'vitest';
 function makeChromeMock() {
   return {
     action: {
+      setIcon: vi.fn().mockResolvedValue(undefined),
       setBadgeText: vi.fn(),
       setBadgeBackgroundColor: vi.fn(),
     },

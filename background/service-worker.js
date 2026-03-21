@@ -1,6 +1,6 @@
 // Service worker — messaging hub, state, and tab lifecycle
 
-import { updateBadge } from "./badge.js";
+import { updateToolbarIcon } from "./badge.js";
 import {
   tryWellKnownNlweb,
   resolveNlwebEndpoint,
@@ -38,7 +38,6 @@ function handleSchemaData(message, sender) {
   const tabId = sender.tab ? sender.tab.id : message.tabId;
   if (tabId) {
     tabDataCache.set(tabId, message.payload);
-    updateBadge(tabId, message.payload);
 
     const nlweb = message.payload.nlweb;
 
@@ -306,6 +305,27 @@ function handleGetSchemamap(message, sender, sendResponse) {
   return true;
 }
 
+function handleSetIconState(message) {
+  const state = message.state;
+  if (!state) return;
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tabId = tabs[0]?.id;
+    const paths = {
+      'on': { '16': 'icons/icon-on-16.png', '48': 'icons/icon-on-48.png', '128': 'icons/icon-on-128.png' },
+      'detection-no': { '16': 'icons/icon-detection-no-16.png', '48': 'icons/icon-detection-no-48.png', '128': 'icons/icon-detection-no-128.png' },
+      'detection-yes': { '16': 'icons/icon-detection-yes-16.png', '48': 'icons/icon-detection-yes-48.png', '128': 'icons/icon-detection-yes-128.png' }
+    };
+    const iconPaths = paths[state];
+    if (!iconPaths) return;
+    const details = tabId ? { path: iconPaths, tabId } : { path: iconPaths };
+    chrome.action.setIcon(details).then(() => {
+      console.log('[UA] Icon set to', state, tabId ? 'for tab ' + tabId : '');
+    }).catch((err) => {
+      console.error('[UA] setIcon FAILED:', err, { state, tabId, details });
+    });
+  });
+}
+
 // Handler registry — maps message types to handler functions
 const handlers = {
   SCHEMA_DATA: handleSchemaData,
@@ -323,6 +343,7 @@ const handlers = {
   SET_PRESET: handleSetPreset,
   SET_DYSLEXIA: handleSetDyslexia,
   SET_THEME: handleSetTheme,
+  SET_ICON_STATE: handleSetIconState,
   GET_SCHEMAMAP: handleGetSchemamap,
 };
 
@@ -340,7 +361,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (state?.abortController) state.abortController.abort();
     tabNlwebState.delete(tabId);
     tabAggregationState.delete(tabId);
-    chrome.action.setBadgeText({ text: "", tabId });
   }
 });
 

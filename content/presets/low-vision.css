@@ -1,37 +1,58 @@
-/* Universal Access — Accessible View Preset
+/* Universal Access — Accessible View Base Preset
    Applied whenever the accessible overlay is active.
-   Light mode: higher contrast (#FAFAFA bg / #333 text = 12.10:1, WCAG AAA)
-   Dark mode: softer, lower contrast for comfortable reading
-   Large fonts, generous spacing, enhanced focus indicators & touch targets */
+   Light mode: high-contrast for low-vision users (AAA contrast throughout)
+   Dark mode: low-contrast for Autistic / ADHD users
+   Atkinson Hyperlegible font, generous spacing, enhanced focus & touch targets */
 
-/* --- Light mode (default) — Higher Contrast --- */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('../../fonts/AtkinsonHyperlegible-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('../../fonts/AtkinsonHyperlegible-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- High-contrast light mode (default) --- */
 
 #ua-accessible-overlay {
-  --ua-font-size-base: 20px;
-  --ua-font-size-sm: 18px;
-  --ua-font-size-lg: 26px;
-  --ua-font-size-xl: 34px;
-  --ua-font-size-xxl: 44px;
+  --ua-font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --ua-font-size-base: 1.25rem;    /* ~20px */
+  --ua-font-size-sm: 1.125rem;     /* ~18px */
+  --ua-font-size-lg: 1.625rem;     /* ~26px */
+  --ua-font-size-xl: 2.125rem;     /* ~34px */
+  --ua-font-size-xxl: 2.75rem;     /* ~44px */
   --ua-line-height: 1.8;
   --ua-letter-spacing: 0.02em;
   --ua-word-spacing: 0.05em;
 
-  --ua-color-bg: #fafafa;
-  --ua-color-surface: #f0f0f0;
-  --ua-color-text: #333333;
-  --ua-color-text-secondary: #3d3d3d;
-  --ua-color-primary: #0b5fff;
-  --ua-color-primary-light: #e0ecff;
-  --ua-color-accent: #007a3d;
-  --ua-color-accent-light: #d4edda;
+  --ua-color-bg: #FAFAFA;
+  --ua-color-surface: #F0F0F0;
+  --ua-color-text: #222222;
+  --ua-color-text-secondary: #3D3D3D;
+  --ua-color-primary: #004CA3;
+  --ua-color-primary-light: #E0ECFF;
+  --ua-color-accent: #007A3D;
+  --ua-color-accent-light: #D4EDDA;
   --ua-color-border: #999999;
   --ua-color-border-strong: #666666;
-  --ua-color-star: #d4a017;
-  --ua-color-overlay-bg: #f5f5f5;
-  --ua-color-header-bg: #1b2a4a;
-  --ua-color-header-text: #ffffff;
+  --ua-color-star: #D4A017;
+  --ua-color-overlay-bg: #FAFAFA;
+  --ua-color-header-bg: #1B2A4A;
+  --ua-color-header-text: #FFFFFF;
+  --ua-color-link: #004CA3;
+  --ua-color-link-hover: #02254F;
+  --ua-color-button-text: #FFFFFF;
+  --ua-color-button-text-hover: #FFFFFF;
 
-  --ua-focus-outline: 4px solid #0b5fff;
+  --ua-focus-outline: 4px solid #004CA3;
   --ua-focus-offset: 4px;
 
   --ua-radius: 8px;
@@ -40,25 +61,29 @@
   --ua-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-/* --- Dark mode — Softer / Lower Contrast --- */
+/* --- Low-contrast dark mode — Autistic / ADHD users --- */
 
 #ua-accessible-overlay[data-theme="dark"] {
-  --ua-color-bg: #2b2b3a;
-  --ua-color-surface: #353548;
-  --ua-color-text: #d0d0e0;
-  --ua-color-text-secondary: #b0b0c5;
-  --ua-color-primary: #7aa2f7;
-  --ua-color-primary-light: #2e3450;
-  --ua-color-accent: #7ecf8e;
+  --ua-color-bg: #141A34;
+  --ua-color-surface: #1C2240;
+  --ua-color-text: #D3D3D3;
+  --ua-color-text-secondary: #ABABAB;
+  --ua-color-primary: #C98C00;
+  --ua-color-primary-light: #2A2210;
+  --ua-color-accent: #7ECF8E;
   --ua-color-accent-light: #253530;
-  --ua-color-border: #555570;
-  --ua-color-border-strong: #70708a;
-  --ua-color-star: #e0af68;
-  --ua-color-overlay-bg: #232334;
-  --ua-color-header-bg: #2a2a40;
-  --ua-color-header-text: #d0d0e0;
+  --ua-color-border: #3A4070;
+  --ua-color-border-strong: #50568A;
+  --ua-color-star: #E0AF68;
+  --ua-color-overlay-bg: #141A34;
+  --ua-color-header-bg: #1C2240;
+  --ua-color-header-text: #D3D3D3;
+  --ua-color-link: #C98C00;
+  --ua-color-link-hover: #FFD982;
+  --ua-color-button-text: #141A34;
+  --ua-color-button-text-hover: #141A34;
 
-  --ua-focus-outline: 4px solid #7aa2f7;
+  --ua-focus-outline: 4px solid #FFD982;
 
   --ua-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   --ua-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -97,15 +122,34 @@
   border: 2px solid var(--ua-color-border-strong);
 }
 
-#ua-accessible-overlay a {
-  color: var(--ua-color-primary);
+/* Links — underline thicker on hover (1→2px) */
+/* Exclude .ua-button styled links from link styling */
+
+#ua-accessible-overlay a:not(.ua-button) {
+  color: var(--ua-color-link, var(--ua-color-primary));
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness 0.15s;
 }
 
-#ua-accessible-overlay a:hover {
+#ua-accessible-overlay a:not(.ua-button):hover {
+  color: var(--ua-color-link-hover, var(--ua-color-primary));
+  text-decoration-thickness: 2px;
   background: var(--ua-color-primary-light);
   padding: 1px 3px;
   border-radius: 3px;
+}
+
+/* Button overrides — filled interactive controls per design system. */
+
+#ua-accessible-overlay .ua-button {
+  color: var(--ua-color-button-text);
+  text-decoration: none;
+}
+
+#ua-accessible-overlay .ua-button:hover {
+  background: var(--ua-color-link-hover, var(--ua-color-primary));
+  color: var(--ua-color-button-text-hover);
+  transform: translateY(-1px);
 }

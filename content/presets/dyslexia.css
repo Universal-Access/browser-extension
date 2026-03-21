@@ -1,36 +1,19 @@
 /* Universal Access — Dyslexia Preset
-   OpenDyslexic font, increased spacing, and reading-optimized layout
-   Based on British Dyslexia Association style guide
+   Comic Sans MS font, ×1.2 size/line-height multiplier, reading-optimized layout
+   Based on design system spec and British Dyslexia Association style guide
    Font & spacing only — colors inherited from the active theme */
 
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('../../fonts/OpenDyslexic-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('../../fonts/OpenDyslexic-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 #ua-accessible-overlay {
-  --ua-font-family: 'Comic Sans MS', 'OpenDyslexic', cursive, sans-serif;
-  --ua-font-size-base: 22px;
-  --ua-font-size-sm: 18px;
-  --ua-font-size-lg: 28px;
-  --ua-font-size-xl: 34px;
-  --ua-font-size-xxl: 42px;
-  --ua-line-height: 2;
-  --ua-letter-spacing: 0.12em;
+  --ua-font-family: 'Comic Sans MS', cursive, sans-serif;
+  --ua-font-size-base: 1.2rem;     /* 18px × 1.2 = ~21.6px */
+  --ua-font-size-sm: 1.067rem;     /* 16px × 1.2 = ~19.2px */
+  --ua-font-size-lg: 1.467rem;     /* 22px × 1.2 = ~26.4px */
+  --ua-font-size-xl: 2rem;         /* 30px × 1.2 = 36px */
+  --ua-font-size-xxl: 2.533rem;    /* 38px × 1.2 = ~45.6px */
+  --ua-line-height: 1.92;
   --ua-word-spacing: 0.16em;
 
-  --ua-max-width: 900px;
+  --ua-max-width: 700px;
 }
 
 /* Dyslexia-specific layout overrides */
@@ -40,28 +23,28 @@
 #ua-accessible-overlay span,
 #ua-accessible-overlay td {
   text-align: left !important;
-  max-width: 80ch;
+  max-width: 700px;
 }
 
 #ua-accessible-overlay .ua-title {
   line-height: 1.4;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 #ua-accessible-overlay .ua-step {
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 #ua-accessible-overlay .ua-ingredients-list li {
-  padding: 12px 0;
+  padding: 0.75rem 0;
 }
 
 #ua-accessible-overlay .ua-reader {
-  max-width: 860px;
+  max-width: 700px;
 }
 
 #ua-accessible-overlay .ua-description p,
 #ua-accessible-overlay .ua-article-body p {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
