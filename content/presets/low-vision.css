@@ -145,6 +145,7 @@
 
 #ua-accessible-overlay .ua-button {
   color: var(--ua-color-button-text);
+  text-decoration: none;
 }
 
 #ua-accessible-overlay .ua-button:hover {

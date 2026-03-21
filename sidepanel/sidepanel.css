@@ -1026,12 +1026,11 @@ a.nlweb-result-name:hover {
 body.sp-preset-dyslexia {
   --sp-font: 'Comic Sans MS', cursive, sans-serif;
   font-family: 'Comic Sans MS', cursive, sans-serif;
-  letter-spacing: 0.08em;
-  word-spacing: 0.12em;
-  line-height: 2;
+  word-spacing: 0.16em;
+  line-height: 1.92;
 }
 
-/* Scale all rem-based sizes by 1.5× */
+/* Scale all rem-based sizes by 1.2× */
 html:has(body.sp-preset-dyslexia) {
-  font-size: 27px;  /* 18px × 1.5 */
+  font-size: 21.6px;  /* 18px × 1.2 */
 }
