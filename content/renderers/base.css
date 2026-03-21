@@ -293,13 +293,14 @@
   gap: 8px;
 }
 
-.ua-button {
+.ua-button,
+a.ua-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 12px 24px;
   background: var(--ua-color-primary);
-  color: white;
+  color: var(--ua-color-button-text, #FFFFFF);
   font-size: var(--ua-font-size-base);
   font-weight: 600;
   font-family: var(--ua-font-family);
@@ -308,13 +309,28 @@
   text-decoration: none;
   cursor: pointer;
   transition: all var(--ua-transition);
-  box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+  box-shadow: var(--ua-shadow);
 }
 
-.ua-button:hover {
-  background: var(--ua-color-primary-hover, #1d4ed8);
-  box-shadow: 0 4px 8px rgba(37,99,235,0.4);
+.ua-button:visited,
+a.ua-button:visited {
+  color: var(--ua-color-button-text, #FFFFFF);
+  text-decoration: none;
+}
+
+.ua-button:hover,
+a.ua-button:hover {
+  background: var(--ua-color-primary-hover);
+  color: var(--ua-color-button-text-hover, #FFFFFF);
+  text-decoration: none;
+  box-shadow: var(--ua-shadow-lg);
   transform: translateY(-1px);
+}
+
+.ua-button:active,
+a.ua-button:active {
+  color: var(--ua-color-button-text-hover, #FFFFFF);
+  text-decoration: none;
 }
 
 .ua-button-buy {
