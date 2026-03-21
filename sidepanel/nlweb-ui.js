@@ -191,13 +191,16 @@ function createSummaryCard(title, message) {
   }
   actions.appendChild(ttsBtn);
 
+  card.appendChild(actions);
+
   let html = "";
   if (title)
     html += `<div class="nlweb-summary-title">${escapeHtml(title)}</div>`;
   if (message)
     html += `<div class="nlweb-result-description">${escapeHtml(message)}</div>`;
-  card.innerHTML = html;
-  card.appendChild(actions);
+  if (html) {
+    card.insertAdjacentHTML("beforeend", html);
+  }
 
   if (shouldAutoReadSummary()) {
     setTimeout(() => {
