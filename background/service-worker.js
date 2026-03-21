@@ -22,19 +22,13 @@ function broadcastNlwebEndpoint(tabId, endpoint, method) {
   state.endpoint = endpoint;
   tabNlwebState.set(tabId, state);
 
-  // Also update cached schema data so sidepanel gets it on initial load
   const cached = tabDataCache.get(tabId);
   if (cached) {
     cached.nlweb = { ...(cached.nlweb || {}), endpoint, method };
   }
 
   chrome.runtime
-    .sendMessage({
-      type: "NLWEB_ENDPOINT",
-      endpoint,
-      method,
-      tabId,
-    })
+    .sendMessage({ type: "NLWEB_ENDPOINT", endpoint, method, tabId })
     .catch(() => {});
 }
 
@@ -52,27 +46,19 @@ function handleSchemaData(message, sender) {
       broadcastNlwebEndpoint(tabId, nlweb.endpoint, nlweb.method);
     } else if (nlweb?.method) {
       resolveNlwebEndpoint(nlweb, message.payload.url).then((endpoint) => {
-        if (endpoint) {
-          broadcastNlwebEndpoint(tabId, endpoint, "resolved");
-        }
+        if (endpoint) broadcastNlwebEndpoint(tabId, endpoint, "resolved");
       });
     } else {
       const pageUrl = message.payload.url;
       if (pageUrl) {
         tryWellKnownNlweb(pageUrl).then((endpoint) => {
-          if (endpoint) {
-            broadcastNlwebEndpoint(tabId, endpoint, "well-known");
-          }
+          if (endpoint) broadcastNlwebEndpoint(tabId, endpoint, "well-known");
         });
       }
     }
 
     chrome.runtime
-      .sendMessage({
-        type: "SCHEMA_UPDATE",
-        payload: message.payload,
-        tabId,
-      })
+      .sendMessage({ type: "SCHEMA_UPDATE", payload: message.payload, tabId })
       .catch(() => {});
   }
 }
@@ -81,47 +67,29 @@ function handleGetSchemaData(message, sender, sendResponse) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
       const tabId = tabs[0].id;
-
       const cached = tabDataCache.get(tabId);
       const nlwebState = tabNlwebState.get(tabId);
 
-      // Enrich cached data with resolved NLWeb endpoint so the sidepanel
-      // gets it in the initial response (no race with delayed broadcast)
       if (cached && nlwebState?.endpoint) {
-        cached.nlweb = {
-          ...(cached.nlweb || {}),
-          endpoint: nlwebState.endpoint,
-          method: "cached",
-        };
+        cached.nlweb = { ...(cached.nlweb || {}), endpoint: nlwebState.endpoint, method: "cached" };
       }
 
       if (cached) {
         sendResponse(cached);
       } else {
-        chrome.tabs.sendMessage(
-          tabId,
-          { type: "REQUEST_EXTRACTION" },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              sendResponse(null);
-            } else {
-              sendResponse(response || null);
-            }
-          },
-        );
+        chrome.tabs.sendMessage(tabId, { type: "REQUEST_EXTRACTION" }, (response) => {
+          if (chrome.runtime.lastError) {
+            sendResponse(null);
+          } else {
+            sendResponse(response || null);
+          }
+        });
       }
 
-      // Also send as a separate message in case the sidepanel
-      // processes SCHEMA_UPDATE before the initial response
       if (nlwebState?.endpoint) {
         setTimeout(() => {
           chrome.runtime
-            .sendMessage({
-              type: "NLWEB_ENDPOINT",
-              endpoint: nlwebState.endpoint,
-              method: "cached",
-              tabId,
-            })
+            .sendMessage({ type: "NLWEB_ENDPOINT", endpoint: nlwebState.endpoint, method: "cached", tabId })
             .catch(() => {});
         }, 100);
       }
@@ -139,9 +107,7 @@ function handleNlwebQuery(message) {
     if (!tabId || !endpoint) return;
 
     const existing = tabNlwebState.get(tabId);
-    if (existing?.abortController) {
-      existing.abortController.abort();
-    }
+    if (existing?.abortController) existing.abortController.abort();
 
     const abortController = new AbortController();
     const state = tabNlwebState.get(tabId) || {};
@@ -149,13 +115,7 @@ function handleNlwebQuery(message) {
     tabNlwebState.set(tabId, state);
 
     try {
-      await executeNlwebQuery({
-        query,
-        endpoint,
-        mode,
-        tabId,
-        abortController,
-      });
+      await executeNlwebQuery({ query, endpoint, mode, tabId, abortController });
     } finally {
       state.abortController = null;
     }
@@ -184,23 +144,14 @@ function handleOpenMicSetupTab(message, sender, sendResponse) {
         });
         return;
       }
-
       micSetupTabId = null;
-      chrome.tabs.create(
-        { url: micSetupPageUrl, active: true },
-        (createdTab) => {
-          micSetupTabId = createdTab?.id ?? null;
-          sendResponse({
-            ok: true,
-            reused: false,
-            tabId: createdTab?.id ?? null,
-          });
-        },
-      );
+      chrome.tabs.create({ url: micSetupPageUrl, active: true }, (createdTab) => {
+        micSetupTabId = createdTab?.id ?? null;
+        sendResponse({ ok: true, reused: false, tabId: createdTab?.id ?? null });
+      });
     });
     return true;
   }
-
   chrome.tabs.create({ url: micSetupPageUrl, active: true }, (createdTab) => {
     micSetupTabId = createdTab?.id ?? null;
     sendResponse({ ok: true, reused: false, tabId: createdTab?.id ?? null });
@@ -214,20 +165,9 @@ function handleProbeSchemaAggregation(message, sender) {
     probeSchemaAggregation(message.origin).then((postTypes) => {
       if (!postTypes) return;
       const hasProducts = postTypes.includes("product");
-      tabAggregationState.set(tabId, {
-        origin: message.origin,
-        postTypes,
-        hasProducts,
-        products: null,
-      });
+      tabAggregationState.set(tabId, { origin: message.origin, postTypes, hasProducts, products: null });
       chrome.runtime
-        .sendMessage({
-          type: "SCHEMA_AGGREGATION_AVAILABLE",
-          origin: message.origin,
-          postTypes,
-          hasProducts,
-          tabId,
-        })
+        .sendMessage({ type: "SCHEMA_AGGREGATION_AVAILABLE", origin: message.origin, postTypes, hasProducts, tabId })
         .catch(() => {});
     });
   }
@@ -249,49 +189,24 @@ function handleFetchAggregatedProducts(message) {
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     const tabId = tabs[0]?.id;
     if (!tabId) {
-      chrome.runtime
-        .sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: "No active tab.", tabId: null })
-        .catch(() => {});
+      chrome.runtime.sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: "No active tab.", tabId: null }).catch(() => {});
       return;
     }
     const state = tabAggregationState.get(tabId);
     if (!state) {
-      chrome.runtime
-        .sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: "No aggregation state for this tab.", tabId })
-        .catch(() => {});
+      chrome.runtime.sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: "No aggregation state for this tab.", tabId }).catch(() => {});
       return;
     }
-
-    // Return cached products if already fetched
     if (state.products) {
-      chrome.runtime
-        .sendMessage({
-          type: "AGGREGATED_PRODUCTS_RESULT",
-          products: state.products,
-          tabId,
-        })
-        .catch(() => {});
+      chrome.runtime.sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", products: state.products, tabId }).catch(() => {});
       return;
     }
-
     try {
       const products = await fetchAggregatedProducts(state.origin);
       state.products = products;
-      chrome.runtime
-        .sendMessage({
-          type: "AGGREGATED_PRODUCTS_RESULT",
-          products,
-          tabId,
-        })
-        .catch(() => {});
+      chrome.runtime.sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", products, tabId }).catch(() => {});
     } catch (err) {
-      chrome.runtime
-        .sendMessage({
-          type: "AGGREGATED_PRODUCTS_RESULT",
-          error: err.message,
-          tabId,
-        })
-        .catch(() => {});
+      chrome.runtime.sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: err.message, tabId }).catch(() => {});
     }
   });
 }
@@ -299,10 +214,7 @@ function handleFetchAggregatedProducts(message) {
 function handleActivateProductBrowse(message) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        type: "ACTIVATE_PRODUCT_BROWSE",
-        products: message.products,
-      });
+      chrome.tabs.sendMessage(tabs[0].id, { type: "ACTIVATE_PRODUCT_BROWSE", products: message.products });
     }
   });
 }
@@ -312,16 +224,9 @@ function handleActivateTransform(message, sender, sendResponse) {
     if (tabs[0]) {
       const tabId = tabs[0].id;
       const data = message.payload || tabDataCache.get(tabId);
-      chrome.tabs.sendMessage(
-        tabId,
-        {
-          type: "ACTIVATE_TRANSFORM",
-          payload: data,
-        },
-        (response) => {
-          sendResponse(response || { success: false });
-        },
-      );
+      chrome.tabs.sendMessage(tabId, { type: "ACTIVATE_TRANSFORM", payload: data }, (response) => {
+        sendResponse(response || { success: false });
+      });
     }
   });
   return true;
@@ -330,15 +235,22 @@ function handleActivateTransform(message, sender, sendResponse) {
 function handleDeactivateTransform(message, sender, sendResponse) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        {
-          type: "DEACTIVATE_TRANSFORM",
-        },
-        (response) => {
-          sendResponse(response || { success: false });
-        },
-      );
+      chrome.tabs.sendMessage(tabs[0].id, { type: "DEACTIVATE_TRANSFORM" }, (response) => {
+        sendResponse(response || { success: false });
+      });
+    }
+  });
+  return true;
+}
+
+// --- Preset handlers (v3 multi-preset + backward compat) ---
+
+function handleSetPresets(message, sender, sendResponse) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: "SET_PRESETS", presets: message.presets }, (response) => {
+        sendResponse(response || { success: false });
+      });
     }
   });
   return true;
@@ -347,16 +259,31 @@ function handleDeactivateTransform(message, sender, sendResponse) {
 function handleSetPreset(message, sender, sendResponse) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        {
-          type: "SET_PRESET",
-          preset: message.preset,
-        },
-        (response) => {
-          sendResponse(response || { success: false });
-        },
-      );
+      chrome.tabs.sendMessage(tabs[0].id, { type: "SET_PRESET", preset: message.preset }, (response) => {
+        sendResponse(response || { success: false });
+      });
+    }
+  });
+  return true;
+}
+
+function handleSetDyslexia(message, sender, sendResponse) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: "SET_DYSLEXIA", enabled: message.enabled }, (response) => {
+        sendResponse(response || { success: false });
+      });
+    }
+  });
+  return true;
+}
+
+function handleSetTheme(message, sender, sendResponse) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: "SET_THEME", theme: message.theme }, (response) => {
+        sendResponse(response || { success: false });
+      });
     }
   });
   return true;
@@ -365,21 +292,13 @@ function handleSetPreset(message, sender, sendResponse) {
 function handleGetSchemamap(message, sender, sendResponse) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        {
-          type: "GET_SCHEMAMAP",
-          origin: message.origin,
-          schemaData: message.schemaData,
-        },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            sendResponse({ navItems: null });
-          } else {
-            sendResponse(response || { navItems: null });
-          }
-        },
-      );
+      chrome.tabs.sendMessage(tabs[0].id, { type: "GET_SCHEMAMAP", origin: message.origin, schemaData: message.schemaData }, (response) => {
+        if (chrome.runtime.lastError) {
+          sendResponse({ navItems: null });
+        } else {
+          sendResponse(response || { navItems: null });
+        }
+      });
     } else {
       sendResponse({ navItems: null });
     }
@@ -400,7 +319,10 @@ const handlers = {
   ACTIVATE_PRODUCT_BROWSE: handleActivateProductBrowse,
   ACTIVATE_TRANSFORM: handleActivateTransform,
   DEACTIVATE_TRANSFORM: handleDeactivateTransform,
+  SET_PRESETS: handleSetPresets,
   SET_PRESET: handleSetPreset,
+  SET_DYSLEXIA: handleSetDyslexia,
+  SET_THEME: handleSetTheme,
   GET_SCHEMAMAP: handleGetSchemamap,
 };
 
@@ -415,9 +337,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.status === "loading") {
     tabDataCache.delete(tabId);
     const state = tabNlwebState.get(tabId);
-    if (state?.abortController) {
-      state.abortController.abort();
-    }
+    if (state?.abortController) state.abortController.abort();
     tabNlwebState.delete(tabId);
     tabAggregationState.delete(tabId);
     chrome.action.setBadgeText({ text: "", tabId });
@@ -444,7 +364,6 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
   if (!cached) {
     chrome.tabs.sendMessage(tabId, { type: "REQUEST_EXTRACTION" }, () => {
       if (chrome.runtime.lastError) {
-        // Content script not injected — inject it, then request extraction
         chrome.scripting
           .executeScript({
             target: { tabId },
@@ -470,15 +389,10 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 
 // Clean up on tab close
 chrome.tabs.onRemoved.addListener((tabId) => {
-  if (tabId === micSetupTabId) {
-    micSetupTabId = null;
-  }
-
+  if (tabId === micSetupTabId) micSetupTabId = null;
   tabDataCache.delete(tabId);
   const state = tabNlwebState.get(tabId);
-  if (state?.abortController) {
-    state.abortController.abort();
-  }
+  if (state?.abortController) state.abortController.abort();
   tabNlwebState.delete(tabId);
   tabAggregationState.delete(tabId);
 });

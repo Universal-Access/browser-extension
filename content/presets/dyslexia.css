@@ -1,6 +1,7 @@
-/* Universal Access — Dyslexia-Friendly Preset
-   Uses OpenDyslexic font, increased spacing, and reading-optimized layout
-   Based on British Dyslexia Association style guide */
+/* Universal Access — Dyslexia Preset
+   OpenDyslexic font, increased spacing, and reading-optimized layout
+   Based on British Dyslexia Association style guide
+   Font & spacing only — colors inherited from the active theme */
 
 @font-face {
   font-family: 'OpenDyslexic';
@@ -19,41 +20,27 @@
 }
 
 #ua-accessible-overlay {
-  --ua-font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
-  --ua-font-size-base: 18px;
-  --ua-font-size-sm: 16px;
-  --ua-font-size-lg: 22px;
-  --ua-font-size-xl: 28px;
-  --ua-font-size-xxl: 34px;
-  --ua-line-height: 1.8;
+  --ua-font-family: 'Comic Sans MS', 'OpenDyslexic', cursive, sans-serif;
+  --ua-font-size-base: 22px;
+  --ua-font-size-sm: 18px;
+  --ua-font-size-lg: 28px;
+  --ua-font-size-xl: 34px;
+  --ua-font-size-xxl: 42px;
+  --ua-line-height: 2;
   --ua-letter-spacing: 0.12em;
   --ua-word-spacing: 0.16em;
 
-  --ua-color-bg: #fdf6e3;
-  --ua-color-surface: #f5edd6;
-  --ua-color-text: #2d2d2d;
-  --ua-color-text-secondary: #4a4a4a;
-  --ua-color-primary: #2e6da4;
-  --ua-color-primary-light: #dce8f2;
-  --ua-color-accent: #3d8b37;
-  --ua-color-accent-light: #e2f0e1;
-  --ua-color-border: #d4c9a8;
-  --ua-color-border-strong: #b8a97e;
-  --ua-color-overlay-bg: #faf3e0;
-  --ua-color-header-bg: #3b5998;
-  --ua-color-header-text: #ffffff;
-
-  --ua-max-width: 600px;
+  --ua-max-width: 900px;
 }
 
-/* Dyslexia-specific overrides */
+/* Dyslexia-specific layout overrides */
 
 #ua-accessible-overlay p,
 #ua-accessible-overlay li,
 #ua-accessible-overlay span,
 #ua-accessible-overlay td {
   text-align: left !important;
-  max-width: 70ch;
+  max-width: 80ch;
 }
 
 #ua-accessible-overlay .ua-title {
@@ -68,6 +55,10 @@
 
 #ua-accessible-overlay .ua-ingredients-list li {
   padding: 12px 0;
+}
+
+#ua-accessible-overlay .ua-reader {
+  max-width: 860px;
 }
 
 #ua-accessible-overlay .ua-description p,

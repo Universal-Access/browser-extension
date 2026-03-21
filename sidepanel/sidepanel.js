@@ -34,40 +34,41 @@ import {
   const aggregationStatus = document.getElementById('aggregation-status');
   const rawDataSection = document.getElementById('raw-data-section');
 
-  // --- Theme Toggle ---
+  // --- Theme Segmented Control (Light / Dark) ---
 
-  const THEMES = ['auto', 'light', 'dark'];
-  const THEME_ICONS = { auto: '⚙', light: '☀', dark: '🌙' };
-  const THEME_LABELS = { auto: 'Theme: Auto', light: 'Theme: Light', dark: 'Theme: Dark' };
-  let currentTheme = 'auto';
+  let currentTheme = 'light';
 
   function applyTheme(theme) {
     currentTheme = theme;
-    const btn = document.getElementById('theme-toggle');
-    if (btn) {
-      btn.textContent = THEME_ICONS[theme];
-      btn.title = THEME_LABELS[theme];
-      btn.setAttribute('aria-label', THEME_LABELS[theme]);
-    }
-    if (theme === 'auto') {
-      document.body.removeAttribute('data-theme');
+    if (theme === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
     } else {
-      document.body.setAttribute('data-theme', theme);
+      document.body.removeAttribute('data-theme');
     }
+    // Update segmented control UI
+    document.getElementById('seg-theme-light')?.classList.toggle('active', theme === 'light');
+    document.getElementById('seg-theme-light')?.setAttribute('aria-checked', String(theme === 'light'));
+    document.getElementById('seg-theme-dark')?.classList.toggle('active', theme === 'dark');
+    document.getElementById('seg-theme-dark')?.setAttribute('aria-checked', String(theme === 'dark'));
     chrome.storage.local.set({ uaTheme: theme });
+    // Send theme to content script overlay
+    chrome.runtime.sendMessage({ type: 'SET_THEME', theme: theme });
   }
 
-  // Restore saved theme
+  // Restore saved theme, or default to OS preference
   chrome.storage.local.get('uaTheme', (result) => {
-    if (result.uaTheme && THEMES.includes(result.uaTheme)) {
+    if (result.uaTheme === 'dark' || result.uaTheme === 'light') {
       applyTheme(result.uaTheme);
+    } else {
+      // No saved preference — use OS setting as default
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark ? 'dark' : 'light');
     }
   });
 
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const nextIdx = (THEMES.indexOf(currentTheme) + 1) % THEMES.length;
-    applyTheme(THEMES[nextIdx]);
-  });
+  // Theme segmented control click handlers
+  document.getElementById('seg-theme-light')?.addEventListener('click', () => applyTheme('light'));
+  document.getElementById('seg-theme-dark')?.addEventListener('click', () => applyTheme('dark'));
 
   // --- STT Integration ---
 
@@ -227,26 +228,41 @@ import {
     });
   });
 
-  // --- Preset Selection ---
+  // --- Dyslexia Toggle ---
 
-  document.querySelectorAll('.preset-option').forEach((option) => {
-    const radio = option.querySelector('input[type="radio"]');
-    radio.addEventListener('change', () => {
-      document.querySelectorAll('.preset-option').forEach(o => o.classList.remove('active'));
-      option.classList.add('active');
-      chrome.runtime.sendMessage({ type: 'SET_PRESET', preset: radio.value });
-    });
+  let dyslexiaEnabled = false;
+
+  function applyDyslexia(enabled) {
+    dyslexiaEnabled = enabled;
+    const toggle = document.getElementById('toggle-dyslexia');
+    if (toggle) toggle.setAttribute('aria-checked', String(enabled));
+    document.body.classList.toggle('sp-preset-dyslexia', enabled);
+    // Send to content script
+    chrome.runtime.sendMessage({ type: 'SET_PRESETS', presets: { dyslexia: enabled } });
+    chrome.storage.local.set({ uaPresets: { dyslexia: enabled } });
+  }
+
+  document.getElementById('toggle-dyslexia')?.addEventListener('click', () => {
+    applyDyslexia(!dyslexiaEnabled);
   });
 
-  // Restore saved preset
-  chrome.storage.local.get('uaPreset', (result) => {
-    if (result.uaPreset) {
-      const radio = document.querySelector(`input[name="preset"][value="${result.uaPreset}"]`);
-      if (radio) {
-        radio.checked = true;
-        document.querySelectorAll('.preset-option').forEach(o => o.classList.remove('active'));
-        radio.closest('.preset-option').classList.add('active');
-      }
+  document.getElementById('toggle-dyslexia')?.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      applyDyslexia(!dyslexiaEnabled);
+    }
+  });
+
+  // Restore saved state (with v1/v2 migration)
+  chrome.storage.local.get(['uaPreset', 'uaDyslexia', 'uaPresets'], (result) => {
+    if (result.uaPresets && typeof result.uaPresets === 'object') {
+      if (result.uaPresets.dyslexia) applyDyslexia(true);
+    } else if (typeof result.uaDyslexia === 'boolean') {
+      if (result.uaDyslexia) applyDyslexia(true);
+      chrome.storage.local.remove('uaDyslexia');
+    } else if (result.uaPreset) {
+      if (result.uaPreset === 'dyslexia') applyDyslexia(true);
+      chrome.storage.local.remove('uaPreset');
     }
   });
 
@@ -346,17 +362,43 @@ import {
 
   // --- Initialize ---
 
+  function refreshSchemaData() {
+    isTransformActive = false;
+    btnActivate.hidden = false;
+    btnDeactivate.hidden = true;
+
+    chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
+      if (chrome.runtime.lastError) {
+        handleSchemaData(null);
+        return;
+      }
+      handleSchemaData(response);
+    });
+  }
+
+  // Initial loads
   chrome.runtime.sendMessage({ type: 'GET_AGGREGATION_STATE' }, (response) => {
     if (chrome.runtime.lastError) return;
     showAggregationSection(response);
   });
 
-  chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
-    if (chrome.runtime.lastError) {
-      handleSchemaData(null);
-      return;
-    }
-    handleSchemaData(response);
+  refreshSchemaData();
+
+  // Re-fetch when the active tab navigates to a new page
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0] || tabs[0].id !== tabId) return;
+
+      if (changeInfo.status === 'loading') {
+        setStatus('🔍', 'Scanning page…', '');
+        handleSchemaData(null);
+        showAggregationSection(null);
+      }
+
+      if (changeInfo.status === 'complete') {
+        refreshSchemaData();
+      }
+    });
   });
 
   // Listen for live updates
