@@ -27,7 +27,7 @@
     "type": "module"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; connect-src https://huggingface.co/ https://raw.githubusercontent.com https://cas-bridge.xethub.hf.co/"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'"
   },
   "content_scripts": [
     {
