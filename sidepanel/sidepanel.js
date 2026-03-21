@@ -2,6 +2,7 @@
 // Integrates schema display, visual transformations, presets, and NLWeb
 
 import { createTreeNode, renderError } from './tree-renderer.js';
+import { iconClipboard, iconCheck } from './icons.js';
 import {
   getNlwebEndpoint,
   updateNlwebSection,
@@ -344,8 +345,8 @@ import {
     const json = JSON.stringify(output, null, 2);
     navigator.clipboard.writeText(json).then(() => {
       const btn = document.getElementById('btn-copy-json');
-      btn.textContent = '✅ Copied!';
-      setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+      btn.innerHTML = iconCheck() + ' Copied!';
+      setTimeout(() => { btn.innerHTML = iconClipboard() + ' Copy'; }, 2000);
     });
   });
 

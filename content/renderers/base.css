@@ -112,6 +112,26 @@
 
 .ua-logo {
   font-size: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.ua-logo .ua-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.ua-close-btn .ua-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ua-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
 }
 
 .ua-header-title {
@@ -924,9 +944,13 @@
 }
 
 .ua-faq-summary::before {
-  content: '▶';
-  font-size: 10px;
-  color: var(--ua-color-primary);
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent var(--ua-color-primary);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
