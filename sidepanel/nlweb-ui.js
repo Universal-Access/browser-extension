@@ -1,6 +1,7 @@
 // NLWeb UI — query form, result cards, and streaming display
 
 import { createTreeNode, escapeHtml } from './tree-renderer.js';
+import { iconAccessibility } from './icons.js';
 
 let nlwebEndpoint = null;
 let loadingChangeCallback = null;
@@ -83,7 +84,7 @@ export function createResultCard(item) {
 
     const readBtn = document.createElement('button');
     readBtn.className = 'nlweb-read-btn';
-    readBtn.textContent = '♿ Read Accessible';
+    readBtn.innerHTML = iconAccessibility() + ' Read Accessible';
     readBtn.title = 'Open in accessible reader view';
     readBtn.addEventListener('click', () => {
       activateNlwebResult(parsed, url);

@@ -9,6 +9,10 @@
   const OVERLAY_ID = 'ua-accessible-overlay';
   const OVERLAY_STYLE_ID = 'ua-overlay-styles';
 
+  // Inline SVG icons (content scripts can't use ES imports)
+  const SVG_WHEELCHAIR = '<svg aria-hidden="true" focusable="false" class="ua-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm-1 6a1 1 0 0 0-1 1v4H7.5a1 1 0 1 0 0 2H10v1.5a5 5 0 1 0 3.5-4.78V9a1 1 0 0 0-1-1h-1.5Zm1.5 7.72V14h1a1 1 0 0 0 .37-.07A3 3 0 1 1 12.5 15.72Z"/></svg>';
+  const SVG_XMARK = '<svg aria-hidden="true" focusable="false" class="ua-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>';
+
   let currentOverlay = null;
   let originalOverflow = '';
   let previouslyFocusedElement = null;
@@ -1130,11 +1134,11 @@
       <a href="#ua-main-content" class="ua-skip-link">Skip to content</a>
       <header class="ua-overlay-header">
         <div class="ua-header-left">
-          <span class="ua-logo" aria-hidden="true">♿</span>
+          <span class="ua-logo" aria-hidden="true">${SVG_WHEELCHAIR}</span>
           <span class="ua-header-title">Universal Access</span>
           <span class="ua-type-badge">${esc(type)}</span>
         </div>
-        <button class="ua-close-btn" aria-label="Close accessible view" title="Close accessible view">✕</button>
+        <button class="ua-close-btn" aria-label="Close accessible view" title="Close accessible view">${SVG_XMARK}</button>
       </header>
       ${navHtml || ''}
       <main class="ua-overlay-content" id="ua-main-content">

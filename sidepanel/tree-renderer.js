@@ -1,5 +1,7 @@
 // Tree node rendering and HTML utilities
 
+import { iconChevronRight } from './icons.js';
+
 export function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
@@ -20,7 +22,7 @@ export function createTreeNode(key, value, isRoot = false) {
   if (Array.isArray(value)) {
     const toggle = document.createElement('div');
     toggle.className = 'tree-toggle';
-    toggle.innerHTML = `<span class="arrow">&#9654;</span> ${key !== null ? `<span class="tree-key">${escapeHtml(key)}</span>` : ''} <span style="color:#666">[${value.length}]</span>`;
+    toggle.innerHTML = `<span class="arrow">${iconChevronRight()}</span> ${key !== null ? `<span class="tree-key">${escapeHtml(key)}</span>` : ''} <span style="color:#666">[${value.length}]</span>`;
     toggle.addEventListener('click', () => toggle.classList.toggle('open'));
 
     const children = document.createElement('div');
@@ -40,7 +42,7 @@ export function createTreeNode(key, value, isRoot = false) {
 
     const toggle = document.createElement('div');
     toggle.className = 'tree-toggle' + (isRoot ? ' open' : '');
-    toggle.innerHTML = `<span class="arrow">&#9654;</span> ${key !== null ? `<span class="tree-key">${escapeHtml(key)}</span>` : ''} <span style="color:#666">{${keys.length}}${escapeHtml(typeLabel)}</span>`;
+    toggle.innerHTML = `<span class="arrow">${iconChevronRight()}</span> ${key !== null ? `<span class="tree-key">${escapeHtml(key)}</span>` : ''} <span style="color:#666">{${keys.length}}${escapeHtml(typeLabel)}</span>`;
     toggle.addEventListener('click', () => toggle.classList.toggle('open'));
 
     const children = document.createElement('div');
