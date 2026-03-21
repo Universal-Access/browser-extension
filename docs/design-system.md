@@ -7,6 +7,16 @@
 
 ---
 
+## Icons
+
+- **Library:** Heroicons (`heroicons.com`)
+- **Variants:** Outline (default), Solid (emphasis)
+- **Size:** 24px (1.333rem)
+- **Stroke width:** 1.5px (outline variant default)
+- **Color:** Inherits from mode text token (`#222222` light, `#D3D3D3` dark)
+
+---
+
 ## Modes
 
 ### High-contrast light mode (`light-mode`)
@@ -59,3 +69,5 @@
 | Font size | ×1.2 multiplier |
 | Line height | ×1.2 multiplier |
 | Text box max-width | 600px–900px, scaled to balance with heading sizes |
+| Word spacing | unset |
+| Letter spacing | 1px |
