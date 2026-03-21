@@ -153,87 +153,6 @@
         <div id="nlweb-results" class="nlweb-results"></div>
       </section>
 
-      <!-- Local LLM Chat Section -->
-      <section id="llm-section" class="llm-section" hidden>
-        <div class="llm-header">
-          <span class="llm-indicator">🤖 Local LLM</span>
-          <span id="llm-model-name" class="llm-model-name"></span>
-        </div>
-
-        <!-- Model Initialization Panel -->
-        <div id="llm-init-panel" class="llm-init-panel">
-          <div class="llm-init-form">
-            <label for="llm-model-select" class="llm-label"
-              >Select Model:</label
-            >
-            <select
-              id="llm-model-select"
-              class="llm-model-select"
-              aria-label="Select local LLM model"
-            >
-              <option value="">-- Choose a model --</option>
-            </select>
-            <p class="llm-model-desc" id="llm-model-desc">
-              Select a model to load. First load may take 1-2 minutes to
-              download weights.
-            </p>
-            <button
-              id="llm-init-btn"
-              class="llm-init-btn btn-primary"
-              aria-label="Initialize and load model"
-            >
-              Load Model
-            </button>
-          </div>
-          <div id="llm-init-progress" class="llm-init-progress" hidden>
-            <div class="llm-progress-bar">
-              <div id="llm-progress-fill" class="llm-progress-fill"></div>
-            </div>
-            <div id="llm-progress-text" class="llm-progress-text">
-              Loading...
-            </div>
-          </div>
-        </div>
-
-        <!-- Chat Panel (shown after model loads) -->
-        <div id="llm-chat-panel" class="llm-chat-panel" hidden>
-          <div
-            id="llm-chat-history"
-            class="llm-chat-history"
-            role="log"
-            aria-live="polite"
-            aria-label="Chat history"
-          ></div>
-          <form id="llm-chat-form" class="llm-chat-form">
-            <input
-              type="text"
-              id="llm-chat-input"
-              class="llm-chat-input"
-              placeholder="Ask the local LLM..."
-              autocomplete="off"
-              aria-label="Message for local LLM"
-            />
-            <button
-              type="submit"
-              id="llm-chat-submit"
-              class="llm-chat-submit btn-primary"
-              aria-label="Send message"
-            >
-              Send
-            </button>
-          </form>
-          <button
-            id="llm-unload-btn"
-            class="llm-unload-btn btn-secondary"
-            aria-label="Unload model and free memory"
-          >
-            Unload Model
-          </button>
-        </div>
-
-        <div id="llm-error" class="llm-error" hidden role="alert"></div>
-      </section>
-
       <!-- Empty State -->
       <div id="empty-state" class="empty-state" hidden>
         <div class="empty-icon" aria-hidden="true">📄</div>
@@ -290,7 +209,6 @@
     </main>
 
     <script src="speech-recognition.js"></script>
-    <script type="module" src="webllm-chat.js"></script>
     <script type="module" src="sidepanel.js"></script>
   </body>
 </html>
