@@ -1,14 +1,14 @@
 @font-face {
-  font-family: 'OpenDyslexic';
-  src: url('../fonts/OpenDyslexic-Regular.woff2') format('woff2');
+  font-family: "OpenDyslexic";
+  src: url("../fonts/OpenDyslexic-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'OpenDyslexic';
-  src: url('../fonts/OpenDyslexic-Bold.woff2') format('woff2');
+  font-family: "OpenDyslexic";
+  src: url("../fonts/OpenDyslexic-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -23,7 +23,7 @@
 /* --- Theme Variables (Light) --- */
 
 body {
-  --sp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sp-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --sp-bg: #fafafa;
   --sp-text: #333;
   --sp-text-secondary: #666;
@@ -34,14 +34,14 @@ body {
   --sp-border: #e0e0e0;
   --sp-border-light: #f0f0f0;
   --sp-border-hover: #ccc;
-  --sp-primary: #FD9827;
-  --sp-primary-hover: #FFD982;
+  --sp-primary: #fd9827;
+  --sp-primary-hover: #ffd982;
   --sp-primary-light: #fff5e0;
   --sp-primary-border: #ffc966;
   --sp-primary-text: #000000;
   --sp-header-bg: #c47400;
   --sp-header-text: white;
-  --sp-badge-bg: #FD9827;
+  --sp-badge-bg: #fd9827;
   --sp-badge-text: #000000;
   --sp-status-found-bg: #e8f5e9;
   --sp-status-found-border: #a5d6a7;
@@ -50,7 +50,7 @@ body {
   --sp-error-bg: #fde7e7;
   --sp-error-border: #f5c6c6;
   --sp-error-text: #c62828;
-  --sp-nlweb-bg: #4CAF50;
+  --sp-nlweb-bg: #4caf50;
   --sp-nlweb-summary-bg: #f0f7ff;
   --sp-focus-ring: 0 0 0 2px rgba(253, 152, 39, 0.25);
   --sp-tree-key: #881391;
@@ -81,14 +81,14 @@ body[data-theme="dark"] {
   --sp-border: #3b3d57;
   --sp-border-light: #2f3146;
   --sp-border-hover: #565670;
-  --sp-primary: #FD9827;
-  --sp-primary-hover: #FFD982;
+  --sp-primary: #fd9827;
+  --sp-primary-hover: #ffd982;
   --sp-primary-light: #3a2a10;
   --sp-primary-border: #a06500;
   --sp-primary-text: #000000;
   --sp-header-bg: #1f2335;
   --sp-header-text: #c0caf5;
-  --sp-badge-bg: #FD9827;
+  --sp-badge-bg: #fd9827;
   --sp-badge-text: #000000;
   --sp-status-found-bg: #1e2a1e;
   --sp-status-found-border: #3d6b3d;
@@ -488,11 +488,107 @@ a.nlweb-result-name:hover {
   border-left: 3px solid var(--sp-primary);
 }
 
+.nlweb-summary-card.reading {
+  box-shadow: inset 0 0 0 1px var(--sp-primary);
+}
+
 .nlweb-summary-title {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 4px;
   color: var(--sp-primary);
+}
+
+.nlweb-summary-actions {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.nlweb-summary-tts-btn {
+  padding: 5px 10px;
+  min-height: 30px;
+  border: 1px solid var(--sp-primary);
+  background: transparent;
+  color: var(--sp-primary);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.nlweb-summary-tts-btn:hover {
+  background: color-mix(in srgb, var(--sp-primary) 12%, transparent);
+}
+
+.nlweb-summary-tts-btn.reading {
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+}
+
+.nlweb-summary-tts-btn:disabled {
+  border-color: var(--sp-border);
+  color: var(--sp-text-hint);
+  cursor: default;
+}
+
+.tts-settings {
+  gap: 6px;
+}
+
+.tts-setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tts-setting-item .preset-label {
+  min-width: 0;
+}
+
+.tts-select {
+  width: 48%;
+  min-width: 150px;
+  min-height: 30px;
+  border: 1px solid var(--sp-border);
+  border-radius: 4px;
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: 12px;
+  padding: 4px 6px;
+  font-family: inherit;
+}
+
+.tts-speed-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 48%;
+  min-width: 150px;
+}
+
+.tts-range {
+  width: 100px;
+}
+
+.tts-speed-value {
+  min-width: 30px;
+  text-align: right;
+  color: var(--sp-text-hint);
+  font-size: 11px;
+}
+
+.tts-autoread {
+  cursor: pointer;
+}
+
+.tts-autoread input[type="checkbox"] {
+  accent-color: var(--sp-primary);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .nlweb-suggested-queries {
@@ -571,12 +667,12 @@ a.nlweb-result-name:hover {
 }
 
 .nlweb-result-schema-toggle::before {
-  content: '▶ ';
+  content: "▶ ";
   font-size: 9px;
 }
 
 .nlweb-result-schema-details[open] > .nlweb-result-schema-toggle::before {
-  content: '▼ ';
+  content: "▼ ";
 }
 
 .nlweb-error {
@@ -624,7 +720,7 @@ a.nlweb-result-name:hover {
 .theme-toggle {
   margin-left: auto;
   background: none;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: inherit;
   font-size: 16px;
   width: 30px;
@@ -640,7 +736,7 @@ a.nlweb-result-name:hover {
 }
 
 .theme-toggle:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .theme-toggle[title]::after {
@@ -657,7 +753,9 @@ a.nlweb-result-name:hover {
   border-radius: 6px;
   background: var(--sp-surface-hover);
   border: 1px solid var(--sp-border);
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .status-bar.found {
@@ -733,7 +831,9 @@ a.nlweb-result-name:hover {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
   min-height: 36px;
 }
 
@@ -802,6 +902,40 @@ a.nlweb-result-name:hover {
   color: var(--sp-text);
 }
 
+.preset-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preset-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--sp-border);
+  border-radius: 6px;
+  background: var(--sp-surface);
+}
+
+.preset-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.preset-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sp-text);
+}
+
+.preset-desc {
+  font-size: 11px;
+  color: var(--sp-text-hint);
+}
+
 /* Segmented Control */
 
 .segmented-control {
@@ -823,7 +957,9 @@ a.nlweb-result-name:hover {
   background: transparent;
   color: var(--sp-text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   min-height: 28px;
 }
 
@@ -1026,7 +1162,9 @@ a.nlweb-result-name:hover {
   height: 16px;
   border-radius: 50%;
   background: var(--sp-text-hint);
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
 
 .toggle-switch[aria-checked="true"] {
@@ -1042,8 +1180,8 @@ a.nlweb-result-name:hover {
 /* Dyslexia — OpenDyslexic font + expanded spacing */
 
 body.sp-preset-dyslexia {
-  --sp-font: 'Comic Sans MS', 'OpenDyslexic', cursive, sans-serif;
-  font-family: 'Comic Sans MS', 'OpenDyslexic', cursive, sans-serif;
+  --sp-font: "Comic Sans MS", "OpenDyslexic", cursive, sans-serif;
+  font-family: "Comic Sans MS", "OpenDyslexic", cursive, sans-serif;
   font-size: 15px;
   letter-spacing: 0.08em;
   word-spacing: 0.12em;

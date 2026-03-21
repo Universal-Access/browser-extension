@@ -1,154 +1,308 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Universal Access</title>
-  <link rel="stylesheet" href="sidepanel.css">
-</head>
-<body>
-  <!-- Header -->
-  <header>
-    <div class="header-row">
-      <span class="logo" aria-hidden="true">♿</span>
-      <h1>Universal Access</h1>
-    </div>
-    <div id="page-url" class="page-url"></div>
-  </header>
-
-  <main id="content">
-    <!-- Status Section -->
-    <section id="status-section" class="panel-section">
-      <div id="status-indicator" class="status-bar" role="status" aria-live="polite">
-        <span id="status-icon" class="status-icon" aria-hidden="true">🔍</span>
-        <span id="status-text" class="status-text">Scanning page…</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Universal Access</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="header-row">
+        <span class="logo" aria-hidden="true">♿</span>
+        <h1>Universal Access</h1>
       </div>
-    </section>
+      <div id="page-url" class="page-url"></div>
+    </header>
 
-    <!-- Display Mode Section -->
-    <section id="display-section" class="panel-section" hidden>
-      <h2 class="section-title">
-        <span class="section-icon" aria-hidden="true">🎨</span>
-        Smart Visual Adaptation
-      </h2>
-      <p class="section-desc" id="detected-type-desc"></p>
-      <div class="action-buttons">
-        <button id="btn-activate" class="btn btn-primary" aria-label="Activate accessible view">
-          <span class="btn-icon">▶</span> Activate Accessible View
-        </button>
-        <button id="btn-deactivate" class="btn btn-secondary" hidden aria-label="Restore original page">
-          <span class="btn-icon">✕</span> Restore Original
-        </button>
-      </div>
-    </section>
-
-    <!-- Accessibility Presets -->
-    <section id="presets-section" class="panel-section" hidden>
-      <h2 class="section-title">
-        <span class="section-icon" aria-hidden="true">👁</span>
-        Accessibility
-      </h2>
-
-      <!-- Theme: Light / Dark segmented control -->
-      <div class="setting-row">
-        <span class="setting-label">Theme</span>
-        <div class="segmented-control" role="radiogroup" aria-label="Theme mode">
-          <button role="radio" aria-checked="true" class="seg-btn active" data-value="light" id="seg-theme-light">Light</button>
-          <button role="radio" aria-checked="false" class="seg-btn" data-value="dark" id="seg-theme-dark">Dark</button>
+    <main id="content">
+      <!-- Status Section -->
+      <section id="status-section" class="panel-section">
+        <div
+          id="status-indicator"
+          class="status-bar"
+          role="status"
+          aria-live="polite"
+        >
+          <span id="status-icon" class="status-icon" aria-hidden="true"
+            >🔍</span
+          >
+          <span id="status-text" class="status-text">Scanning page…</span>
         </div>
+      </section>
+
+      <!-- Display Mode Section -->
+      <section id="display-section" class="panel-section" hidden>
+        <h2 class="section-title">
+          <span class="section-icon" aria-hidden="true">🎨</span>
+          Smart Visual Adaptation
+        </h2>
+        <p class="section-desc" id="detected-type-desc"></p>
+        <div class="action-buttons">
+          <button
+            id="btn-activate"
+            class="btn btn-primary"
+            aria-label="Activate accessible view"
+          >
+            <span class="btn-icon">▶</span> Activate Accessible View
+          </button>
+          <button
+            id="btn-deactivate"
+            class="btn btn-secondary"
+            hidden
+            aria-label="Restore original page"
+          >
+            <span class="btn-icon">✕</span> Restore Original
+          </button>
+        </div>
+      </section>
+
+      <!-- Accessibility -->
+      <section id="presets-section" class="panel-section" hidden>
+        <h2 class="section-title">
+          <span class="section-icon" aria-hidden="true">👁</span>
+          Accessibility
+        </h2>
+
+        <div class="setting-row">
+          <span class="setting-label">Theme</span>
+          <div
+            class="segmented-control"
+            role="radiogroup"
+            aria-label="Theme mode"
+          >
+            <button
+              role="radio"
+              aria-checked="true"
+              class="seg-btn active"
+              data-value="light"
+              id="seg-theme-light"
+            >
+              Light
+            </button>
+            <button
+              role="radio"
+              aria-checked="false"
+              class="seg-btn"
+              data-value="dark"
+              id="seg-theme-dark"
+            >
+              Dark
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Dyslexia</span>
+          <button
+            role="switch"
+            aria-checked="false"
+            class="toggle-switch"
+            id="toggle-dyslexia"
+            aria-label="Toggle Dyslexia mode"
+          >
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Site Navigation (schemamap.json) -->
+      <section id="nav-section" class="panel-section" hidden>
+        <h2 class="section-title">
+          <span class="section-icon" aria-hidden="true">🗺️</span>
+          Site Navigation
+        </h2>
+        <p class="section-desc">
+          Accessible navigation links from this site's schemamap.
+        </p>
+        <ul
+          id="nav-links"
+          class="nav-link-list"
+          role="navigation"
+          aria-label="Site navigation"
+        ></ul>
+      </section>
+
+      <!-- Schema Aggregation -->
+      <section id="aggregation-section" class="panel-section" hidden>
+        <h2 class="section-title">
+          <span class="section-icon" aria-hidden="true">📦</span>
+          Schema Aggregation
+        </h2>
+        <p class="section-desc">
+          This site exposes site-wide structured data. Browse all products in an
+          accessible overlay.
+        </p>
+        <div class="action-buttons">
+          <button
+            id="btn-browse-products"
+            class="btn btn-primary"
+            aria-label="Browse all products from this site"
+          >
+            <span class="btn-icon">🛍️</span> Browse Products
+          </button>
+        </div>
+        <div
+          id="aggregation-status"
+          class="aggregation-status"
+          role="status"
+          aria-live="polite"
+        ></div>
+      </section>
+
+      <!-- Read Aloud Settings (collapsible) -->
+      <section id="tts-section" class="panel-section collapsible" hidden>
+        <h2
+          class="section-title section-toggle"
+          id="tts-toggle"
+          aria-expanded="false"
+          aria-controls="tts-content"
+          style="cursor: pointer"
+        >
+          <span class="section-icon" aria-hidden="true">🔊</span>
+          Read Aloud Settings
+          <span class="toggle-arrow" style="margin-left: auto">▶</span>
+        </h2>
+        <div class="collapsible-content" id="tts-content">
+          <div
+            class="preset-options tts-settings"
+            aria-label="Text to speech settings"
+          >
+            <div class="preset-option tts-setting-item">
+              <span class="preset-label">
+                <span class="preset-name">Voice</span>
+                <span class="preset-desc">Choose the read-aloud voice</span>
+              </span>
+              <select
+                id="nlweb-tts-voice"
+                class="tts-select"
+                aria-label="TTS Voice"
+              ></select>
+            </div>
+            <div class="preset-option tts-setting-item">
+              <span class="preset-label">
+                <span class="preset-name">Speed</span>
+                <span class="preset-desc">Set read-aloud playback rate</span>
+              </span>
+              <div class="tts-speed-control">
+                <input
+                  id="nlweb-tts-rate"
+                  class="tts-range"
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value="1"
+                  aria-label="TTS Speed"
+                />
+                <span id="nlweb-tts-rate-value" class="tts-speed-value"
+                  >1.0x</span
+                >
+              </div>
+            </div>
+            <label class="preset-option tts-setting-item tts-autoread">
+              <input id="nlweb-tts-auto" type="checkbox" />
+              <span class="preset-label">
+                <span class="preset-name">Auto read new summary</span>
+                <span class="preset-desc"
+                  >Start speaking summaries automatically</span
+                >
+              </span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- NLWeb Section -->
+      <section id="nlweb-section" class="nlweb-section" hidden>
+        <div class="nlweb-header">
+          <span class="nlweb-indicator">NLWeb</span>
+          <span id="nlweb-endpoint-info" class="nlweb-endpoint-info"></span>
+        </div>
+        <form id="nlweb-form" class="nlweb-form">
+          <input
+            type="text"
+            id="nlweb-query"
+            placeholder="Ask this site a question..."
+            autocomplete="off"
+            aria-label="Ask this site a question"
+          />
+          <button
+            type="button"
+            id="nlweb-mic"
+            class="nlweb-mic-btn"
+            aria-label="Start voice input"
+            aria-pressed="false"
+          >
+            Mic
+          </button>
+          <button type="submit" id="nlweb-submit">Ask</button>
+        </form>
+        <div
+          id="nlweb-stt-status"
+          class="nlweb-stt-status"
+          aria-live="polite"
+        ></div>
+        <div id="nlweb-results" class="nlweb-results"></div>
+      </section>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" hidden>
+        <div class="empty-icon" aria-hidden="true">📄</div>
+        <p>No structured data found on this page.</p>
+        <p class="hint">
+          Navigate to a page with Schema.org markup to see results.
+        </p>
       </div>
 
-      <!-- Dyslexia toggle -->
-      <div class="setting-row">
-        <span class="setting-label">Dyslexia</span>
-        <button role="switch" aria-checked="false" class="toggle-switch" id="toggle-dyslexia" aria-label="Toggle Dyslexia mode">
-          <span class="toggle-knob"></span>
-        </button>
-      </div>
-    </section>
+      <!-- Raw Data (collapsible, for debugging) -->
+      <section id="raw-data-section" class="panel-section collapsible" hidden>
+        <h2
+          class="section-title section-toggle"
+          data-toggle="raw"
+          aria-expanded="false"
+          aria-controls="raw-data-content"
+        >
+          <span class="section-icon" aria-hidden="true">🔧</span>
+          Raw Schema Data
+          <button
+            id="btn-copy-json"
+            class="btn-copy"
+            title="Copy all schema JSON"
+            aria-label="Copy all schema data as JSON"
+          >
+            📋 Copy
+          </button>
+          <span class="toggle-arrow">▶</span>
+        </h2>
+        <div class="collapsible-content" id="raw-data-content">
+          <section id="section-jsonld" class="schema-section" hidden>
+            <h3 class="subsection-header" data-toggle="jsonld">
+              <span class="toggle-arrow">▶</span>
+              JSON-LD <span id="count-jsonld" class="count-badge">0</span>
+            </h3>
+            <div id="items-jsonld" class="section-items"></div>
+          </section>
+          <section id="section-microdata" class="schema-section" hidden>
+            <h3 class="subsection-header" data-toggle="microdata">
+              <span class="toggle-arrow">▶</span>
+              Microdata <span id="count-microdata" class="count-badge">0</span>
+            </h3>
+            <div id="items-microdata" class="section-items"></div>
+          </section>
+          <section id="section-rdfa" class="schema-section" hidden>
+            <h3 class="subsection-header" data-toggle="rdfa">
+              <span class="toggle-arrow">▶</span>
+              RDFa <span id="count-rdfa" class="count-badge">0</span>
+            </h3>
+            <div id="items-rdfa" class="section-items"></div>
+          </section>
+        </div>
+      </section>
+    </main>
 
-    <!-- Site Navigation (schemamap.json) -->
-    <section id="nav-section" class="panel-section" hidden>
-      <h2 class="section-title">
-        <span class="section-icon" aria-hidden="true">🗺️</span>
-        Site Navigation
-      </h2>
-      <p class="section-desc">Accessible navigation links from this site's schemamap.</p>
-      <ul id="nav-links" class="nav-link-list" role="navigation" aria-label="Site navigation"></ul>
-    </section>
-
-    <!-- Schema Aggregation -->
-    <section id="aggregation-section" class="panel-section" hidden>
-      <h2 class="section-title">
-        <span class="section-icon" aria-hidden="true">📦</span>
-        Schema Aggregation
-      </h2>
-      <p class="section-desc">This site exposes site-wide structured data. Browse all products in an accessible overlay.</p>
-      <div class="action-buttons">
-        <button id="btn-browse-products" class="btn btn-primary" aria-label="Browse all products from this site">
-          <span class="btn-icon">🛍️</span> Browse Products
-        </button>
-      </div>
-      <div id="aggregation-status" class="aggregation-status" role="status" aria-live="polite"></div>
-    </section>
-
-    <!-- NLWeb Section -->
-    <section id="nlweb-section" class="nlweb-section" hidden>
-      <div class="nlweb-header">
-        <span class="nlweb-indicator">NLWeb</span>
-        <span id="nlweb-endpoint-info" class="nlweb-endpoint-info"></span>
-      </div>
-      <form id="nlweb-form" class="nlweb-form">
-        <input type="text" id="nlweb-query" placeholder="Ask this site a question..." autocomplete="off" aria-label="Ask this site a question">
-        <button type="button" id="nlweb-mic" class="nlweb-mic-btn" aria-label="Start voice input" aria-pressed="false">Mic</button>
-        <button type="submit" id="nlweb-submit">Ask</button>
-      </form>
-      <div id="nlweb-stt-status" class="nlweb-stt-status" aria-live="polite"></div>
-      <div id="nlweb-results" class="nlweb-results"></div>
-    </section>
-
-    <!-- Empty State -->
-    <div id="empty-state" class="empty-state" hidden>
-      <div class="empty-icon" aria-hidden="true">📄</div>
-      <p>No structured data found on this page.</p>
-      <p class="hint">Navigate to a page with Schema.org markup to see results.</p>
-    </div>
-
-    <!-- Raw Data (collapsible, for debugging) -->
-    <section id="raw-data-section" class="panel-section collapsible" hidden>
-      <h2 class="section-title section-toggle" data-toggle="raw" aria-expanded="false" aria-controls="raw-data-content">
-        <span class="section-icon" aria-hidden="true">🔧</span>
-        Raw Schema Data
-        <button id="btn-copy-json" class="btn-copy" title="Copy all schema JSON" aria-label="Copy all schema data as JSON">📋 Copy</button>
-        <span class="toggle-arrow">▶</span>
-      </h2>
-      <div class="collapsible-content" id="raw-data-content">
-        <section id="section-jsonld" class="schema-section" hidden>
-          <h3 class="subsection-header" data-toggle="jsonld">
-            <span class="toggle-arrow">▶</span>
-            JSON-LD <span id="count-jsonld" class="count-badge">0</span>
-          </h3>
-          <div id="items-jsonld" class="section-items"></div>
-        </section>
-        <section id="section-microdata" class="schema-section" hidden>
-          <h3 class="subsection-header" data-toggle="microdata">
-            <span class="toggle-arrow">▶</span>
-            Microdata <span id="count-microdata" class="count-badge">0</span>
-          </h3>
-          <div id="items-microdata" class="section-items"></div>
-        </section>
-        <section id="section-rdfa" class="schema-section" hidden>
-          <h3 class="subsection-header" data-toggle="rdfa">
-            <span class="toggle-arrow">▶</span>
-            RDFa <span id="count-rdfa" class="count-badge">0</span>
-          </h3>
-          <div id="items-rdfa" class="section-items"></div>
-        </section>
-      </div>
-    </section>
-  </main>
-
-  <script src="speech-recognition.js"></script>
-  <script type="module" src="sidepanel.js"></script>
-</body>
+    <script src="speech-recognition.js"></script>
+    <script type="module" src="sidepanel.js"></script>
+  </body>
 </html>
