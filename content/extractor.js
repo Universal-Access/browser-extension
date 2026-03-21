@@ -5,13 +5,13 @@
 function salvageJson(raw) {
   let text = raw;
   // Strip BOM and non-breaking spaces
-  text = text.replace(/^\uFEFF/, '').replace(/\u00A0/g, ' ');
+  text = text.replace(/^\uFEFF/, "").replace(/\u00A0/g, " ");
   // Strip single-line JS comments (but not inside strings — best effort)
-  text = text.replace(/^\s*\/\/.*$/gm, '');
+  text = text.replace(/^\s*\/\/.*$/gm, "");
   // Strip multi-line JS comments
-  text = text.replace(/\/\*[\s\S]*?\*\//g, '');
+  text = text.replace(/\/\*[\s\S]*?\*\//g, "");
   // Strip trailing commas before } or ]
-  text = text.replace(/,\s*([}\]])/g, '$1');
+  text = text.replace(/,\s*([}\]])/g, "$1");
   // Trim whitespace
   text = text.trim();
   if (!text) return null;
@@ -24,7 +24,9 @@ function salvageJson(raw) {
 
 function extractJsonLd() {
   const items = [];
-  const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+  const scripts = document.querySelectorAll(
+    'script[type="application/ld+json"]',
+  );
   scripts.forEach((script) => {
     try {
       const data = JSON.parse(script.textContent);
@@ -50,7 +52,11 @@ function extractJsonLd() {
           items.push({ data: salvaged, error: null, salvaged: true });
         }
       } else {
-        items.push({ data: null, error: e.message, raw: script.textContent.slice(0, 500) });
+        items.push({
+          data: null,
+          error: e.message,
+          raw: script.textContent.slice(0, 500),
+        });
       }
     }
   });
@@ -59,29 +65,29 @@ function extractJsonLd() {
 
 function parseMicrodataItem(element) {
   const item = {};
-  const itemType = element.getAttribute('itemtype');
+  const itemType = element.getAttribute("itemtype");
   if (itemType) {
-    item['@type'] = itemType;
+    item["@type"] = itemType;
   }
 
-  const children = element.querySelectorAll('[itemprop]');
+  const children = element.querySelectorAll("[itemprop]");
   children.forEach((child) => {
     // Only process direct children of this itemscope
-    if (child.closest('[itemscope]') !== element) return;
+    if (child.closest("[itemscope]") !== element) return;
 
-    const prop = child.getAttribute('itemprop');
+    const prop = child.getAttribute("itemprop");
     let value;
 
-    if (child.hasAttribute('itemscope')) {
+    if (child.hasAttribute("itemscope")) {
       value = parseMicrodataItem(child);
-    } else if (child.tagName === 'META') {
-      value = child.getAttribute('content') || '';
-    } else if (child.tagName === 'A' || child.tagName === 'LINK') {
-      value = child.getAttribute('href') || '';
-    } else if (child.tagName === 'IMG') {
-      value = child.getAttribute('src') || '';
-    } else if (child.tagName === 'TIME') {
-      value = child.getAttribute('datetime') || child.textContent.trim();
+    } else if (child.tagName === "META") {
+      value = child.getAttribute("content") || "";
+    } else if (child.tagName === "A" || child.tagName === "LINK") {
+      value = child.getAttribute("href") || "";
+    } else if (child.tagName === "IMG") {
+      value = child.getAttribute("src") || "";
+    } else if (child.tagName === "TIME") {
+      value = child.getAttribute("datetime") || child.textContent.trim();
     } else {
       value = child.textContent.trim();
     }
@@ -102,7 +108,7 @@ function parseMicrodataItem(element) {
 
 function extractMicrodata() {
   const items = [];
-  const topLevel = document.querySelectorAll('[itemscope]:not([itemprop])');
+  const topLevel = document.querySelectorAll("[itemscope]:not([itemprop])");
   topLevel.forEach((element) => {
     items.push(parseMicrodataItem(element));
   });
@@ -111,39 +117,40 @@ function extractMicrodata() {
 
 function parseRdfaItem(element) {
   const item = {};
-  const typeOf = element.getAttribute('typeof');
+  const typeOf = element.getAttribute("typeof");
   if (typeOf) {
-    item['@type'] = typeOf;
+    item["@type"] = typeOf;
   }
-  const vocab = element.getAttribute('vocab');
+  const vocab = element.getAttribute("vocab");
   if (vocab) {
-    item['@vocab'] = vocab;
+    item["@vocab"] = vocab;
   }
   // RDFa resource attribute functions as an @id
-  const resource = element.getAttribute('resource');
+  const resource = element.getAttribute("resource");
   if (resource) {
-    item['@id'] = resource;
+    item["@id"] = resource;
   }
 
-  const children = element.querySelectorAll('[property]');
+  const children = element.querySelectorAll("[property]");
   children.forEach((child) => {
     // Only process direct children of this typeof scope
-    const closestTypeof = child.parentElement && child.parentElement.closest('[typeof]');
+    const closestTypeof =
+      child.parentElement && child.parentElement.closest("[typeof]");
     if (closestTypeof !== element) return;
 
-    const prop = child.getAttribute('property');
+    const prop = child.getAttribute("property");
     let value;
 
-    if (child.hasAttribute('typeof')) {
+    if (child.hasAttribute("typeof")) {
       value = parseRdfaItem(child);
-    } else if (child.hasAttribute('content')) {
-      value = child.getAttribute('content');
-    } else if (child.tagName === 'A' || child.tagName === 'LINK') {
-      value = child.getAttribute('href') || '';
-    } else if (child.tagName === 'IMG') {
-      value = child.getAttribute('src') || '';
-    } else if (child.tagName === 'TIME') {
-      value = child.getAttribute('datetime') || child.textContent.trim();
+    } else if (child.hasAttribute("content")) {
+      value = child.getAttribute("content");
+    } else if (child.tagName === "A" || child.tagName === "LINK") {
+      value = child.getAttribute("href") || "";
+    } else if (child.tagName === "IMG") {
+      value = child.getAttribute("src") || "";
+    } else if (child.tagName === "TIME") {
+      value = child.getAttribute("datetime") || child.textContent.trim();
     } else {
       value = child.textContent.trim();
     }
@@ -163,10 +170,11 @@ function parseRdfaItem(element) {
 
 function extractRdfa() {
   const items = [];
-  const topLevel = document.querySelectorAll('[typeof]');
+  const topLevel = document.querySelectorAll("[typeof]");
   // Filter to only top-level typeof elements (not nested inside another typeof)
   topLevel.forEach((element) => {
-    const parent = element.parentElement && element.parentElement.closest('[typeof]');
+    const parent =
+      element.parentElement && element.parentElement.closest("[typeof]");
     if (!parent) {
       items.push(parseRdfaItem(element));
     }
@@ -177,34 +185,98 @@ function extractRdfa() {
 // --- Entity Classification ---
 
 const ARTICLE_TYPES = [
-  'Article', 'NewsArticle', 'BlogPosting', 'TechArticle', 'ScholarlyArticle', 'Report',
-  'SocialMediaPosting', 'DiscussionForumPosting', 'LiveBlogPosting', 'AnalysisNewsArticle',
-  'AskPublicNewsArticle', 'BackgroundNewsArticle', 'OpinionNewsArticle', 'ReportageNewsArticle',
-  'ReviewNewsArticle', 'Review', 'CriticReview', 'UserReview', 'EmployerReview',
-  'Book', 'Chapter', 'Thesis', 'HowTo', 'Guide'
+  "Article",
+  "NewsArticle",
+  "BlogPosting",
+  "TechArticle",
+  "ScholarlyArticle",
+  "Report",
+  "SocialMediaPosting",
+  "DiscussionForumPosting",
+  "LiveBlogPosting",
+  "AnalysisNewsArticle",
+  "AskPublicNewsArticle",
+  "BackgroundNewsArticle",
+  "OpinionNewsArticle",
+  "ReportageNewsArticle",
+  "ReviewNewsArticle",
+  "Review",
+  "CriticReview",
+  "UserReview",
+  "EmployerReview",
+  "Book",
+  "Chapter",
+  "Thesis",
+  "HowTo",
+  "Guide",
 ];
 const WEBPAGE_TYPES = [
-  'WebPage', 'CheckoutPage', 'CollectionPage', 'FAQPage', 'ItemPage',
-  'AboutPage', 'ContactPage', 'ProfilePage', 'SearchResultsPage',
-  'RealEstateListing', 'MedicalWebPage', 'QAPage'
+  "WebPage",
+  "CheckoutPage",
+  "CollectionPage",
+  "FAQPage",
+  "ItemPage",
+  "AboutPage",
+  "ContactPage",
+  "ProfilePage",
+  "SearchResultsPage",
+  "RealEstateListing",
+  "MedicalWebPage",
+  "QAPage",
 ];
 const PRODUCT_TYPES = [
-  'Product', 'SoftwareApplication', 'IndividualProduct', 'ProductGroup',
-  'MobileApplication', 'WebApplication', 'Service', 'Offer', 'AggregateOffer',
-  'Course', 'Vehicle',
-  'Movie', 'TVSeries', 'VideoGame', 'MusicAlbum', 'MusicRecording',
-  'CreativeWorkSeason', 'CreativeWorkSeries'
+  "Product",
+  "SoftwareApplication",
+  "IndividualProduct",
+  "ProductGroup",
+  "MobileApplication",
+  "WebApplication",
+  "Service",
+  "Offer",
+  "AggregateOffer",
+  "Course",
+  "Vehicle",
+  "Movie",
+  "TVSeries",
+  "VideoGame",
+  "MusicAlbum",
+  "MusicRecording",
+  "CreativeWorkSeason",
+  "CreativeWorkSeries",
 ];
 const LOCAL_BUSINESS_TYPES = [
-  'LocalBusiness', 'Store', 'LodgingBusiness', 'Hotel',
-  'FoodEstablishment', 'Restaurant', 'BarOrPub', 'CafeOrCoffeeShop'
+  "LocalBusiness",
+  "Store",
+  "LodgingBusiness",
+  "Hotel",
+  "FoodEstablishment",
+  "Restaurant",
+  "BarOrPub",
+  "CafeOrCoffeeShop",
 ];
 const EVENT_TYPES = [
-  'Event', 'BusinessEvent', 'ChildrensEvent', 'ComedyEvent', 'CourseInstance',
-  'DanceEvent', 'DeliveryEvent', 'EducationEvent', 'EventSeries', 'ExhibitionEvent',
-  'Festival', 'FoodEvent', 'Hackathon', 'LiteraryEvent', 'MusicEvent',
-  'PublicationEvent', 'SaleEvent', 'ScreeningEvent', 'SocialEvent', 'SportsEvent',
-  'TheaterEvent', 'VisualArtsEvent'
+  "Event",
+  "BusinessEvent",
+  "ChildrensEvent",
+  "ComedyEvent",
+  "CourseInstance",
+  "DanceEvent",
+  "DeliveryEvent",
+  "EducationEvent",
+  "EventSeries",
+  "ExhibitionEvent",
+  "Festival",
+  "FoodEvent",
+  "Hackathon",
+  "LiteraryEvent",
+  "MusicEvent",
+  "PublicationEvent",
+  "SaleEvent",
+  "ScreeningEvent",
+  "SocialEvent",
+  "SportsEvent",
+  "TheaterEvent",
+  "VisualArtsEvent",
 ];
 
 function normalizeType(rawType) {
@@ -216,26 +288,26 @@ function normalizeType(rawType) {
     }
     return null;
   }
-  if (typeof rawType === 'object' && rawType !== null) {
-    if (rawType['@value']) return normalizeType(rawType['@value']);
+  if (typeof rawType === "object" && rawType !== null) {
+    if (rawType["@value"]) return normalizeType(rawType["@value"]);
     return null;
   }
-  if (typeof rawType !== 'string') return null;
-  const cleaned = rawType.replace(/^https?:\/\/schema\.org\//, '').trim();
+  if (typeof rawType !== "string") return null;
+  const cleaned = rawType.replace(/^https?:\/\/schema\.org\//, "").trim();
   if (!cleaned) return null;
-  if (ARTICLE_TYPES.includes(cleaned)) return 'Article';
-  if (WEBPAGE_TYPES.includes(cleaned)) return 'Article';
-  if (PRODUCT_TYPES.includes(cleaned)) return 'Product';
-  if (LOCAL_BUSINESS_TYPES.includes(cleaned)) return 'LocalBusiness';
-  if (EVENT_TYPES.includes(cleaned)) return 'Event';
-  if (cleaned === 'FAQPage') return 'FAQPage';
-  if (cleaned === 'Recipe') return 'Recipe';
+  if (ARTICLE_TYPES.includes(cleaned)) return "Article";
+  if (WEBPAGE_TYPES.includes(cleaned)) return "Article";
+  if (PRODUCT_TYPES.includes(cleaned)) return "Product";
+  if (LOCAL_BUSINESS_TYPES.includes(cleaned)) return "LocalBusiness";
+  if (EVENT_TYPES.includes(cleaned)) return "Event";
+  if (cleaned === "FAQPage") return "FAQPage";
+  if (cleaned === "Recipe") return "Recipe";
   return cleaned;
 }
 
 function extractEntitiesFromItem(item, source) {
   const entities = [];
-  if (!item || typeof item !== 'object') return entities;
+  if (!item || typeof item !== "object") return entities;
   try {
     // Handle arrays of items (e.g. JSON-LD arrays that weren't flattened upstream)
     if (Array.isArray(item)) {
@@ -244,43 +316,43 @@ function extractEntitiesFromItem(item, source) {
       }
       return entities;
     }
-    if (item['@graph'] && Array.isArray(item['@graph'])) {
-      for (const node of item['@graph']) {
+    if (item["@graph"] && Array.isArray(item["@graph"])) {
+      for (const node of item["@graph"]) {
         entities.push(...extractEntitiesFromItem(node, source));
       }
       return entities;
     }
-    const rawType = item['@type'] || item.data?.['@type'];
+    const rawType = item["@type"] || item.data?.["@type"];
     const type = normalizeType(rawType);
     if (type) {
       entities.push({ type, rawType, source, data: item.data || item });
     }
   } catch (e) {
-    console.warn('[Universal Access] Skipped malformed entity:', e.message);
+    console.warn("[Universal Access] Skipped malformed entity:", e.message);
   }
   return entities;
 }
 
 function classifyEntities(extractionData) {
   const entities = [];
-  for (const item of (extractionData.jsonLd || [])) {
+  for (const item of extractionData.jsonLd || []) {
     if (item.error) continue;
-    entities.push(...extractEntitiesFromItem(item.data || item, 'jsonLd'));
+    entities.push(...extractEntitiesFromItem(item.data || item, "jsonLd"));
   }
-  for (const item of (extractionData.microdata || [])) {
-    entities.push(...extractEntitiesFromItem(item, 'microdata'));
+  for (const item of extractionData.microdata || []) {
+    entities.push(...extractEntitiesFromItem(item, "microdata"));
   }
-  for (const item of (extractionData.rdfa || [])) {
-    entities.push(...extractEntitiesFromItem(item, 'rdfa'));
+  for (const item of extractionData.rdfa || []) {
+    entities.push(...extractEntitiesFromItem(item, "rdfa"));
   }
-  const typeSet = new Set(entities.map(e => e.type));
-  let primaryType = 'Unknown';
-  if (typeSet.has('Recipe')) primaryType = 'Recipe';
-  else if (typeSet.has('Event')) primaryType = 'Event';
-  else if (typeSet.has('Product')) primaryType = 'Product';
-  else if (typeSet.has('LocalBusiness')) primaryType = 'LocalBusiness';
-  else if (typeSet.has('Article')) primaryType = 'Article';
-  else if (typeSet.has('FAQPage')) primaryType = 'FAQPage';
+  const typeSet = new Set(entities.map((e) => e.type));
+  let primaryType = "Unknown";
+  if (typeSet.has("Recipe")) primaryType = "Recipe";
+  else if (typeSet.has("Event")) primaryType = "Event";
+  else if (typeSet.has("Product")) primaryType = "Product";
+  else if (typeSet.has("LocalBusiness")) primaryType = "LocalBusiness";
+  else if (typeSet.has("Article")) primaryType = "Article";
+  else if (typeSet.has("FAQPage")) primaryType = "FAQPage";
   return { entities, primaryType };
 }
 
@@ -290,10 +362,123 @@ function extractAll() {
     microdata: extractMicrodata(),
     rdfa: extractRdfa(),
     nlweb: discoverNlweb(), // NLWeb discovery currently tested against news.microsoft.com
-    url: window.location.href
+    url: window.location.href,
   };
   const { entities, primaryType } = classifyEntities(raw);
   return { ...raw, entities, primaryType };
+}
+
+function normalizeText(value) {
+  return (value || "").replace(/\s+/g, " ").trim();
+}
+
+function isElementVisible(el) {
+  if (!el) return false;
+  const style = window.getComputedStyle(el);
+  if (style.display === "none" || style.visibility === "hidden") return false;
+  return true;
+}
+
+function shouldSkipMarkdownElement(el) {
+  if (!el || !el.tagName) return true;
+  if (!isElementVisible(el)) return true;
+  const tag = el.tagName.toLowerCase();
+  return [
+    "script",
+    "style",
+    "noscript",
+    "nav",
+    "footer",
+    "header",
+    "aside",
+    "form",
+  ].includes(tag);
+}
+
+function extractPageMarkdown(maxChars = 24000) {
+  const blocks = [];
+  const root =
+    document.querySelector("main") ||
+    document.querySelector("article") ||
+    document.querySelector('[role="main"]') ||
+    document.body;
+
+  if (document.title) {
+    blocks.push(`# ${normalizeText(document.title)}`);
+  }
+
+  const description = document
+    .querySelector('meta[name="description"]')
+    ?.getAttribute("content");
+  if (description) {
+    blocks.push(`> ${normalizeText(description)}`);
+  }
+
+  const elements = root.querySelectorAll(
+    "h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,pre",
+  );
+  const seen = new Set();
+
+  for (const el of elements) {
+    if (shouldSkipMarkdownElement(el)) continue;
+    if (el.closest("nav,footer,header,aside,form,script,style,noscript"))
+      continue;
+
+    const tag = el.tagName.toLowerCase();
+    let chunk = "";
+
+    if (tag.startsWith("h")) {
+      const level = Number(tag[1]) || 2;
+      const text = normalizeText(el.textContent);
+      if (!text) continue;
+      chunk = `${"#".repeat(Math.min(level, 6))} ${text}`;
+    } else if (tag === "p") {
+      const text = normalizeText(el.textContent);
+      if (!text) continue;
+      chunk = text;
+    } else if (tag === "blockquote") {
+      const text = normalizeText(el.textContent);
+      if (!text) continue;
+      chunk = `> ${text}`;
+    } else if (tag === "pre") {
+      const text = (el.textContent || "").trim();
+      if (!text) continue;
+      chunk = `\`\`\`\n${text}\n\`\`\``;
+    } else if (tag === "ul" || tag === "ol") {
+      const listItems = Array.from(el.children).filter(
+        (child) => child.tagName?.toLowerCase() === "li",
+      );
+      if (!listItems.length) continue;
+      const lines = listItems
+        .map((li, idx) => {
+          const text = normalizeText(li.textContent);
+          if (!text) return null;
+          return tag === "ol" ? `${idx + 1}. ${text}` : `- ${text}`;
+        })
+        .filter(Boolean);
+      if (!lines.length) continue;
+      chunk = lines.join("\n");
+    }
+
+    if (!chunk) continue;
+
+    const dedupeKey = normalizeText(chunk).toLowerCase();
+    if (!dedupeKey || seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+
+    blocks.push(chunk);
+
+    if (blocks.join("\n\n").length >= maxChars) break;
+  }
+
+  let markdown = blocks
+    .join("\n\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (markdown.length > maxChars) {
+    markdown = `${markdown.slice(0, maxChars)}\n\n...[truncated]`;
+  }
+  return markdown;
 }
 
 // Guard against "Extension context invalidated" errors after extension reload
@@ -309,7 +494,7 @@ function isExtContextValid() {
 const data = extractAll();
 if (isExtContextValid()) {
   try {
-    chrome.runtime.sendMessage({ type: 'SCHEMA_DATA', payload: data });
+    chrome.runtime.sendMessage({ type: "SCHEMA_DATA", payload: data });
   } catch {
     // Extension context invalidated
   }
@@ -321,18 +506,26 @@ try {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     try {
       if (!isExtContextValid()) return;
-      if (message.type === 'REQUEST_EXTRACTION') {
+      if (message.type === "REQUEST_EXTRACTION") {
         const freshData = extractAll();
         try {
-          chrome.runtime.sendMessage({ type: 'SCHEMA_DATA', payload: freshData });
+          chrome.runtime.sendMessage({
+            type: "SCHEMA_DATA",
+            payload: freshData,
+          });
         } catch {
           // Extension context invalidated
         }
         sendResponse(freshData);
+      } else if (message.type === "GET_PAGE_MARKDOWN") {
+        sendResponse({
+          ok: true,
+          markdown: extractPageMarkdown(),
+        });
       }
     } catch (e) {
-      if (!String(e.message).includes('Extension context invalidated')) {
-        console.warn('[Universal Access] Extractor listener error:', e.message);
+      if (!String(e.message).includes("Extension context invalidated")) {
+        console.warn("[Universal Access] Extractor listener error:", e.message);
       }
     }
   });

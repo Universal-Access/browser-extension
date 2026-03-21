@@ -156,12 +156,44 @@ import * as webllm from "./webllm-chat.js";
       : "Loading local model...",
     );
 
+    setLoaderText("Extracting page content...");
+    const pageMarkdown = await getActivePageMarkdown();
+
     await ensureLocalLlmReady();
-    const response = await webllm.sendMessage(query, 512);
+    setLoaderText("Generating local answer...");
+    const response = await webllm.sendMessage(query, 512, pageMarkdown);
 
     if (!receivedChunk) {
       body.textContent = response.message || "No response.";
     }
+  }
+
+  function getActivePageMarkdown() {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: "GET_PAGE_MARKDOWN" }, (response) => {
+        if (chrome.runtime.lastError || !response?.ok) {
+          const fallback = [
+            currentData?.url ? `URL: ${currentData.url}` : null,
+            "[Page markdown extraction unavailable]",
+          ]
+            .filter(Boolean)
+            .join("\n");
+          resolve(fallback);
+          return;
+        }
+        const title = response.title || "";
+        const url = response.url || currentData?.url || "";
+        const markdown = (response.markdown || "").trim();
+        const withMeta = [
+          title ? `# ${title}` : null,
+          url ? `URL: ${url}` : null,
+          markdown || "[Page markdown extraction returned empty content]",
+        ]
+          .filter(Boolean)
+          .join("\n\n");
+        resolve(withMeta);
+      });
+    });
   }
 
   // --- Status Updates ---

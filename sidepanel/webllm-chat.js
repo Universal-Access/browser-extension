@@ -92,19 +92,62 @@ export async function initializeEngine(modelId, progressCallback) {
 }
 
 // Send a message to the LLM and stream the response
-export async function sendMessage(userMessage, maxTokens = 512) {
+export async function sendMessage(
+  userMessage,
+  maxTokens = 512,
+  pageMarkdown = "",
+) {
   if (!engine || !isEngineReady) {
     throw new Error("Engine not initialized. Initialize a model first.");
   }
 
   try {
+    const context = (pageMarkdown || "").trim();
+    const contextLimit = 16000;
+    const truncatedContext =
+      context.length > contextLimit ?
+        `${context.slice(0, contextLimit)}\n\n...[truncated]`
+      : context;
+    const resolvedContext =
+      truncatedContext || "[No markdown context available for this page.]";
+    const systemPrompt =
+      "You are a helpful AI assistant. Be concise and helpful. " +
+      "If page context is provided, ground your answer in it and say when information is not present.";
+    const requestId = `req_${Date.now().toString(36)}`;
+    const contextPreviewHead = resolvedContext.slice(0, 500);
+    const contextPreviewTail =
+      resolvedContext.length > 500 ? resolvedContext.slice(-500) : "";
+
     const messages = [
       {
         role: "system",
-        content: "You are a helpful AI assistant. Be concise and helpful.",
+        content: `${systemPrompt}\n\nPage context (markdown):\n\n${resolvedContext}`,
       },
       { role: "user", content: userMessage },
     ];
+
+    console.groupCollapsed(`[WebLLM] Request ${requestId}`);
+    console.log("Model:", currentModel || "unknown");
+    console.log("User prompt length:", (userMessage || "").length);
+    console.log("Context stats:", {
+      originalLength: context.length,
+      resolvedLength: resolvedContext.length,
+      wasTruncated: context.length > contextLimit,
+      usedFallbackContext: !truncatedContext,
+    });
+    console.log(
+      "Messages:",
+      messages.map((m, i) => ({
+        index: i,
+        role: m.role,
+        contentLength: (m.content || "").length,
+      })),
+    );
+    console.log("Context preview (start):", contextPreviewHead);
+    if (contextPreviewTail) {
+      console.log("Context preview (end):", contextPreviewTail);
+    }
+    console.groupEnd();
 
     // Stream the response
     const chunks = await engine.chat.completions.create({

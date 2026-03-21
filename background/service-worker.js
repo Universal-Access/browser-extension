@@ -130,6 +130,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === "GET_PAGE_MARKDOWN") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab?.id) {
+        sendResponse({ ok: false, error: "No active tab" });
+        return;
+      }
+
+      chrome.tabs.sendMessage(
+        tab.id,
+        { type: "GET_PAGE_MARKDOWN" },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            sendResponse({
+              ok: false,
+              error:
+                chrome.runtime.lastError.message ||
+                "Failed to extract markdown",
+            });
+            return;
+          }
+
+          sendResponse({
+            ok: true,
+            markdown: response?.markdown || "",
+            url: tab.url || "",
+            title: tab.title || "",
+          });
+        },
+      );
+    });
+    return true;
+  }
+
   if (message.type === "NLWEB_QUERY") {
     const { query, endpoint, mode } = message;
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
