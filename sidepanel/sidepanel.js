@@ -1,7 +1,7 @@
 // Side panel — control hub for Universal Access
 // Integrates schema display, visual transformations, presets, and NLWeb
 
-import { createTreeNode, renderError } from "./tree-renderer.js";
+import { createTreeNode, renderError, escapeHtml } from "./tree-renderer.js";
 import {
   getNlwebEndpoint,
   updateNlwebSection,
@@ -117,6 +117,116 @@ import * as webllm from "./webllm-chat.js";
     return { card, body };
   }
 
+  function renderInlineMarkdown(text) {
+    let html = escapeHtml(text);
+    html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    html = html.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+    );
+    return html;
+  }
+
+  function markdownToHtml(markdown) {
+    const lines = String(markdown || "")
+      .replace(/\r\n/g, "\n")
+      .split("\n");
+    const out = [];
+    let inCode = false;
+    let codeLines = [];
+    let listType = null;
+
+    function closeList() {
+      if (!listType) return;
+      out.push(listType === "ol" ? "</ol>" : "</ul>");
+      listType = null;
+    }
+
+    for (const rawLine of lines) {
+      const line = rawLine || "";
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith("```")) {
+        closeList();
+        if (!inCode) {
+          inCode = true;
+          codeLines = [];
+        } else {
+          out.push(
+            `<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`,
+          );
+          inCode = false;
+          codeLines = [];
+        }
+        continue;
+      }
+
+      if (inCode) {
+        codeLines.push(line);
+        continue;
+      }
+
+      if (!trimmed) {
+        closeList();
+        continue;
+      }
+
+      const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+      if (headingMatch) {
+        closeList();
+        const level = headingMatch[1].length;
+        out.push(
+          `<h${level}>${renderInlineMarkdown(headingMatch[2])}</h${level}>`,
+        );
+        continue;
+      }
+
+      const blockQuoteMatch = trimmed.match(/^>\s?(.*)$/);
+      if (blockQuoteMatch) {
+        closeList();
+        out.push(
+          `<blockquote>${renderInlineMarkdown(blockQuoteMatch[1])}</blockquote>`,
+        );
+        continue;
+      }
+
+      const ulMatch = trimmed.match(/^[-*]\s+(.*)$/);
+      if (ulMatch) {
+        if (listType !== "ul") {
+          closeList();
+          out.push("<ul>");
+          listType = "ul";
+        }
+        out.push(`<li>${renderInlineMarkdown(ulMatch[1])}</li>`);
+        continue;
+      }
+
+      const olMatch = trimmed.match(/^\d+\.\s+(.*)$/);
+      if (olMatch) {
+        if (listType !== "ol") {
+          closeList();
+          out.push("<ol>");
+          listType = "ol";
+        }
+        out.push(`<li>${renderInlineMarkdown(olMatch[1])}</li>`);
+        continue;
+      }
+
+      closeList();
+      out.push(`<p>${renderInlineMarkdown(trimmed)}</p>`);
+    }
+
+    if (inCode) {
+      out.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+    }
+    closeList();
+    return (
+      out.join("\n") || `<p>${renderInlineMarkdown(String(markdown || ""))}</p>`
+    );
+  }
+
   async function ensureLocalLlmReady() {
     if (webllm.isReady()) return;
     if (!defaultLlmModelId) {
@@ -143,10 +253,12 @@ import * as webllm from "./webllm-chat.js";
     results.appendChild(card);
 
     let receivedChunk = false;
+    let streamingMarkdown = "";
     webllm.onChatMessage((msg) => {
       if (msg.type === "chunk" && msg.content) {
         receivedChunk = true;
-        body.textContent += msg.content;
+        streamingMarkdown += msg.content;
+        body.innerHTML = markdownToHtml(streamingMarkdown);
       }
     });
 
@@ -164,7 +276,7 @@ import * as webllm from "./webllm-chat.js";
     const response = await webllm.sendMessage(query, 512, pageMarkdown);
 
     if (!receivedChunk) {
-      body.textContent = response.message || "No response.";
+      body.innerHTML = markdownToHtml(response.message || "No response.");
     }
   }
 

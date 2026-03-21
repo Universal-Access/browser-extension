@@ -499,6 +499,68 @@ a.nlweb-result-name:hover {
   line-height: 1.4;
 }
 
+.nlweb-result-description h1,
+.nlweb-result-description h2,
+.nlweb-result-description h3,
+.nlweb-result-description h4,
+.nlweb-result-description h5,
+.nlweb-result-description h6 {
+  color: var(--sp-text);
+  margin: 8px 0 6px;
+  line-height: 1.3;
+}
+
+.nlweb-result-description p {
+  margin: 6px 0;
+}
+
+.nlweb-result-description ul,
+.nlweb-result-description ol {
+  margin: 6px 0 6px 18px;
+}
+
+.nlweb-result-description li {
+  margin: 3px 0;
+}
+
+.nlweb-result-description code {
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 11px;
+  background: var(--sp-surface-hover);
+  border: 1px solid var(--sp-border-light);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.nlweb-result-description pre {
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 11px;
+  background: var(--sp-surface-hover);
+  border: 1px solid var(--sp-border-light);
+  border-radius: 4px;
+  padding: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.nlweb-result-description pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.nlweb-result-description blockquote {
+  border-left: 3px solid var(--sp-border-hover);
+  margin: 8px 0;
+  padding-left: 8px;
+  color: var(--sp-text-secondary);
+}
+
+.nlweb-result-description a {
+  color: var(--sp-primary);
+  text-decoration: underline;
+}
+
 .nlweb-result-schema {
   margin-top: 6px;
 }
