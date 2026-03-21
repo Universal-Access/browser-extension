@@ -75,31 +75,27 @@
   box-sizing: border-box;
 }
 
-/* Reset heading elements to prevent host page CSS leakage.
-   Headings get `all: unset` because we always restyle them
-   completely via .ua-title / .ua-section-title classes.
-   Uses !important to beat host page rules in the light DOM. */
-#ua-accessible-overlay h1,
-#ua-accessible-overlay h2,
-#ua-accessible-overlay h3,
-#ua-accessible-overlay h4,
-#ua-accessible-overlay h5,
-#ua-accessible-overlay h6 {
-  all: unset;
-  display: block !important;
-  box-sizing: border-box !important;
-  font-family: var(--ua-font-family) !important;
-  color: var(--ua-color-text) !important;
-  line-height: var(--ua-line-height) !important;
-  letter-spacing: var(--ua-letter-spacing) !important;
-  word-spacing: var(--ua-word-spacing) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  background: none !important;
-  font-size: inherit !important;
-  font-weight: inherit !important;
-  text-transform: none !important;
+#ua-accessible-overlay *::before,
+#ua-accessible-overlay *::after {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  position: static;
+  float: none;
+  clear: none;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  animation: none;
+  transition: none;
+  box-shadow: none;
+  outline: none;
+  text-decoration: none;
+  vertical-align: baseline;
 }
 
 /* Override host page text styles on common elements.
@@ -285,6 +281,35 @@
 }
 
 /* --- Typography --- */
+
+#ua-accessible-overlay h1,
+#ua-accessible-overlay h2,
+#ua-accessible-overlay h3,
+#ua-accessible-overlay h4,
+#ua-accessible-overlay h5,
+#ua-accessible-overlay h6 {
+  font-family: var(--ua-font-family);
+  background: none;
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+  padding: 0;
+  margin: 0;
+  float: none;
+  clear: none;
+  opacity: 1;
+  transform: none;
+}
+
+#ua-accessible-overlay h1::before, #ua-accessible-overlay h1::after,
+#ua-accessible-overlay h2::before, #ua-accessible-overlay h2::after,
+#ua-accessible-overlay h3::before, #ua-accessible-overlay h3::after,
+#ua-accessible-overlay h4::before, #ua-accessible-overlay h4::after,
+#ua-accessible-overlay h5::before, #ua-accessible-overlay h5::after,
+#ua-accessible-overlay h6::before, #ua-accessible-overlay h6::after {
+  content: none !important;
+  display: none;
+}
 
 .ua-title {
   font-size: var(--ua-font-size-xxl);
