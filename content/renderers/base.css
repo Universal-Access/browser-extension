@@ -75,46 +75,110 @@
   box-sizing: border-box;
 }
 
+/* Reset heading elements to prevent host page CSS leakage.
+   Headings get `all: unset` because we always restyle them
+   completely via .ua-title / .ua-section-title classes.
+   Uses !important to beat host page rules in the light DOM. */
+#ua-accessible-overlay h1,
+#ua-accessible-overlay h2,
+#ua-accessible-overlay h3,
+#ua-accessible-overlay h4,
+#ua-accessible-overlay h5,
+#ua-accessible-overlay h6 {
+  all: unset;
+  display: block !important;
+  box-sizing: border-box !important;
+  font-family: var(--ua-font-family) !important;
+  color: var(--ua-color-text) !important;
+  line-height: var(--ua-line-height) !important;
+  letter-spacing: var(--ua-letter-spacing) !important;
+  word-spacing: var(--ua-word-spacing) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  text-transform: none !important;
+}
+
+/* Override host page text styles on common elements.
+   Only resets typography — preserves structural props
+   (margin, padding, display, list-style, font-weight, etc.).
+   Uses !important to beat host page rules in the light DOM. */
+#ua-accessible-overlay p,
+#ua-accessible-overlay ul,
+#ua-accessible-overlay ol,
+#ua-accessible-overlay li,
+#ua-accessible-overlay span,
+#ua-accessible-overlay strong,
+#ua-accessible-overlay em,
+#ua-accessible-overlay blockquote,
+#ua-accessible-overlay table,
+#ua-accessible-overlay td,
+#ua-accessible-overlay th {
+  font-family: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  word-spacing: inherit !important;
+  font-size: inherit !important;
+  text-transform: none !important;
+}
+
+/* Reset images — clear host margins/borders */
+#ua-accessible-overlay img {
+  border: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 #ua-accessible-overlay :focus-visible {
   outline: var(--ua-focus-outline);
   outline-offset: var(--ua-focus-offset);
 }
 
-/* --- Global link styling (1px underline → 2px on hover) --- */
+/* --- Global link styling (1px underline → 2px on hover) ---
+   Uses !important to override host page link styles that leak
+   into the overlay via the light DOM. */
 
 #ua-accessible-overlay a {
-  color: var(--ua-color-link, var(--ua-color-primary));
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
+  color: var(--ua-color-link, var(--ua-color-primary)) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 1px !important;
+  text-decoration-color: currentColor !important;
+  background: none !important;
+  border: none !important;
   transition: text-decoration-thickness 0.15s, color 0.15s;
 }
 
 #ua-accessible-overlay a:hover {
-  color: var(--ua-color-link-hover, var(--ua-color-primary));
-  text-decoration-thickness: 2px;
+  color: var(--ua-color-link-hover, var(--ua-color-primary)) !important;
+  text-decoration-thickness: 2px !important;
 }
 
 /* Button links — no underline */
 #ua-accessible-overlay a.ua-button {
-  text-decoration: none;
-  color: var(--ua-color-button-text);
+  text-decoration: none !important;
+  color: var(--ua-color-button-text) !important;
 }
 
 #ua-accessible-overlay a.ua-button:hover {
-  text-decoration: none;
-  color: var(--ua-color-button-text);
+  text-decoration: none !important;
+  color: var(--ua-color-button-text) !important;
 }
 
 /* Navigation links — no underline, secondary color (they use hover background instead) */
 #ua-accessible-overlay .ua-nav-link {
-  text-decoration: none;
-  color: var(--ua-color-text-secondary);
+  text-decoration: none !important;
+  color: var(--ua-color-text-secondary) !important;
 }
 
 #ua-accessible-overlay .ua-nav-link:hover {
-  text-decoration: none;
-  color: var(--ua-color-primary);
+  text-decoration: none !important;
+  color: var(--ua-color-primary) !important;
 }
 
 /* --- Header --- */
@@ -140,7 +204,10 @@
 }
 
 .ua-logo {
-  font-size: 22px;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .ua-header-title {
