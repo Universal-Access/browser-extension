@@ -1,16 +1,16 @@
 /* Universal Access — Dyslexia Preset
-   Comic Sans font, 1.2× increased font size, expanded spacing, narrower text box
-   Based on British Dyslexia Association style guide
+   Comic Sans MS font, ×1.2 size/line-height multiplier, reading-optimized layout, expanded spacing, narrower text box
+   Based on design system spec and British Dyslexia Association style guide
    Font & spacing only — colors inherited from the active theme */
 
 #ua-accessible-overlay {
   --ua-font-family: 'Comic Sans MS', cursive, sans-serif;
-  --ua-font-size-base: 1.5rem;      /* ~24px at 16px root, 1.2× of base 1.25rem */
-  --ua-font-size-sm: 1.35rem;       /* ~21.6px */
-  --ua-font-size-lg: 1.95rem;       /* ~31.2px */
-  --ua-font-size-xl: 2.55rem;       /* ~40.8px */
-  --ua-font-size-xxl: 3.3rem;       /* ~52.8px */
-  --ua-line-height: 1.92;           /* 1.6 × 1.2 */
+  --ua-font-size-base: 1.2rem;     /* 18px × 1.2 = ~21.6px */
+  --ua-font-size-sm: 1.067rem;     /* 16px × 1.2 = ~19.2px */
+  --ua-font-size-lg: 1.467rem;     /* 22px × 1.2 = ~26.4px */
+  --ua-font-size-xl: 2rem;         /* 30px × 1.2 = 36px */
+  --ua-font-size-xxl: 2.533rem;    /* 38px × 1.2 = ~45.6px */
+  --ua-line-height: 1.92;
   --ua-letter-spacing: 0.12em;
   --ua-word-spacing: 0.16em;
 

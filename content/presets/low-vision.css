@@ -1,7 +1,7 @@
 /* Universal Access — Accessible View Base Preset
    Applied whenever the accessible overlay is active.
-   Light mode: Soft AAA contrast (#FAFAFA bg / #222222 text)
-   Dark mode: Low-contrast comfortable reading (#141A34 bg / #D3D3D3 text)
+   Light mode: high-contrast for low-vision users (AAA contrast throughout)
+   Dark mode: low-contrast for Autistic / ADHD users
    Atkinson Hyperlegible font, generous spacing, enhanced focus & touch targets */
 
 @font-face {
@@ -20,7 +20,7 @@
   font-display: swap;
 }
 
-/* --- Light mode (default) — Soft Contrast AAA --- */
+/* --- High-contrast light mode (default) --- */
 
 #ua-accessible-overlay {
   --ua-font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
@@ -36,7 +36,7 @@
   --ua-color-bg: #FAFAFA;
   --ua-color-surface: #F0F0F0;
   --ua-color-text: #222222;
-  --ua-color-text-secondary: #444444;
+  --ua-color-text-secondary: #3D3D3D;
   --ua-color-primary: #004CA3;
   --ua-color-primary-light: #E0ECFF;
   --ua-color-accent: #007A3D;
@@ -44,13 +44,14 @@
   --ua-color-border: #999999;
   --ua-color-border-strong: #666666;
   --ua-color-star: #D4A017;
-  --ua-color-overlay-bg: #F5F5F5;
+  --ua-color-overlay-bg: #FAFAFA;
   --ua-color-header-bg: #1B2A4A;
   --ua-color-header-text: #FFFFFF;
   --ua-color-link: #004CA3;
   --ua-color-link-hover: #02254F;
   --ua-color-button-bg: #004CA3;
   --ua-color-button-text: #FFFFFF;
+  --ua-color-button-text-hover: #FFFFFF;
   --ua-color-button-hover: #02254F;
   --ua-color-button-buy-bg: #007A3D;
   --ua-color-button-buy-hover: #005C2E;
@@ -64,7 +65,7 @@
   --ua-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-/* --- Dark mode — Low Contrast (Autistic/ADHD friendly) --- */
+/* --- Low-contrast dark mode — Autistic / ADHD users --- */
 
 #ua-accessible-overlay[data-theme="dark"] {
   --ua-color-bg: #141A34;
@@ -78,13 +79,14 @@
   --ua-color-border: #3A4070;
   --ua-color-border-strong: #50568A;
   --ua-color-star: #E0AF68;
-  --ua-color-overlay-bg: #0F1328;
+  --ua-color-overlay-bg: #141A34;
   --ua-color-header-bg: #1C2240;
   --ua-color-header-text: #D3D3D3;
   --ua-color-link: #C98C00;
   --ua-color-link-hover: #FFD982;
   --ua-color-button-bg: #C98C00;
   --ua-color-button-text: #141A34;
+  --ua-color-button-text-hover: #141A34;
   --ua-color-button-hover: #FFD982;
   --ua-color-button-buy-bg: #7ECF8E;
   --ua-color-button-buy-hover: #5AB56A;
@@ -145,4 +147,17 @@
   background: var(--ua-color-primary-light);
   padding: 1px 3px;
   border-radius: 3px;
+}
+
+/* Button overrides — filled interactive controls per design system. */
+
+#ua-accessible-overlay .ua-button {
+  color: var(--ua-color-button-text);
+  text-decoration: none;
+}
+
+#ua-accessible-overlay .ua-button:hover {
+  background: var(--ua-color-link-hover, var(--ua-color-primary));
+  color: var(--ua-color-button-text-hover);
+  transform: translateY(-1px);
 }

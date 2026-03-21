@@ -1,6 +1,7 @@
 // NLWeb UI — query form, result cards, and streaming display
 
 import { createTreeNode, escapeHtml } from './tree-renderer.js';
+import { iconAccessibility } from './icons.js';
 
 let nlwebEndpoint = null;
 let loadingChangeCallback = null;
