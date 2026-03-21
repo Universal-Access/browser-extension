@@ -249,6 +249,9 @@
 
 .ua-actions {
   margin: var(--ua-spacing) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .ua-button {
@@ -273,6 +276,16 @@
   background: #1d4ed8;
   box-shadow: 0 4px 8px rgba(37,99,235,0.4);
   transform: translateY(-1px);
+}
+
+.ua-button-buy {
+  background: #16a34a;
+  box-shadow: 0 2px 4px rgba(22,163,74,0.3);
+}
+
+.ua-button-buy:hover {
+  background: #15803d;
+  box-shadow: 0 4px 8px rgba(22,163,74,0.4);
 }
 
 /* --- FAQ --- */

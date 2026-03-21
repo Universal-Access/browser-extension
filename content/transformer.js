@@ -218,6 +218,7 @@
     const category = data.applicationCategory || data.category || '';
     const os = data.operatingSystem || '';
     const url = data.url || '';
+    const buyUrl = extractBuyUrl(data);
 
     return `
       <article class="ua-card ua-product" role="main" aria-label="Product: ${esc(name)}">
@@ -245,8 +246,9 @@
           ${sku ? `<p class="ua-meta ua-sku">SKU: ${esc(sku)}</p>` : ''}
           ${description ? `<div class="ua-description">${formatText(description)}</div>` : ''}
 
-          ${url ? `<div class="ua-actions">
-            <a href="${esc(url)}" class="ua-button" target="_blank" rel="noopener noreferrer">View Product →</a>
+          ${url || buyUrl ? `<div class="ua-actions">
+            ${url ? `<a href="${esc(url)}" class="ua-button" target="_blank" rel="noopener noreferrer">View Product →</a>` : ''}
+            ${buyUrl && buyUrl !== url ? `<a href="${esc(buyUrl)}" class="ua-button ua-button-buy" target="_blank" rel="noopener noreferrer">Buy Product →</a>` : ''}
           </div>` : ''}
 
           ${faqs.length > 0 ? `
@@ -780,6 +782,16 @@
     } catch {
       return `${currency || '$'} ${numPrice}`;
     }
+  }
+
+  function extractBuyUrl(data) {
+    const offers = data.offers;
+    if (!offers) return null;
+    const list = Array.isArray(offers) ? offers : [offers];
+    for (const offer of list) {
+      if (offer?.url) return offer.url;
+    }
+    return null;
   }
 
   function extractAvailability(data) {
