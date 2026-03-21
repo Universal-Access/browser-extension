@@ -6,9 +6,11 @@ import {
   resolveNlwebEndpoint,
   executeNlwebQuery,
 } from "./nlweb-client.js";
+import { probeSchemaAggregation, fetchAggregatedProducts } from "./schema-aggregation-client.js";
 
 const tabDataCache = new Map();
 const tabNlwebState = new Map(); // { endpoint, abortController }
+const tabAggregationState = new Map(); // { origin, postTypes, products }
 const micSetupPageUrl = chrome.runtime.getURL("setup/setup.html");
 let micSetupTabId = null;
 
@@ -207,6 +209,95 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // --- Schema Aggregation ---
+  if (message.type === "PROBE_SCHEMA_AGGREGATION") {
+    const tabId = sender.tab ? sender.tab.id : null;
+    if (tabId && message.origin) {
+      probeSchemaAggregation(message.origin).then((postTypes) => {
+        if (!postTypes) return;
+        const hasProducts = postTypes.includes("product");
+        tabAggregationState.set(tabId, {
+          origin: message.origin,
+          postTypes,
+          hasProducts,
+          products: null,
+        });
+        chrome.runtime
+          .sendMessage({
+            type: "SCHEMA_AGGREGATION_AVAILABLE",
+            origin: message.origin,
+            postTypes,
+            hasProducts,
+            tabId,
+          })
+          .catch(() => {});
+      });
+    }
+  }
+
+  if (message.type === "GET_AGGREGATION_STATE") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        const state = tabAggregationState.get(tabs[0].id);
+        sendResponse(state || null);
+      } else {
+        sendResponse(null);
+      }
+    });
+    return true;
+  }
+
+  if (message.type === "FETCH_AGGREGATED_PRODUCTS") {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      const tabId = tabs[0]?.id;
+      if (!tabId) {
+        chrome.runtime
+          .sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: "No active tab.", tabId: null })
+          .catch(() => {});
+        return;
+      }
+      const state = tabAggregationState.get(tabId);
+      if (!state) {
+        chrome.runtime
+          .sendMessage({ type: "AGGREGATED_PRODUCTS_RESULT", error: "No aggregation state for this tab.", tabId })
+          .catch(() => {});
+        return;
+      }
+
+      try {
+        const products = await fetchAggregatedProducts(state.origin);
+        state.products = products;
+        chrome.runtime
+          .sendMessage({
+            type: "AGGREGATED_PRODUCTS_RESULT",
+            products,
+            tabId,
+          })
+          .catch(() => {});
+      } catch (err) {
+        chrome.runtime
+          .sendMessage({
+            type: "AGGREGATED_PRODUCTS_RESULT",
+            error: err.message,
+            tabId,
+          })
+          .catch(() => {});
+      }
+    });
+    return true;
+  }
+
+  if (message.type === "ACTIVATE_PRODUCT_BROWSE") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "ACTIVATE_PRODUCT_BROWSE",
+          products: message.products,
+        });
+      }
+    });
+  }
+
   // --- Activate visual transformation ---
   if (message.type === "ACTIVATE_TRANSFORM") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -301,6 +392,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       state.abortController.abort();
     }
     tabNlwebState.delete(tabId);
+    tabAggregationState.delete(tabId);
     chrome.action.setBadgeText({ text: "", tabId });
   }
 });
@@ -317,4 +409,5 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     state.abortController.abort();
   }
   tabNlwebState.delete(tabId);
+  tabAggregationState.delete(tabId);
 });
