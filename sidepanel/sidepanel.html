@@ -107,60 +107,6 @@
         </div>
       </section>
 
-      <!-- Read Aloud -->
-      <section id="tts-section" class="panel-section" hidden>
-        <h2 class="section-title">
-          <span class="section-icon" aria-hidden="true">🔊</span>
-          Read Aloud Settings
-        </h2>
-        <div
-          class="preset-options tts-settings"
-          aria-label="Text to speech settings"
-        >
-          <div class="preset-option tts-setting-item">
-            <span class="preset-label">
-              <span class="preset-name">Voice</span>
-              <span class="preset-desc">Choose the read-aloud voice</span>
-            </span>
-            <select
-              id="nlweb-tts-voice"
-              class="tts-select"
-              aria-label="TTS Voice"
-            ></select>
-          </div>
-          <div class="preset-option tts-setting-item">
-            <span class="preset-label">
-              <span class="preset-name">Speed</span>
-              <span class="preset-desc">Set read-aloud playback rate</span>
-            </span>
-            <div class="tts-speed-control">
-              <input
-                id="nlweb-tts-rate"
-                class="tts-range"
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value="1"
-                aria-label="TTS Speed"
-              />
-              <span id="nlweb-tts-rate-value" class="tts-speed-value"
-                >1.0x</span
-              >
-            </div>
-          </div>
-          <label class="preset-option tts-setting-item tts-autoread">
-            <input id="nlweb-tts-auto" type="checkbox" />
-            <span class="preset-label">
-              <span class="preset-name">Auto read new summary</span>
-              <span class="preset-desc"
-                >Start speaking summaries automatically</span
-              >
-            </span>
-          </label>
-        </div>
-      </section>
-
       <!-- Site Navigation (schemamap.json) -->
       <section id="nav-section" class="panel-section" hidden>
         <h2 class="section-title">
@@ -203,6 +149,69 @@
           role="status"
           aria-live="polite"
         ></div>
+      </section>
+
+      <!-- Read Aloud Settings (collapsible) -->
+      <section id="tts-section" class="panel-section collapsible" hidden>
+        <h2
+          class="section-title section-toggle"
+          id="tts-toggle"
+          aria-expanded="false"
+          aria-controls="tts-content"
+          style="cursor: pointer"
+        >
+          <span class="section-icon" aria-hidden="true">🔊</span>
+          Read Aloud Settings
+          <span class="toggle-arrow" style="margin-left: auto">▶</span>
+        </h2>
+        <div class="collapsible-content" id="tts-content">
+          <div
+            class="preset-options tts-settings"
+            aria-label="Text to speech settings"
+          >
+            <div class="preset-option tts-setting-item">
+              <span class="preset-label">
+                <span class="preset-name">Voice</span>
+                <span class="preset-desc">Choose the read-aloud voice</span>
+              </span>
+              <select
+                id="nlweb-tts-voice"
+                class="tts-select"
+                aria-label="TTS Voice"
+              ></select>
+            </div>
+            <div class="preset-option tts-setting-item">
+              <span class="preset-label">
+                <span class="preset-name">Speed</span>
+                <span class="preset-desc">Set read-aloud playback rate</span>
+              </span>
+              <div class="tts-speed-control">
+                <input
+                  id="nlweb-tts-rate"
+                  class="tts-range"
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value="1"
+                  aria-label="TTS Speed"
+                />
+                <span id="nlweb-tts-rate-value" class="tts-speed-value"
+                  >1.0x</span
+                >
+              </div>
+            </div>
+            <label class="preset-option tts-setting-item tts-autoread">
+              <input id="nlweb-tts-auto" type="checkbox" />
+              <span class="preset-label">
+                <span class="preset-name">Auto read new summary</span>
+                <span class="preset-desc"
+                  >Start speaking summaries automatically</span
+                >
+              </span>
+            </label>
+          </div>
+        </div>
       </section>
 
       <!-- NLWeb Section -->
