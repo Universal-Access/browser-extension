@@ -424,6 +424,50 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 });
 
+// Notify sidepanel when user switches tabs
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  const cached = tabDataCache.get(tabId);
+  const aggregation = tabAggregationState.get(tabId) || null;
+  const nlweb = tabNlwebState.get(tabId) || null;
+
+  chrome.runtime
+    .sendMessage({
+      type: "TAB_ACTIVATED",
+      payload: cached || null,
+      aggregation,
+      nlweb: nlweb?.endpoint ? { endpoint: nlweb.endpoint, method: "cached" } : null,
+      tabId,
+    })
+    .catch(() => {});
+
+  // If no cached data, ask the content script to extract
+  if (!cached) {
+    chrome.tabs.sendMessage(tabId, { type: "REQUEST_EXTRACTION" }, () => {
+      if (chrome.runtime.lastError) {
+        // Content script not injected — inject it, then request extraction
+        chrome.scripting
+          .executeScript({
+            target: { tabId },
+            files: [
+              "content/nlweb-discovery.js",
+              "content/schema-aggregation.js",
+              "content/extractor.js",
+              "content/schemamap.js",
+              "content/transformer.js",
+              "content/presets/presets.js",
+            ],
+          })
+          .then(() => {
+            chrome.tabs.sendMessage(tabId, { type: "REQUEST_EXTRACTION" }, () => {
+              if (chrome.runtime.lastError) { /* still failed — ignore */ }
+            });
+          })
+          .catch(() => { /* chrome:// or other restricted page — ignore */ });
+      }
+    });
+  }
+});
+
 // Clean up on tab close
 chrome.tabs.onRemoved.addListener((tabId) => {
   if (tabId === micSetupTabId) {
