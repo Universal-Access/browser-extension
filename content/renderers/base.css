@@ -83,6 +83,29 @@
   box-sizing: border-box;
 }
 
+#ua-accessible-overlay *::before,
+#ua-accessible-overlay *::after {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  position: static;
+  float: none;
+  clear: none;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  animation: none;
+  transition: none;
+  box-shadow: none;
+  outline: none;
+  text-decoration: none;
+  vertical-align: baseline;
+}
+
 #ua-accessible-overlay :focus-visible {
   outline: var(--ua-focus-outline);
   outline-offset: var(--ua-focus-offset);
@@ -209,6 +232,35 @@
 }
 
 /* --- Typography --- */
+
+#ua-accessible-overlay h1,
+#ua-accessible-overlay h2,
+#ua-accessible-overlay h3,
+#ua-accessible-overlay h4,
+#ua-accessible-overlay h5,
+#ua-accessible-overlay h6 {
+  font-family: var(--ua-font-family);
+  background: none;
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+  padding: 0;
+  margin: 0;
+  float: none;
+  clear: none;
+  opacity: 1;
+  transform: none;
+}
+
+#ua-accessible-overlay h1::before, #ua-accessible-overlay h1::after,
+#ua-accessible-overlay h2::before, #ua-accessible-overlay h2::after,
+#ua-accessible-overlay h3::before, #ua-accessible-overlay h3::after,
+#ua-accessible-overlay h4::before, #ua-accessible-overlay h4::after,
+#ua-accessible-overlay h5::before, #ua-accessible-overlay h5::after,
+#ua-accessible-overlay h6::before, #ua-accessible-overlay h6::after {
+  content: none !important;
+  display: none;
+}
 
 .ua-title {
   font-size: var(--ua-font-size-xxl);
