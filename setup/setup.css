@@ -5,8 +5,8 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
-  background: #f5f7fa;
-  color: #1f2937;
+  background: #FAFAFA;
+  color: #222222;
 }
 
 .setup-shell {
@@ -69,13 +69,13 @@ h1 {
 }
 
 .btn.primary {
-  background: #1a73e8;
-  border-color: #1a73e8;
+  background: #004CA3;
+  border-color: #004CA3;
   color: #ffffff;
 }
 
 .btn.primary:hover {
-  background: #155fc0;
+  background: #02254F;
 }
 
 .btn:disabled {
