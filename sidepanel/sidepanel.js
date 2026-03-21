@@ -32,6 +32,9 @@ import {
   const presetsSection = document.getElementById('presets-section');
   const navSection = document.getElementById('nav-section');
   const navLinks = document.getElementById('nav-links');
+  const aggregationSection = document.getElementById('aggregation-section');
+  const btnBrowseProducts = document.getElementById('btn-browse-products');
+  const aggregationStatus = document.getElementById('aggregation-status');
   const rawDataSection = document.getElementById('raw-data-section');
 
   // --- Theme Toggle ---
@@ -342,7 +345,28 @@ import {
     });
   });
 
+  // --- Schema Aggregation ---
+
+  function showAggregationSection(state) {
+    if (state && state.hasProducts) {
+      aggregationSection.hidden = false;
+    } else {
+      aggregationSection.hidden = true;
+    }
+  }
+
+  btnBrowseProducts.addEventListener('click', () => {
+    aggregationStatus.textContent = 'Loading products…';
+    btnBrowseProducts.disabled = true;
+    chrome.runtime.sendMessage({ type: 'FETCH_AGGREGATED_PRODUCTS' });
+  });
+
   // --- Initialize ---
+
+  chrome.runtime.sendMessage({ type: 'GET_AGGREGATION_STATE' }, (response) => {
+    if (chrome.runtime.lastError) return;
+    showAggregationSection(response);
+  });
 
   chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
     if (chrome.runtime.lastError) {
@@ -361,6 +385,26 @@ import {
       isTransformActive = false;
       btnActivate.hidden = false;
       btnDeactivate.hidden = true;
+    }
+    if (message.type === 'SCHEMA_AGGREGATION_AVAILABLE') {
+      showAggregationSection(message);
+    }
+    if (message.type === 'AGGREGATED_PRODUCTS_RESULT') {
+      btnBrowseProducts.disabled = false;
+      if (message.error) {
+        aggregationStatus.textContent = `Error: ${message.error}`;
+        return;
+      }
+      if (!message.products || message.products.length === 0) {
+        aggregationStatus.textContent = 'No products found.';
+        return;
+      }
+      aggregationStatus.textContent = `Found ${message.products.length} products. Opening overlay…`;
+      chrome.runtime.sendMessage({
+        type: 'ACTIVATE_PRODUCT_BROWSE',
+        products: message.products
+      });
+      setTimeout(() => { aggregationStatus.textContent = ''; }, 3000);
     }
     if (message.type === 'NLWEB_ENDPOINT') {
       updateNlwebSection(message.endpoint, message.method);

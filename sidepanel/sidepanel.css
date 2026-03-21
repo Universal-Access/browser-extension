@@ -995,6 +995,15 @@ a.nlweb-result-name:hover {
   opacity: 0.6;
 }
 
+/* --- Aggregation Status --- */
+
+.aggregation-status {
+  font-size: 12px;
+  color: var(--sp-text-secondary);
+  margin-top: 8px;
+  min-height: 16px;
+}
+
 /* --- Reduced Motion --- */
 
 @media (prefers-reduced-motion: reduce) {
