@@ -24,8 +24,8 @@ import {
   const emptyState = document.getElementById('empty-state');
   const displaySection = document.getElementById('display-section');
   const detectedTypeDesc = document.getElementById('detected-type-desc');
-  const btnActivate = document.getElementById('btn-activate');
-  const btnDeactivate = document.getElementById('btn-deactivate');
+  const segTransformOff = document.getElementById('seg-transform-off');
+  const segTransformOn = document.getElementById('seg-transform-on');
   const presetsSection = document.getElementById('presets-section');
   const navSection = document.getElementById('nav-section');
   const navLinks = document.getElementById('nav-links');
@@ -245,26 +245,27 @@ import {
     }
   }
 
-  // --- Activate / Deactivate ---
+  // --- Activate / Deactivate Segmented Control ---
 
-  btnActivate.addEventListener('click', () => {
-    if (!currentData) return;
+  function setTransformToggle(checked) {
+    isTransformActive = checked;
+    segTransformOff?.classList.toggle('active', !checked);
+    segTransformOff?.setAttribute('aria-checked', String(!checked));
+    segTransformOn?.classList.toggle('active', checked);
+    segTransformOn?.setAttribute('aria-checked', String(checked));
+  }
+
+  segTransformOn?.addEventListener('click', () => {
+    if (isTransformActive || !currentData) return;
     chrome.runtime.sendMessage({
       type: 'ACTIVATE_TRANSFORM',
       payload: currentData
-    }, () => {
-      isTransformActive = true;
-      btnActivate.hidden = true;
-      btnDeactivate.hidden = false;
-    });
+    }, () => setTransformToggle(true));
   });
 
-  btnDeactivate.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: 'DEACTIVATE_TRANSFORM' }, () => {
-      isTransformActive = false;
-      btnActivate.hidden = false;
-      btnDeactivate.hidden = true;
-    });
+  segTransformOff?.addEventListener('click', () => {
+    if (!isTransformActive) return;
+    chrome.runtime.sendMessage({ type: 'DEACTIVATE_TRANSFORM' }, () => setTransformToggle(false));
   });
 
   // --- Auto-activate accessibility view ---
@@ -277,11 +278,7 @@ import {
       chrome.runtime.sendMessage({
         type: 'ACTIVATE_TRANSFORM',
         payload: currentData
-      }, () => {
-        isTransformActive = true;
-        btnActivate.hidden = true;
-        btnDeactivate.hidden = false;
-      });
+      }, () => setTransformToggle(true));
     }
   }
 
@@ -419,9 +416,7 @@ import {
   // --- Initialize ---
 
   function refreshSchemaData() {
-    isTransformActive = false;
-    btnActivate.hidden = false;
-    btnDeactivate.hidden = true;
+    setTransformToggle(false);
 
     chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
       if (chrome.runtime.lastError) {
@@ -461,6 +456,7 @@ import {
   // Listen for live updates
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'TAB_ACTIVATED') {
+      setTransformToggle(false);
       handleSchemaData(message.payload);
       showAggregationSection(message.aggregation);
       if (message.nlweb) {
@@ -471,9 +467,7 @@ import {
       handleSchemaData(message.payload);
     }
     if (message.type === 'DEACTIVATE_TRANSFORM') {
-      isTransformActive = false;
-      btnActivate.hidden = false;
-      btnDeactivate.hidden = true;
+      setTransformToggle(false);
     }
     if (message.type === 'SCHEMA_AGGREGATION_AVAILABLE') {
       showAggregationSection(message);
