@@ -1265,7 +1265,21 @@
     createOverlay(html, 'Products');
     const overlay = document.getElementById(OVERLAY_ID);
     if (overlay) {
-      bindPagination(overlay, products, totalPages);
+      overlay.addEventListener('click', (e) => {
+        const prev = e.target.closest('.ua-pagination-prev');
+        const next = e.target.closest('.ua-pagination-next');
+        if (prev && prev.getAttribute('aria-disabled') !== 'true' && productBrowseState.page > 0) {
+          productBrowseState.page--;
+          updateOverlayContent(overlay, productBrowseState.products, Math.ceil(productBrowseState.products.length / PRODUCT_PAGE_SIZE));
+        }
+        if (next && next.getAttribute('aria-disabled') !== 'true') {
+          const tp = Math.ceil(productBrowseState.products.length / PRODUCT_PAGE_SIZE);
+          if (productBrowseState.page < tp - 1) {
+            productBrowseState.page++;
+            updateOverlayContent(overlay, productBrowseState.products, tp);
+          }
+        }
+      });
     }
   }
 
@@ -1299,36 +1313,10 @@
     return cardsHtml + paginationHtml;
   }
 
-  function bindPagination(overlay, products, totalPages) {
-    const prevBtn = overlay.querySelector('.ua-pagination-prev');
-    const nextBtn = overlay.querySelector('.ua-pagination-next');
-
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => {
-        if (prevBtn.getAttribute('aria-disabled') === 'true') return;
-        if (productBrowseState.page > 0) {
-          productBrowseState.page--;
-          updateOverlayContent(overlay, products, totalPages);
-        }
-      });
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => {
-        if (nextBtn.getAttribute('aria-disabled') === 'true') return;
-        if (productBrowseState.page < totalPages - 1) {
-          productBrowseState.page++;
-          updateOverlayContent(overlay, products, totalPages);
-        }
-      });
-    }
-  }
-
   function updateOverlayContent(overlay, products, totalPages) {
     const content = overlay.querySelector('#ua-main-content');
     if (!content) return;
     content.innerHTML = renderProductPage(productBrowseState.page, products, totalPages);
-    bindPagination(overlay, products, totalPages);
 
     // Announce page change to screen readers via persistent live region
     let announcer = overlay.querySelector('#ua-page-announce');
