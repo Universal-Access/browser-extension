@@ -91,86 +91,12 @@
   outline-offset: var(--ua-focus-offset);
 }
 
-/* --- Header --- */
-
-.ua-overlay-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px var(--ua-spacing);
-  background: var(--ua-color-header-bg);
-  color: var(--ua-color-header-text);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  flex-shrink: 0;
-}
-
-.ua-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.ua-logo {
-  font-size: 22px;
-  display: flex;
-  align-items: center;
-}
-
-.ua-logo .ua-icon {
-  width: 22px;
-  height: 22px;
-}
-
-.ua-close-btn .ua-icon {
-  width: 18px;
-  height: 18px;
-}
-
 .ua-icon {
   display: inline-block;
   vertical-align: middle;
   flex-shrink: 0;
   width: 1em;
   height: 1em;
-}
-
-.ua-header-title {
-  font-weight: 700;
-  font-size: var(--ua-font-size-lg);
-}
-
-.ua-type-badge {
-  background: var(--ua-color-primary);
-  color: white;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.ua-close-btn {
-  background: transparent;
-  border: 2px solid rgba(255,255,255,0.3);
-  color: var(--ua-color-header-text);
-  font-size: 18px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--ua-transition);
-}
-
-.ua-close-btn:hover {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.5);
 }
 
 /* --- Content area --- */

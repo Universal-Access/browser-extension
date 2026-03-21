@@ -91,18 +91,6 @@
 
 /* Enhanced touch targets & visibility */
 
-#ua-accessible-overlay .ua-close-btn {
-  border-width: 3px;
-  font-size: 22px;
-  width: 48px;
-  height: 48px;
-}
-
-#ua-accessible-overlay .ua-type-badge {
-  font-size: 14px;
-  padding: 4px 14px;
-}
-
 #ua-accessible-overlay .ua-checkbox input[type="checkbox"] {
   width: 26px;
   height: 26px;

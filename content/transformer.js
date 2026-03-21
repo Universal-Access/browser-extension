@@ -1132,14 +1132,6 @@
 
     overlay.innerHTML = `
       <a href="#ua-main-content" class="ua-skip-link">Skip to content</a>
-      <header class="ua-overlay-header">
-        <div class="ua-header-left">
-          <span class="ua-logo" aria-hidden="true">${SVG_WHEELCHAIR}</span>
-          <span class="ua-header-title">Universal Access</span>
-          <span class="ua-type-badge">${esc(type)}</span>
-        </div>
-        <button class="ua-close-btn" aria-label="Close accessible view" title="Close accessible view">${SVG_XMARK}</button>
-      </header>
       ${navHtml || ''}
       <main class="ua-overlay-content" id="ua-main-content">
         ${html}
@@ -1150,11 +1142,6 @@
     if (navHtml) {
       bindNavInteractions(overlay);
     }
-
-    overlay.querySelector('.ua-close-btn').addEventListener('click', () => {
-      safeSendMessage({ type: 'DEACTIVATE_TRANSFORM' });
-      removeOverlay();
-    });
 
     const escHandler = (e) => {
       if (e.key === 'Escape') {
