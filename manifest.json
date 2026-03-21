@@ -15,9 +15,9 @@
   ],
   "action": {
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/icon-off-16.png",
+      "48": "icons/icon-off-48.png",
+      "128": "icons/icon-off-128.png"
     },
     "default_title": "Universal Access"
   },
@@ -48,15 +48,18 @@
         "content/renderers/base.css",
         "content/presets/low-vision.css",
         "content/presets/dyslexia.css",
-        "fonts/OpenDyslexic-Regular.woff2",
-        "fonts/OpenDyslexic-Bold.woff2"
+        "fonts/AtkinsonHyperlegible-Regular.woff2",
+        "fonts/AtkinsonHyperlegible-Bold.woff2",
+        "icons/icon-on.svg",
+        "icons/icon-detection-no.svg",
+        "icons/icon-detection-yes.svg"
       ],
       "matches": ["<all_urls>"]
     }
   ],
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/icon-off-16.png",
+    "48": "icons/icon-off-48.png",
+    "128": "icons/icon-off-128.png"
   }
 }

@@ -1,6 +1,9 @@
 // Schema.org structured data extractor
 // Extracts JSON-LD, Microdata, and RDFa from the current page
 
+if (typeof window.__uaExtractorLoaded === 'undefined') {
+window.__uaExtractorLoaded = true;
+
 // Attempt moderate fixes on broken JSON before giving up
 function salvageJson(raw) {
   let text = raw;
@@ -339,3 +342,5 @@ try {
 } catch {
   // Extension context already invalidated at registration time
 }
+
+} // end __uaExtractorLoaded guard

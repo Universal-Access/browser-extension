@@ -9,11 +9,8 @@
 <body>
   <!-- Header -->
   <header>
-    <div class="header-row">
-      <span class="logo" aria-hidden="true">♿</span>
-      <h1>Universal Access</h1>
-    </div>
-    <div id="page-url" class="page-url"></div>
+    <img id="header-icon" class="header-icon" src="../icons/icon-on.svg" alt="Universal Access status">
+    <h1>Universal Access</h1>
   </header>
 
   <main id="content">
@@ -23,6 +20,7 @@
         <span id="status-icon" class="status-icon" aria-hidden="true">🔍</span>
         <span id="status-text" class="status-text">Scanning page…</span>
       </div>
+      <div id="page-url" class="page-url"></div>
     </section>
 
     <!-- Display Mode Section -->
@@ -34,7 +32,7 @@
       <p class="section-desc" id="detected-type-desc"></p>
       <div class="action-buttons">
         <button id="btn-activate" class="btn btn-primary" aria-label="Activate accessible view">
-          <span class="btn-icon">▶</span> Activate Accessible View
+          Activate Accessible View
         </button>
         <button id="btn-deactivate" class="btn btn-secondary" hidden aria-label="Restore original page">
           <span class="btn-icon">✕</span> Restore Original
@@ -53,7 +51,8 @@
       <div class="setting-row">
         <span class="setting-label">Theme</span>
         <div class="segmented-control" role="radiogroup" aria-label="Theme mode">
-          <button role="radio" aria-checked="true" class="seg-btn active" data-value="light" id="seg-theme-light">Light</button>
+          <button role="radio" aria-checked="true" class="seg-btn active" data-value="auto" id="seg-theme-auto">Auto</button>
+          <button role="radio" aria-checked="false" class="seg-btn" data-value="light" id="seg-theme-light">Light</button>
           <button role="radio" aria-checked="false" class="seg-btn" data-value="dark" id="seg-theme-dark">Dark</button>
         </div>
       </div>

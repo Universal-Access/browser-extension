@@ -1,36 +1,20 @@
 /* Universal Access — Dyslexia Preset
-   OpenDyslexic font, increased spacing, and reading-optimized layout
+   Comic Sans font, 1.5× increased font size, expanded spacing, narrower text box
    Based on British Dyslexia Association style guide
    Font & spacing only — colors inherited from the active theme */
 
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('../../fonts/OpenDyslexic-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('../../fonts/OpenDyslexic-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 #ua-accessible-overlay {
-  --ua-font-family: 'Comic Sans MS', 'OpenDyslexic', cursive, sans-serif;
-  --ua-font-size-base: 22px;
-  --ua-font-size-sm: 18px;
-  --ua-font-size-lg: 28px;
-  --ua-font-size-xl: 34px;
-  --ua-font-size-xxl: 42px;
+  --ua-font-family: 'Comic Sans MS', cursive, sans-serif;
+  --ua-font-size-base: 1.875rem;   /* ~30px at 16px root, 1.5× of base 1.25rem */
+  --ua-font-size-sm: 1.688rem;     /* ~27px */
+  --ua-font-size-lg: 2.438rem;     /* ~39px */
+  --ua-font-size-xl: 3.188rem;     /* ~51px */
+  --ua-font-size-xxl: 4.125rem;    /* ~66px */
   --ua-line-height: 2;
   --ua-letter-spacing: 0.12em;
   --ua-word-spacing: 0.16em;
 
-  --ua-max-width: 900px;
+  --ua-max-width: 700px;
 }
 
 /* Dyslexia-specific layout overrides */
@@ -40,28 +24,28 @@
 #ua-accessible-overlay span,
 #ua-accessible-overlay td {
   text-align: left !important;
-  max-width: 80ch;
+  max-width: 700px;
 }
 
 #ua-accessible-overlay .ua-title {
   line-height: 1.4;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 #ua-accessible-overlay .ua-step {
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 #ua-accessible-overlay .ua-ingredients-list li {
-  padding: 12px 0;
+  padding: 0.75rem 0;
 }
 
 #ua-accessible-overlay .ua-reader {
-  max-width: 860px;
+  max-width: 700px;
 }
 
 #ua-accessible-overlay .ua-description p,
 #ua-accessible-overlay .ua-article-body p {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
