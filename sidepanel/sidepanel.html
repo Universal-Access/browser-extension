@@ -12,7 +12,6 @@
     <div class="header-row">
       <span class="logo" aria-hidden="true">♿</span>
       <h1>Universal Access</h1>
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Theme: Auto">☀</button>
     </div>
     <div id="page-url" class="page-url"></div>
   </header>
@@ -47,30 +46,24 @@
     <section id="presets-section" class="panel-section" hidden>
       <h2 class="section-title">
         <span class="section-icon" aria-hidden="true">👁</span>
-        Accessibility Preset
+        Accessibility
       </h2>
-      <div class="preset-options" role="radiogroup" aria-label="Accessibility preset">
-        <label class="preset-option active">
-          <input type="radio" name="preset" value="none" checked>
-          <span class="preset-label">
-            <span class="preset-name">Default</span>
-            <span class="preset-desc">Standard display</span>
-          </span>
-        </label>
-        <label class="preset-option">
-          <input type="radio" name="preset" value="low-vision">
-          <span class="preset-label">
-            <span class="preset-name">Low Vision</span>
-            <span class="preset-desc">High contrast, large fonts</span>
-          </span>
-        </label>
-        <label class="preset-option">
-          <input type="radio" name="preset" value="dyslexia">
-          <span class="preset-label">
-            <span class="preset-name">Dyslexia</span>
-            <span class="preset-desc">OpenDyslexic font, adjusted spacing</span>
-          </span>
-        </label>
+
+      <!-- Theme: Light / Dark segmented control -->
+      <div class="setting-row">
+        <span class="setting-label">Theme</span>
+        <div class="segmented-control" role="radiogroup" aria-label="Theme mode">
+          <button role="radio" aria-checked="true" class="seg-btn active" data-value="light" id="seg-theme-light">Light</button>
+          <button role="radio" aria-checked="false" class="seg-btn" data-value="dark" id="seg-theme-dark">Dark</button>
+        </div>
+      </div>
+
+      <!-- Dyslexia toggle -->
+      <div class="setting-row">
+        <span class="setting-label">Dyslexia</span>
+        <button role="switch" aria-checked="false" class="toggle-switch" id="toggle-dyslexia" aria-label="Toggle Dyslexia mode">
+          <span class="toggle-knob"></span>
+        </button>
       </div>
     </section>
 

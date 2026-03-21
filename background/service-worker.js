@@ -179,13 +179,58 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  // --- Set accessibility preset ---
+  // --- Set accessibility presets (multi-preset v3) ---
+  if (message.type === 'SET_PRESETS') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SET_PRESETS',
+          presets: message.presets
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Set accessibility preset (v1 compat) ---
   if (message.type === 'SET_PRESET') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         chrome.tabs.sendMessage(tabs[0].id, {
           type: 'SET_PRESET',
           preset: message.preset
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Set dyslexia mode (v2 compat) ---
+  if (message.type === 'SET_DYSLEXIA') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SET_DYSLEXIA',
+          enabled: message.enabled
+        }, (response) => {
+          sendResponse(response || { success: false });
+        });
+      }
+    });
+    return true;
+  }
+
+  // --- Set theme (light/dark) ---
+  if (message.type === 'SET_THEME') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SET_THEME',
+          theme: message.theme
         }, (response) => {
           sendResponse(response || { success: false });
         });

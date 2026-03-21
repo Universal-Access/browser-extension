@@ -6,9 +6,9 @@
   "permissions": [
     "sidePanel",
     "activeTab",
+    "tabs",
     "scripting",
-    "storage",
-    "microphone"
+    "storage"
   ],
   "host_permissions": [
     "<all_urls>"
