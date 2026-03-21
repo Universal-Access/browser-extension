@@ -1144,10 +1144,10 @@
       if (e.key === 'Escape') {
         safeSendMessage({ type: 'DEACTIVATE_TRANSFORM' });
         removeOverlay();
-        document.removeEventListener('keydown', escHandler);
       }
     };
     document.addEventListener('keydown', escHandler);
+    overlay._escHandler = escHandler;
 
     originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -1161,6 +1161,9 @@
   function removeOverlay() {
     const existing = document.getElementById(OVERLAY_ID);
     if (existing) {
+      if (existing._escHandler) {
+        document.removeEventListener('keydown', existing._escHandler);
+      }
       existing.remove();
       document.body.style.overflow = originalOverflow;
       currentOverlay = null;
@@ -1250,6 +1253,103 @@
   // The listener may fire after the extension context is invalidated (e.g. after reload).
   // We guard inside the callback itself since the listener persists beyond context lifetime.
 
+  // --- Product Browse (Aggregation) ---
+
+  const PRODUCT_PAGE_SIZE = 2;
+  let productBrowseState = { products: [], page: 0 };
+
+  function activateProductBrowse(products) {
+    productBrowseState = { products, page: 0 };
+    const totalPages = Math.ceil(products.length / PRODUCT_PAGE_SIZE);
+    const html = renderProductPage(0, products, totalPages);
+    createOverlay(html, 'Products');
+    const overlay = document.getElementById(OVERLAY_ID);
+    if (overlay) {
+      bindPagination(overlay, products, totalPages);
+    }
+  }
+
+  function renderProductPage(pageNum, products, totalPages) {
+    const start = pageNum * PRODUCT_PAGE_SIZE;
+    const pageProducts = products.slice(start, start + PRODUCT_PAGE_SIZE);
+
+    const cardsHtml = pageProducts.map(product => {
+      // Wrap each product in its own minimal schemaData so findProductData doesn't merge them
+      const wrappedSchema = {
+        jsonLd: [{ data: product }],
+        microdata: [],
+        rdfa: [],
+        entities: [{ type: 'Product', data: product }],
+        primaryType: 'Product'
+      };
+      return renderProduct({ type: 'Product', data: product }, wrappedSchema);
+    }).join('');
+
+    const prevDisabled = pageNum === 0;
+    const nextDisabled = pageNum >= totalPages - 1;
+
+    const paginationHtml = `
+      <nav class="ua-pagination" aria-label="Product pagination">
+        <button class="ua-button ua-pagination-prev"${prevDisabled ? ' aria-disabled="true"' : ''}><span aria-hidden="true">←</span> Previous</button>
+        <span class="ua-pagination-info">Page ${pageNum + 1} of ${totalPages}</span>
+        <button class="ua-button ua-pagination-next"${nextDisabled ? ' aria-disabled="true"' : ''}>Next <span aria-hidden="true">→</span></button>
+      </nav>
+    `;
+
+    return cardsHtml + paginationHtml;
+  }
+
+  function bindPagination(overlay, products, totalPages) {
+    const prevBtn = overlay.querySelector('.ua-pagination-prev');
+    const nextBtn = overlay.querySelector('.ua-pagination-next');
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (prevBtn.getAttribute('aria-disabled') === 'true') return;
+        if (productBrowseState.page > 0) {
+          productBrowseState.page--;
+          updateOverlayContent(overlay, products, totalPages);
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (nextBtn.getAttribute('aria-disabled') === 'true') return;
+        if (productBrowseState.page < totalPages - 1) {
+          productBrowseState.page++;
+          updateOverlayContent(overlay, products, totalPages);
+        }
+      });
+    }
+  }
+
+  function updateOverlayContent(overlay, products, totalPages) {
+    const content = overlay.querySelector('#ua-main-content');
+    if (!content) return;
+    content.innerHTML = renderProductPage(productBrowseState.page, products, totalPages);
+    bindPagination(overlay, products, totalPages);
+
+    // Announce page change to screen readers via persistent live region
+    let announcer = overlay.querySelector('#ua-page-announce');
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = 'ua-page-announce';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'ua-sr-only';
+      overlay.appendChild(announcer);
+    }
+    announcer.textContent = `Page ${productBrowseState.page + 1} of ${totalPages}`;
+
+    // Move focus to first product card heading
+    const firstHeading = content.querySelector('.ua-title');
+    if (firstHeading) {
+      firstHeading.setAttribute('tabindex', '-1');
+      firstHeading.focus();
+    }
+  }
+
   try {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       try {
@@ -1260,6 +1360,12 @@
         }
         if (message.type === 'DEACTIVATE_TRANSFORM') {
           removeOverlay();
+          sendResponse({ success: true });
+        }
+        if (message.type === 'ACTIVATE_PRODUCT_BROWSE') {
+          if (message.products && message.products.length > 0) {
+            activateProductBrowse(message.products);
+          }
           sendResponse({ success: true });
         }
       } catch (e) {

@@ -1015,3 +1015,43 @@
 .ua-item-list-link:hover {
   text-decoration: underline;
 }
+
+/* --- Pagination --- */
+
+.ua-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ua-spacing);
+  padding: var(--ua-spacing) 0;
+}
+
+.ua-pagination-info {
+  font-size: var(--ua-font-size-sm);
+  font-weight: 600;
+  color: var(--ua-color-text-secondary);
+}
+
+.ua-pagination .ua-button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Screen-reader-only utility */
+.ua-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Multi-product card spacing --- */
+
+.ua-type-products .ua-card + .ua-card {
+  margin-top: var(--ua-spacing);
+}
