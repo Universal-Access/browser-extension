@@ -169,9 +169,13 @@ main {
 }
 
 .section-header .toggle-arrow {
-  font-size: 10px;
-  transition: transform 0.15s;
   display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent currentColor;
+  transition: transform 0.15s;
 }
 
 .section-header.open .toggle-arrow {
@@ -229,11 +233,17 @@ main {
 }
 
 .tree-toggle .arrow {
-  font-size: 9px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.15s;
   width: 10px;
   color: var(--sp-text-secondary);
+}
+
+.tree-toggle .arrow .ua-icon {
+  width: 10px;
+  height: 10px;
 }
 
 .tree-toggle.open .arrow {
@@ -526,7 +536,15 @@ a.nlweb-result-name:hover {
   gap: 6px;
 }
 
+.nlweb-read-btn .ua-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .nlweb-read-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 5px 12px;
   background: var(--sp-primary);
   color: var(--sp-primary-text);
@@ -563,12 +581,20 @@ a.nlweb-result-name:hover {
 }
 
 .nlweb-result-schema-toggle::before {
-  content: '▶ ';
-  font-size: 9px;
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent currentColor;
+  margin-right: 4px;
+  vertical-align: middle;
+  transition: transform 0.15s;
 }
 
 .nlweb-result-schema-details[open] > .nlweb-result-schema-toggle::before {
-  content: '▼ ';
+  transform: rotate(90deg);
 }
 
 .nlweb-error {
@@ -610,6 +636,43 @@ a.nlweb-result-name:hover {
 .logo {
   font-size: 20px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.logo .ua-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- Icon base styles --- */
+
+.ua-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+
+.section-icon .ua-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-icon .ua-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.btn-copy .ua-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.empty-icon .ua-icon {
+  width: 40px;
+  height: 40px;
 }
 
 /* Theme Toggle */
@@ -662,6 +725,8 @@ a.nlweb-result-name:hover {
 .section-icon {
   font-size: 16px;
   line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .section-desc {
@@ -872,8 +937,12 @@ a.nlweb-result-name:hover {
 }
 
 .section-toggle .toggle-arrow {
-  font-size: 10px;
   display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent currentColor;
   transition: transform 0.15s;
   margin-left: auto;
   color: var(--sp-text-hint);
@@ -903,8 +972,12 @@ a.nlweb-result-name:hover {
 }
 
 .subsection-header .toggle-arrow {
-  font-size: 9px;
   display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent currentColor;
   transition: transform 0.15s;
   color: var(--sp-text-hint);
 }
@@ -927,6 +1000,8 @@ a.nlweb-result-name:hover {
   font-size: 40px;
   margin-bottom: 12px;
   opacity: 0.6;
+  display: flex;
+  justify-content: center;
 }
 
 /* --- Aggregation Status --- */
