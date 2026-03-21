@@ -170,7 +170,7 @@ import {
 
       displaySection.hidden = false;
       presetsSection.hidden = false;
-      ttsSection.hidden = false;
+      ttsSection.hidden = !hasNlweb;
 
       const typeDescs = {
         Product:
@@ -196,7 +196,7 @@ import {
         setStatus("📊", `${totalCount} schema items found`, "found");
         displaySection.hidden = true;
         presetsSection.hidden = true;
-        ttsSection.hidden = true;
+        ttsSection.hidden = !hasNlweb;
       } else {
         setStatus("📄", "No structured data found", "empty");
         emptyState.hidden = false;
