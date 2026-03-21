@@ -249,6 +249,9 @@
 
 .ua-actions {
   margin: var(--ua-spacing) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .ua-button {
@@ -273,6 +276,16 @@
   background: #1d4ed8;
   box-shadow: 0 4px 8px rgba(37,99,235,0.4);
   transform: translateY(-1px);
+}
+
+.ua-button-buy {
+  background: #16a34a;
+  box-shadow: 0 2px 4px rgba(22,163,74,0.3);
+}
+
+.ua-button-buy:hover {
+  background: #15803d;
+  box-shadow: 0 4px 8px rgba(22,163,74,0.4);
 }
 
 /* --- FAQ --- */
@@ -1014,4 +1027,44 @@
 
 .ua-item-list-link:hover {
   text-decoration: underline;
+}
+
+/* --- Pagination --- */
+
+.ua-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ua-spacing);
+  padding: var(--ua-spacing) 0;
+}
+
+.ua-pagination-info {
+  font-size: var(--ua-font-size-sm);
+  font-weight: 600;
+  color: var(--ua-color-text-secondary);
+}
+
+.ua-pagination .ua-button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Screen-reader-only utility */
+.ua-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Multi-product card spacing --- */
+
+.ua-type-products .ua-card + .ua-card {
+  margin-top: var(--ua-spacing);
 }

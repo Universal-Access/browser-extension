@@ -218,6 +218,7 @@
     const category = data.applicationCategory || data.category || '';
     const os = data.operatingSystem || '';
     const url = data.url || '';
+    const buyUrl = extractBuyUrl(data);
 
     return `
       <article class="ua-card ua-product" role="main" aria-label="Product: ${esc(name)}">
@@ -245,8 +246,9 @@
           ${sku ? `<p class="ua-meta ua-sku">SKU: ${esc(sku)}</p>` : ''}
           ${description ? `<div class="ua-description">${formatText(description)}</div>` : ''}
 
-          ${url ? `<div class="ua-actions">
-            <a href="${esc(url)}" class="ua-button" target="_blank" rel="noopener noreferrer">View Product →</a>
+          ${url || buyUrl ? `<div class="ua-actions">
+            ${url ? `<a href="${esc(url)}" class="ua-button" target="_blank" rel="noopener noreferrer">View Product →</a>` : ''}
+            ${buyUrl && buyUrl !== url ? `<a href="${esc(buyUrl)}" class="ua-button ua-button-buy" target="_blank" rel="noopener noreferrer">Buy Product →</a>` : ''}
           </div>` : ''}
 
           ${faqs.length > 0 ? `
@@ -782,6 +784,16 @@
     }
   }
 
+  function extractBuyUrl(data) {
+    const offers = data.offers;
+    if (!offers) return null;
+    const list = Array.isArray(offers) ? offers : [offers];
+    for (const offer of list) {
+      if (offer?.url) return offer.url;
+    }
+    return null;
+  }
+
   function extractAvailability(data) {
     const offers = data.offers;
     if (!offers) return null;
@@ -1144,10 +1156,10 @@
       if (e.key === 'Escape') {
         safeSendMessage({ type: 'DEACTIVATE_TRANSFORM' });
         removeOverlay();
-        document.removeEventListener('keydown', escHandler);
       }
     };
     document.addEventListener('keydown', escHandler);
+    overlay._escHandler = escHandler;
 
     originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -1161,6 +1173,9 @@
   function removeOverlay() {
     const existing = document.getElementById(OVERLAY_ID);
     if (existing) {
+      if (existing._escHandler) {
+        document.removeEventListener('keydown', existing._escHandler);
+      }
       existing.remove();
       document.body.style.overflow = originalOverflow;
       currentOverlay = null;
@@ -1250,6 +1265,91 @@
   // The listener may fire after the extension context is invalidated (e.g. after reload).
   // We guard inside the callback itself since the listener persists beyond context lifetime.
 
+  // --- Product Browse (Aggregation) ---
+
+  const PRODUCT_PAGE_SIZE = 2;
+  let productBrowseState = { products: [], page: 0 };
+
+  function activateProductBrowse(products) {
+    productBrowseState = { products, page: 0 };
+    const totalPages = Math.ceil(products.length / PRODUCT_PAGE_SIZE);
+    const html = renderProductPage(0, products, totalPages);
+    createOverlay(html, 'Products');
+    const overlay = document.getElementById(OVERLAY_ID);
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        const prev = e.target.closest('.ua-pagination-prev');
+        const next = e.target.closest('.ua-pagination-next');
+        if (prev && prev.getAttribute('aria-disabled') !== 'true' && productBrowseState.page > 0) {
+          productBrowseState.page--;
+          updateOverlayContent(overlay, productBrowseState.products, Math.ceil(productBrowseState.products.length / PRODUCT_PAGE_SIZE));
+        }
+        if (next && next.getAttribute('aria-disabled') !== 'true') {
+          const tp = Math.ceil(productBrowseState.products.length / PRODUCT_PAGE_SIZE);
+          if (productBrowseState.page < tp - 1) {
+            productBrowseState.page++;
+            updateOverlayContent(overlay, productBrowseState.products, tp);
+          }
+        }
+      });
+    }
+  }
+
+  function renderProductPage(pageNum, products, totalPages) {
+    const start = pageNum * PRODUCT_PAGE_SIZE;
+    const pageProducts = products.slice(start, start + PRODUCT_PAGE_SIZE);
+
+    const cardsHtml = pageProducts.map(product => {
+      // Wrap each product in its own minimal schemaData so findProductData doesn't merge them
+      const wrappedSchema = {
+        jsonLd: [{ data: product }],
+        microdata: [],
+        rdfa: [],
+        entities: [{ type: 'Product', data: product }],
+        primaryType: 'Product'
+      };
+      return renderProduct({ type: 'Product', data: product }, wrappedSchema);
+    }).join('');
+
+    const prevDisabled = pageNum === 0;
+    const nextDisabled = pageNum >= totalPages - 1;
+
+    const paginationHtml = `
+      <nav class="ua-pagination" aria-label="Product pagination">
+        <button class="ua-button ua-pagination-prev"${prevDisabled ? ' aria-disabled="true"' : ''}><span aria-hidden="true">←</span> Previous</button>
+        <span class="ua-pagination-info">Page ${pageNum + 1} of ${totalPages}</span>
+        <button class="ua-button ua-pagination-next"${nextDisabled ? ' aria-disabled="true"' : ''}>Next <span aria-hidden="true">→</span></button>
+      </nav>
+    `;
+
+    return cardsHtml + paginationHtml;
+  }
+
+  function updateOverlayContent(overlay, products, totalPages) {
+    const content = overlay.querySelector('#ua-main-content');
+    if (!content) return;
+    content.innerHTML = renderProductPage(productBrowseState.page, products, totalPages);
+
+    // Announce page change to screen readers via persistent live region
+    let announcer = overlay.querySelector('#ua-page-announce');
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = 'ua-page-announce';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'ua-sr-only';
+      overlay.appendChild(announcer);
+    }
+    announcer.textContent = `Page ${productBrowseState.page + 1} of ${totalPages}`;
+
+    // Move focus to first product card heading
+    const firstHeading = content.querySelector('.ua-title');
+    if (firstHeading) {
+      firstHeading.setAttribute('tabindex', '-1');
+      firstHeading.focus();
+    }
+  }
+
   try {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       try {
@@ -1260,6 +1360,12 @@
         }
         if (message.type === 'DEACTIVATE_TRANSFORM') {
           removeOverlay();
+          sendResponse({ success: true });
+        }
+        if (message.type === 'ACTIVATE_PRODUCT_BROWSE') {
+          if (message.products && message.products.length > 0) {
+            activateProductBrowse(message.products);
+          }
           sendResponse({ success: true });
         }
       } catch (e) {
