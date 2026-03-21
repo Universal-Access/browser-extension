@@ -219,6 +219,10 @@
 
 /* --- Typography --- */
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ua-font-family);
+}
+
 .ua-title {
   font-size: var(--ua-font-size-xxl);
   font-weight: 800;
