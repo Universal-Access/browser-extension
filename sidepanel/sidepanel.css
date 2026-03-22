@@ -643,75 +643,115 @@ main {
 
 .nlweb-form {
   display: flex;
+  flex-direction: column;
   gap: 6px;
-  padding: 12px 14px;
   border-bottom: 1px solid var(--sp-border);
+  padding-bottom: 10px;
 }
 
-.nlweb-form input[type="text"] {
+.nlweb-query-label {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--sp-text-secondary);
+}
+
+.nlweb-form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nlweb-input-wrapper {
+  display: flex;
+  align-items: center;
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--sp-border-hover);
-  border-radius: 6px;
-  font-size: 0.88rem;
-  font-family: inherit;
-  outline: none;
+  border: 1.5px solid var(--sp-border-hover);
+  border-radius: 10px;
   background: var(--sp-surface);
-  color: var(--sp-text);
+  overflow: hidden;
+  transition: border-color 0.15s;
 }
 
-.nlweb-form input[type="text"]:focus-visible {
+.nlweb-input-wrapper:focus-within {
+  border-color: var(--sp-primary);
   outline: var(--sp-focus-ring);
   outline-offset: var(--sp-focus-offset);
 }
 
-.nlweb-form input[type="text"]:disabled {
-  background: var(--sp-surface-hover);
-  color: var(--sp-text-hint);
-}
-
-.nlweb-form button {
-  padding: 8px 16px;
+.nlweb-form input[type="text"] {
+  flex: 1;
+  padding: 9px 12px;
   border: none;
-  border-radius: 6px;
+  outline: none;
+  background: transparent;
   font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
   font-family: inherit;
+  color: var(--sp-text);
+  min-width: 0;
 }
 
-.nlweb-form button#nlweb-submit {
-  background: var(--sp-primary);
-  color: var(--sp-primary-text);
-}
-
-.nlweb-form button#nlweb-submit:hover {
-  background: var(--sp-primary-hover);
-}
-
-.nlweb-form button#nlweb-submit:disabled {
-  background: var(--sp-border-hover);
+.nlweb-form input[type="text"]::placeholder {
   color: var(--sp-text-hint);
-  cursor: default;
+}
+
+.nlweb-form input[type="text"]:disabled {
+  color: var(--sp-text-hint);
 }
 
 .nlweb-mic-btn {
-  min-width: 44px;
-  background: var(--sp-surface-hover);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: none;
+  border-left: 1px solid var(--sp-border);
+  border-radius: 0;
+  background: transparent;
   color: var(--sp-text-secondary);
+  font-size: 0.83rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
 }
 
 .nlweb-mic-btn:hover {
-  background: var(--sp-surface-active);
+  background: var(--sp-surface-hover);
+  color: var(--sp-text);
 }
 
 .nlweb-mic-btn.listening {
   background: #D93025;
   color: white;
+  border-left-color: #D93025;
 }
 
 .nlweb-mic-btn:disabled {
-  background: var(--sp-surface-hover);
+  color: var(--sp-text-hint);
+  cursor: default;
+}
+
+#nlweb-submit {
+  padding: 9px 16px;
+  background: var(--sp-primary);
+  color: var(--sp-primary-text);
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+#nlweb-submit:hover {
+  background: var(--sp-primary-hover);
+}
+
+#nlweb-submit:disabled {
+  background: var(--sp-border-hover);
   color: var(--sp-text-hint);
   cursor: default;
 }
