@@ -153,7 +153,7 @@ import {
 
     if (hasEntities && primaryType !== 'Unknown') {
       displaySection.hidden = false;
-      presetsSection.hidden = false;
+      presetsSection.hidden = !isTransformActive;
 
       const typeDescs = {
         Product: 'View product details in a clean, accessible layout with price, ratings, and description.',
@@ -253,6 +253,7 @@ import {
     segTransformOff?.setAttribute('aria-checked', String(!checked));
     segTransformOn?.classList.toggle('active', checked);
     segTransformOn?.setAttribute('aria-checked', String(checked));
+    presetsSection.hidden = !checked;
   }
 
   segTransformOn?.addEventListener('click', () => {
