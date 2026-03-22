@@ -378,6 +378,28 @@ main {
   border-radius: 50%;
   background: var(--sp-text-hint);
   transition: transform 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-icon {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.toggle-icon-off {
+  color: var(--sp-surface);
+  opacity: 1;
+  transform: scale(1);
+}
+
+.toggle-icon-on {
+  color: var(--sp-primary);
+  opacity: 0;
+  transform: scale(0.5);
 }
 
 .toggle-switch[aria-checked="true"] {
@@ -388,6 +410,16 @@ main {
 .toggle-switch[aria-checked="true"] .toggle-knob {
   transform: translateX(20px);
   background: var(--sp-primary-text);
+}
+
+.toggle-switch[aria-checked="true"] .toggle-icon-off {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.toggle-switch[aria-checked="true"] .toggle-icon-on {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* === Site Navigation (schemamap) === */
