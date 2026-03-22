@@ -164,10 +164,17 @@ function handleProbeSchemaAggregation(message, sender) {
     probeSchemaAggregation(message.origin).then((postTypes) => {
       if (!postTypes) return;
       const hasProducts = postTypes.includes("product");
-      tabAggregationState.set(tabId, { origin: message.origin, postTypes, hasProducts, products: null });
+      const state = { origin: message.origin, postTypes, hasProducts, products: null };
+      tabAggregationState.set(tabId, state);
       chrome.runtime
         .sendMessage({ type: "SCHEMA_AGGREGATION_AVAILABLE", origin: message.origin, postTypes, hasProducts, tabId })
         .catch(() => {});
+      // Precache products so they're ready when the user toggles Browse Products
+      if (hasProducts) {
+        fetchAggregatedProducts(message.origin)
+          .then((products) => { state.products = products; })
+          .catch(() => {});
+      }
     });
   }
 }
@@ -235,6 +242,17 @@ function handleDeactivateTransform(message, sender, sendResponse) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
       chrome.tabs.sendMessage(tabs[0].id, { type: "DEACTIVATE_TRANSFORM" }, (response) => {
+        sendResponse(response || { success: false });
+      });
+    }
+  });
+  return true;
+}
+
+function handleDeactivateProductBrowse(message, sender, sendResponse) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: "DEACTIVATE_PRODUCT_BROWSE" }, (response) => {
         sendResponse(response || { success: false });
       });
     }
@@ -339,6 +357,7 @@ const handlers = {
   ACTIVATE_PRODUCT_BROWSE: handleActivateProductBrowse,
   ACTIVATE_TRANSFORM: handleActivateTransform,
   DEACTIVATE_TRANSFORM: handleDeactivateTransform,
+  DEACTIVATE_PRODUCT_BROWSE: handleDeactivateProductBrowse,
   SET_PRESETS: handleSetPresets,
   SET_PRESET: handleSetPreset,
   SET_DYSLEXIA: handleSetDyslexia,
