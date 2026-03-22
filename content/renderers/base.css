@@ -115,6 +115,7 @@
   outline-offset: var(--ua-focus-offset);
 }
 
+
 .ua-icon {
   display: inline-block;
   vertical-align: middle;
@@ -1020,14 +1021,18 @@ a.ua-button:active {
   margin-left: 4px;
 }
 
-.ua-breadcrumb-link {
+.ua-breadcrumb-item a {
   color: var(--ua-color-primary);
   text-decoration: none;
 }
 
-.ua-breadcrumb-link:hover {
+.ua-breadcrumb-item a:hover {
   color: var(--ua-color-link-hover);
   text-decoration: underline;
+}
+
+.ua-breadcrumb-item a:visited {
+  color: var(--ua-color-primary);
 }
 
 .ua-breadcrumb-current {
