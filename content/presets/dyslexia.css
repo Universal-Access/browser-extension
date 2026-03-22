@@ -1,5 +1,5 @@
 /* Universal Access — Dyslexia Preset
-   Comic Sans MS font, ×1.2 size/line-height multiplier, reading-optimized layout
+   Comic Sans MS font, ×1.2 size/line-height multiplier, reading-optimized layout, expanded spacing, narrower text box
    Based on design system spec and British Dyslexia Association style guide
    Font & spacing only — colors inherited from the active theme */
 
@@ -11,6 +11,7 @@
   --ua-font-size-xl: 2rem;         /* 30px × 1.2 = 36px */
   --ua-font-size-xxl: 2.533rem;    /* 38px × 1.2 = ~45.6px */
   --ua-line-height: 1.92;
+  --ua-letter-spacing: 0.12em;
   --ua-word-spacing: 0.16em;
 
   --ua-max-width: 700px;
