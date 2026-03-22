@@ -30,7 +30,8 @@ import {
   const navSection = document.getElementById('nav-section');
   const navLinks = document.getElementById('nav-links');
   const aggregationSection = document.getElementById('aggregation-section');
-  const btnBrowseProducts = document.getElementById('btn-browse-products');
+  const segProductsOff = document.getElementById('seg-products-off');
+  const segProductsOn = document.getElementById('seg-products-on');
   const aggregationStatus = document.getElementById('aggregation-status');
   const rawDataSection = document.getElementById('raw-data-section');
 
@@ -246,17 +247,26 @@ import {
 
   // --- Activate / Deactivate Segmented Control ---
 
+  function updatePresetsVisibility() {
+    presetsSection.hidden = !(isTransformActive || isProductBrowseActive);
+  }
+
   function setTransformToggle(checked) {
     isTransformActive = checked;
     segTransformOff?.classList.toggle('active', !checked);
     segTransformOff?.setAttribute('aria-checked', String(!checked));
     segTransformOn?.classList.toggle('active', checked);
     segTransformOn?.setAttribute('aria-checked', String(checked));
-    presetsSection.hidden = !checked;
+    updatePresetsVisibility();
   }
 
   segTransformOn?.addEventListener('click', () => {
     if (isTransformActive || !currentData) return;
+    if (isProductBrowseActive) {
+      chrome.runtime.sendMessage({ type: 'DEACTIVATE_PRODUCT_BROWSE' });
+      setProductBrowseToggle(false);
+      aggregationStatus.textContent = '';
+    }
     chrome.runtime.sendMessage({
       type: 'ACTIVATE_TRANSFORM',
       payload: currentData
@@ -435,16 +445,38 @@ import {
     }
   }
 
-  btnBrowseProducts.addEventListener('click', () => {
+  let isProductBrowseActive = false;
+
+  function setProductBrowseToggle(checked) {
+    isProductBrowseActive = checked;
+    segProductsOff?.classList.toggle('active', !checked);
+    segProductsOff?.setAttribute('aria-checked', String(!checked));
+    segProductsOn?.classList.toggle('active', checked);
+    segProductsOn?.setAttribute('aria-checked', String(checked));
+    updatePresetsVisibility();
+  }
+
+  segProductsOn?.addEventListener('click', () => {
+    if (isProductBrowseActive) return;
+    if (isTransformActive) {
+      chrome.runtime.sendMessage({ type: 'DEACTIVATE_TRANSFORM' });
+      setTransformToggle(false);
+    }
     aggregationStatus.textContent = 'Loading products…';
-    btnBrowseProducts.disabled = true;
     chrome.runtime.sendMessage({ type: 'FETCH_AGGREGATED_PRODUCTS' });
+  });
+
+  segProductsOff?.addEventListener('click', () => {
+    if (!isProductBrowseActive) return;
+    chrome.runtime.sendMessage({ type: 'DEACTIVATE_PRODUCT_BROWSE' }, () => setProductBrowseToggle(false));
+    aggregationStatus.textContent = '';
   });
 
   // --- Initialize ---
 
   function refreshSchemaData() {
     setTransformToggle(false);
+    setProductBrowseToggle(false);
 
     chrome.runtime.sendMessage({ type: 'GET_SCHEMA_DATA' }, (response) => {
       if (chrome.runtime.lastError) {
@@ -473,6 +505,8 @@ import {
         updateIconState('on');
         handleSchemaData(null);
         showAggregationSection(null);
+        setProductBrowseToggle(false);
+        aggregationStatus.textContent = '';
       }
 
       if (changeInfo.status === 'complete') {
@@ -485,6 +519,8 @@ import {
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'TAB_ACTIVATED') {
       setTransformToggle(false);
+      setProductBrowseToggle(false);
+      aggregationStatus.textContent = '';
       handleSchemaData(message.payload);
       showAggregationSection(message.aggregation);
       if (message.nlweb) {
@@ -501,20 +537,21 @@ import {
       showAggregationSection(message);
     }
     if (message.type === 'AGGREGATED_PRODUCTS_RESULT') {
-      btnBrowseProducts.disabled = false;
       if (message.error) {
         aggregationStatus.textContent = `Error: ${message.error}`;
+        setProductBrowseToggle(false);
         return;
       }
       if (!message.products || message.products.length === 0) {
         aggregationStatus.textContent = 'No products found.';
+        setProductBrowseToggle(false);
         return;
       }
       aggregationStatus.textContent = `Found ${message.products.length} products. Opening overlay…`;
       chrome.runtime.sendMessage({
         type: 'ACTIVATE_PRODUCT_BROWSE',
         products: message.products
-      });
+      }, () => setProductBrowseToggle(true));
       setTimeout(() => { aggregationStatus.textContent = ''; }, 3000);
     }
     if (message.type === 'NLWEB_ENDPOINT') {

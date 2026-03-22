@@ -1353,6 +1353,10 @@
           removeOverlay();
           sendResponse({ success: true });
         }
+        if (message.type === 'DEACTIVATE_PRODUCT_BROWSE') {
+          removeOverlay();
+          sendResponse({ success: true });
+        }
         if (message.type === 'ACTIVATE_PRODUCT_BROWSE') {
           if (message.products && message.products.length > 0) {
             activateProductBrowse(message.products);
