@@ -64,7 +64,7 @@
 /* --- Low-contrast dark mode — Autistic / ADHD users --- */
 
 #ua-accessible-overlay[data-theme="dark"] {
-  --ua-color-bg: #141A34;
+  --ua-color-bg: #0D1228;
   --ua-color-surface: #1C2240;
   --ua-color-text: #D3D3D3;
   --ua-color-text-secondary: #ABABAB;
@@ -75,12 +75,12 @@
   --ua-color-border: #3A4070;
   --ua-color-border-strong: #50568A;
   --ua-color-star: #E0AF68;
-  --ua-color-overlay-bg: #141A34;
+  --ua-color-overlay-bg: #0D1228;
   --ua-color-header-bg: #1C2240;
   --ua-color-header-text: #D3D3D3;
   --ua-color-link: #C98C00;
   --ua-color-link-hover: #FFD982;
-  --ua-color-button-text: #141A34;
+  --ua-color-button-text: #0D1228;
   --ua-color-button-text-hover: #141A34;
 
   --ua-focus-outline: 4px solid #FFD982;
@@ -90,18 +90,6 @@
 }
 
 /* Enhanced touch targets & visibility */
-
-#ua-accessible-overlay .ua-close-btn {
-  border-width: 3px;
-  font-size: 22px;
-  width: 48px;
-  height: 48px;
-}
-
-#ua-accessible-overlay .ua-type-badge {
-  font-size: 14px;
-  padding: 4px 14px;
-}
 
 #ua-accessible-overlay .ua-checkbox input[type="checkbox"] {
   width: 26px;

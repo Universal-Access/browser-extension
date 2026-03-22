@@ -73,7 +73,7 @@ body {
 /* === Design System — Low-Contrast Dark Mode === */
 
 body[data-theme="dark"] {
-  --sp-bg: #141A34;
+  --sp-bg: #0D1228;
   --sp-text: #D3D3D3;
   --sp-text-secondary: #ABABAB;
   --sp-text-hint: #7A7A8E;
@@ -86,11 +86,11 @@ body[data-theme="dark"] {
   --sp-link: #C98C00;
   --sp-link-hover: #FFD982;
   --sp-primary: #C98C00;
-  --sp-primary-hover: #FFD982;
+  --sp-primary-hover: #A67200;
   --sp-primary-light: #2A2210;
-  --sp-primary-text: #141A34;
+  --sp-primary-text: #0D1228;
   --sp-badge-bg: #C98C00;
-  --sp-badge-text: #141A34;
+  --sp-badge-text: #0D1228;
   --sp-error-bg: #2D1B1B;
   --sp-error-border: #5C3030;
   --sp-error-text: #F7768E;
@@ -951,6 +951,11 @@ a.nlweb-result-name:hover {
 .btn-icon .ua-icon {
   width: 12px;
   height: 12px;
+}
+
+#btn-browse-products .ua-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .btn-copy .ua-icon {
