@@ -30,6 +30,16 @@ No build step required — the extension runs as vanilla JavaScript.
 3. View extracted Schema.org data in collapsible tree sections (JSON-LD, Microdata, RDFa).
 4. If the site supports NLWeb, a query form appears — type a question or use the microphone button for voice input.
 
+### Dev Tools (Raw Schema Data)
+
+For developers and debugging purposes, a hidden "Dev Tools" section displays raw schema data with the ability to inspect and copy all extracted JSON.
+
+**To activate:**
+- Press **Ctrl+Shift+D** (Windows/Linux)
+- Press **Cmd+Shift+D** (macOS)
+
+The Dev Tools section will toggle on/off and remain visible until toggled again. Your preference is saved across sessions.
+
 ## How It Works
 
 **Schema.org extraction:** Content scripts run on every page, parsing JSON-LD (`<script type="application/ld+json">`), Microdata (`itemscope`/`itemprop` attributes), and RDFa (`typeof`/`property` attributes). Extracted data is sent to the service worker, cached, and forwarded to the side panel for display.
