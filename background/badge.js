@@ -1,38 +1,24 @@
 // Toolbar icon state management
+// Uses absolute chrome-extension:// URLs so the MV3 service worker can fetch them
 
-const ICON_PATHS = {
-  'off': {
-    '16': 'icons/icon-off-16.png',
-    '48': 'icons/icon-off-48.png',
-    '128': 'icons/icon-off-128.png'
-  },
-  'on': {
-    '16': 'icons/icon-on-16.png',
-    '48': 'icons/icon-on-48.png',
-    '128': 'icons/icon-on-128.png'
-  },
-  'detection-no': {
-    '16': 'icons/icon-detection-no-16.png',
-    '48': 'icons/icon-detection-no-48.png',
-    '128': 'icons/icon-detection-no-128.png'
-  },
-  'detection-yes': {
-    '16': 'icons/icon-detection-yes-16.png',
-    '48': 'icons/icon-detection-yes-48.png',
-    '128': 'icons/icon-detection-yes-128.png'
+const ICON_STATES = ['off', 'on', 'detection-no', 'detection-yes'];
+const ICON_SIZES = ['16', '48', '128'];
+
+// Build paths using chrome.runtime.getURL so the service worker can resolve them
+const ICON_PATHS = {};
+for (const state of ICON_STATES) {
+  ICON_PATHS[state] = {};
+  for (const size of ICON_SIZES) {
+    ICON_PATHS[state][size] = chrome.runtime.getURL(`icons/icon-${state}-${size}.png`);
   }
-};
+}
 
 export function updateToolbarIcon(tabId, state) {
   const paths = ICON_PATHS[state];
   if (!paths) return;
-  if (tabId) {
-    chrome.action.setIcon({ path: paths, tabId }).catch((err) => {
-      console.warn('[Universal Access] setIcon failed:', err.message, { state, tabId });
-    });
-  } else {
-    chrome.action.setIcon({ path: paths }).catch((err) => {
-      console.warn('[Universal Access] setIcon failed:', err.message, { state });
-    });
-  }
+  const details = { path: paths };
+  if (tabId) details.tabId = tabId;
+  chrome.action.setIcon(details).catch((err) => {
+    console.warn('[Universal Access] setIcon failed:', err.message, { state, tabId });
+  });
 }
