@@ -91,7 +91,11 @@
       </div>
       <form id="nlweb-form" class="nlweb-form">
         <input type="text" id="nlweb-query" placeholder="Ask this site a question..." autocomplete="off" aria-label="Ask this site a question">
-        <button type="button" id="nlweb-mic" class="nlweb-mic-btn" aria-label="Start voice input" aria-pressed="false">Mic</button>
+        <button type="button" id="nlweb-mic" class="nlweb-mic-btn" aria-label="Start voice input" aria-pressed="false">
+          <svg class="mic-icon mic-icon-idle" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          <svg class="mic-icon mic-icon-active" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          <span class="mic-pulse"></span>
+        </button>
         <button type="submit" id="nlweb-submit">Ask</button>
       </form>
       <div id="nlweb-stt-status" class="nlweb-stt-status" aria-live="polite"></div>
@@ -139,6 +143,7 @@
     </section>
   </main>
 
+  <script src="audio-cues.js"></script>
   <script src="speech-recognition.js"></script>
   <script type="module" src="sidepanel.js"></script>
 </body>

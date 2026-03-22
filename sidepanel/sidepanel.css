@@ -684,24 +684,112 @@ main {
 }
 
 .nlweb-mic-btn {
+  position: relative;
   min-width: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   background: var(--sp-surface-hover);
   color: var(--sp-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.1s;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .nlweb-mic-btn:hover {
   background: var(--sp-surface-active);
+  color: var(--sp-text);
+  transform: scale(1.05);
 }
+
+.nlweb-mic-btn:active {
+  transform: scale(0.95);
+}
+
+.nlweb-mic-btn:focus-visible {
+  outline: 2px solid var(--sp-primary);
+  outline-offset: 2px;
+}
+
+/* SVG icons inside the mic button */
+.mic-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.mic-icon-active {
+  display: none;
+}
+
+/* Pulse ring — hidden by default */
+.mic-pulse {
+  display: none;
+}
+
+/* --- Listening state --- */
 
 .nlweb-mic-btn.listening {
   background: #D93025;
   color: white;
+  box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.4);
+}
+
+.nlweb-mic-btn.listening:hover {
+  background: #C5221F;
+  color: white;
+}
+
+.nlweb-mic-btn.listening .mic-icon-idle {
+  display: none;
+}
+
+.nlweb-mic-btn.listening .mic-icon-active {
+  display: block;
+}
+
+.nlweb-mic-btn.listening .mic-pulse {
+  display: block;
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(217, 48, 37, 0.5);
+  animation: mic-pulse-ring 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mic-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
 }
 
 .nlweb-mic-btn:disabled {
   background: var(--sp-surface-hover);
   color: var(--sp-text-hint);
   cursor: default;
+  transform: none;
+  opacity: 0.5;
+}
+
+.nlweb-mic-btn:disabled .mic-pulse {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-pulse {
+    animation: none !important;
+    display: none !important;
+  }
 }
 
 .nlweb-stt-status {
