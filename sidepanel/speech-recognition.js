@@ -44,7 +44,6 @@ function createSpeechRecognitionController(config = {}) {
       "aria-label",
       speechIsListening ? "Stop voice input" : "Start voice input",
     );
-    mic.textContent = speechIsListening ? "Stop" : "Mic";
   }
 
   function buildSpeechInputValue(finalTranscript, interimTranscript = "") {
@@ -254,6 +253,7 @@ function createSpeechRecognitionController(config = {}) {
       });
       updateMicButtonUi();
       updateSpeechStatus("Listening... click Stop when done.");
+      if (typeof AudioCues !== 'undefined') AudioCues.playStartCue();
     });
 
     speechRecognition.addEventListener("speechstart", () => {
@@ -363,6 +363,7 @@ function createSpeechRecognitionController(config = {}) {
 
       speechIsListening = false;
       updateMicButtonUi();
+      if (typeof AudioCues !== 'undefined') AudioCues.playStopCue();
       if (!getStatus()?.classList.contains("error")) {
         updateSpeechStatus("Voice input is off.");
       }
