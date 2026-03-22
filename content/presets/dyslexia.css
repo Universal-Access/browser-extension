@@ -4,7 +4,7 @@
    Font & spacing only — colors inherited from the active theme */
 
 #ua-accessible-overlay {
-  --ua-font-family: 'Comic Sans MS', cursive, sans-serif;
+  --ua-font-family: 'Comic Sans MS', 'Atkinson Hyperlegible', sans-serif;
   --ua-font-size-base: 1.2rem;     /* 18px × 1.2 = ~21.6px */
   --ua-font-size-sm: 1.067rem;     /* 16px × 1.2 = ~19.2px */
   --ua-font-size-lg: 1.467rem;     /* 22px × 1.2 = ~26.4px */
