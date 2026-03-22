@@ -1134,7 +1134,9 @@
       <a href="#ua-main-content" class="ua-skip-link">Skip to content</a>
       <header class="ua-overlay-header">
         <div class="ua-header-left">
-          <span class="ua-logo" aria-hidden="true">${SVG_WHEELCHAIR}</span>
+          <span class="ua-logo" aria-hidden="true">
+            <img class="ua-icon" src="${chrome.runtime.getURL('icons/icon-on.svg')}" alt="">
+          </span>
           <span class="ua-header-title">Universal Access</span>
           <span class="ua-type-badge">${esc(type)}</span>
         </div>
