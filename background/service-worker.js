@@ -328,19 +328,7 @@ function handleSetIconState(message) {
   if (!state) return;
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tabId = tabs[0]?.id;
-    const paths = {
-      'on': { '16': 'icons/icon-on-16.png', '48': 'icons/icon-on-48.png', '128': 'icons/icon-on-128.png' },
-      'detection-no': { '16': 'icons/icon-detection-no-16.png', '48': 'icons/icon-detection-no-48.png', '128': 'icons/icon-detection-no-128.png' },
-      'detection-yes': { '16': 'icons/icon-detection-yes-16.png', '48': 'icons/icon-detection-yes-48.png', '128': 'icons/icon-detection-yes-128.png' }
-    };
-    const iconPaths = paths[state];
-    if (!iconPaths) return;
-    const details = tabId ? { path: iconPaths, tabId } : { path: iconPaths };
-    chrome.action.setIcon(details).then(() => {
-      console.log('[UA] Icon set to', state, tabId ? 'for tab ' + tabId : '');
-    }).catch((err) => {
-      console.error('[UA] setIcon FAILED:', err, { state, tabId, details });
-    });
+    updateToolbarIcon(tabId, state);
   });
 }
 
