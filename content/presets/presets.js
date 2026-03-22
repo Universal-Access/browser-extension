@@ -1,9 +1,10 @@
 // Accessibility Preset Manager (v3)
 // low-vision.css is ALWAYS injected when the overlay is active (base accessible styles)
-//   → Light mode = higher contrast (#FAFAFA/#333, 12.10:1 AAA)
+//   → Light mode = higher contrast (#FAFAFA/#222, AAA)
 //   → Dark mode = softer contrast for comfortable reading
 // dyslexia.css is the only toggleable preset (font, size & spacing — no colors)
 // Persists state via chrome.storage.local
+// Supports 'auto' theme that follows OS preference
 
 (function () {
   'use strict';
@@ -14,7 +15,7 @@
   const DYSLEXIA_CSS = 'content/presets/dyslexia.css';
 
   let dyslexiaEnabled = false;
-  let currentTheme = 'light';
+  let currentTheme = 'auto';
 
   function isContextValid() {
     try {
@@ -22,6 +23,13 @@
     } catch {
       return false;
     }
+  }
+
+  function resolveEffectiveTheme(theme) {
+    if (theme === 'auto') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme;
   }
 
   function injectStylesheet(id, cssPath) {
@@ -46,8 +54,9 @@
     const overlay = document.getElementById('ua-accessible-overlay');
     if (!overlay) return;
 
-    // Apply theme to overlay
-    if (currentTheme === 'dark') {
+    // Apply theme to overlay (resolve 'auto' to effective theme)
+    const effective = resolveEffectiveTheme(currentTheme);
+    if (effective === 'dark') {
       overlay.setAttribute('data-theme', 'dark');
     } else {
       overlay.removeAttribute('data-theme');
@@ -74,16 +83,27 @@
     }
   }
 
+  // --- Re-apply theme when OS preference changes (only matters in auto mode) ---
+  try {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (currentTheme === 'auto') {
+        applyState();
+      }
+    });
+  } catch {
+    // matchMedia not available
+  }
+
   // --- Restore on load (with migration from v1/v2 formats) ---
   try {
     chrome.storage.local.get(['uaPreset', 'uaPresets', 'uaDyslexia', 'uaTheme'], (result) => {
       if (chrome.runtime.lastError) return;
 
-      // Restore theme
-      if (result.uaTheme === 'dark' || result.uaTheme === 'light') {
+      // Restore theme (now supports 'auto')
+      if (result.uaTheme === 'dark' || result.uaTheme === 'light' || result.uaTheme === 'auto') {
         currentTheme = result.uaTheme;
       } else {
-        currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        currentTheme = 'auto';
       }
 
       // v3 format
@@ -133,11 +153,45 @@
           sendResponse({ presets: { dyslexia: dyslexiaEnabled } });
         }
 
-        // Set theme (light/dark)
+        // Set theme (light/dark/auto)
         if (message.type === 'SET_THEME') {
-          currentTheme = message.theme === 'dark' ? 'dark' : 'light';
+          currentTheme = (message.theme === 'dark' || message.theme === 'light' || message.theme === 'auto')
+            ? message.theme : 'auto';
           applyState();
           sendResponse({ success: true, theme: currentTheme });
+        }
+
+        // Get full state (for sidepanel sync on tab switch)
+        // Re-reads from storage first so we pick up changes made from other tabs
+        if (message.type === 'GET_STATE') {
+          chrome.storage.local.get(['uaPresets', 'uaTheme'], (result) => {
+            if (chrome.runtime.lastError) {
+              sendResponse({
+                theme: currentTheme,
+                presets: { dyslexia: dyslexiaEnabled },
+                overlayActive: !!document.getElementById('ua-accessible-overlay')
+              });
+              return;
+            }
+
+            // Sync from storage (other tab may have changed these)
+            if (result.uaTheme === 'dark' || result.uaTheme === 'light' || result.uaTheme === 'auto') {
+              currentTheme = result.uaTheme;
+            }
+            if (result.uaPresets && typeof result.uaPresets === 'object') {
+              dyslexiaEnabled = !!result.uaPresets.dyslexia;
+            }
+
+            // Re-apply to overlay if present
+            applyState();
+
+            sendResponse({
+              theme: currentTheme,
+              presets: { dyslexia: dyslexiaEnabled },
+              overlayActive: !!document.getElementById('ua-accessible-overlay')
+            });
+          });
+          return true; // async sendResponse
         }
 
         // --- Backward compatibility ---

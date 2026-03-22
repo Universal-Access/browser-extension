@@ -327,6 +327,23 @@ function handleSetIconState(message) {
 }
 
 // Handler registry — maps message types to handler functions
+
+function handleGetTabState(message, sender, sendResponse) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: "GET_STATE" }, (response) => {
+        if (chrome.runtime.lastError) {
+          sendResponse(null);
+        } else {
+          sendResponse(response || null);
+        }
+      });
+    } else {
+      sendResponse(null);
+    }
+  });
+  return true;
+}
 const handlers = {
   SCHEMA_DATA: handleSchemaData,
   GET_SCHEMA_DATA: handleGetSchemaData,
@@ -344,6 +361,7 @@ const handlers = {
   SET_DYSLEXIA: handleSetDyslexia,
   SET_THEME: handleSetTheme,
   SET_ICON_STATE: handleSetIconState,
+  GET_TAB_STATE: handleGetTabState,
   GET_SCHEMAMAP: handleGetSchemamap,
 };
 
