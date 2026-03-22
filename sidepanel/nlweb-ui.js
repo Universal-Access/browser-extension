@@ -21,18 +21,20 @@ export function updateNlwebSection(endpoint, method) {
   if (endpoint) {
     nlwebEndpoint = endpoint;
     section.hidden = false;
-    try {
-      const url = new URL(endpoint);
-      endpointInfo.textContent = url.hostname;
-      endpointInfo.title = endpoint;
-    } catch {
-      endpointInfo.textContent = endpoint;
-      endpointInfo.title = endpoint;
+    if (endpointInfo) {
+      try {
+        const url = new URL(endpoint);
+        endpointInfo.textContent = url.hostname;
+        endpointInfo.title = endpoint;
+      } catch {
+        endpointInfo.textContent = endpoint;
+        endpointInfo.title = endpoint;
+      }
     }
   } else {
     nlwebEndpoint = null;
     section.hidden = true;
-    endpointInfo.textContent = '';
+    if (endpointInfo) endpointInfo.textContent = '';
   }
 }
 

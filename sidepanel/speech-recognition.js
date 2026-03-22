@@ -44,7 +44,10 @@ function createSpeechRecognitionController(config = {}) {
       "aria-label",
       speechIsListening ? "Stop voice input" : "Start voice input",
     );
-    mic.textContent = speechIsListening ? "Stop" : "Mic";
+    const textNode = [...mic.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
+    if (textNode) {
+      textNode.textContent = speechIsListening ? " Stop" : " Voice";
+    }
   }
 
   function buildSpeechInputValue(finalTranscript, interimTranscript = "") {
