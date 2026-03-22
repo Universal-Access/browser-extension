@@ -190,6 +190,9 @@ import {
       renderSection('microdata', data.microdata);
       renderSection('rdfa', data.rdfa);
     }
+
+    // Auto-activate accessibility view if schema data is available
+    autoActivateTransform();
   }
 
   // --- Schemamap Navigation (Sidepanel) ---
@@ -264,6 +267,20 @@ import {
     if (!isTransformActive) return;
     chrome.runtime.sendMessage({ type: 'DEACTIVATE_TRANSFORM' }, () => setTransformToggle(false));
   });
+
+  // --- Auto-activate accessibility view ---
+
+  function autoActivateTransform() {
+    if (!currentData) return;
+    const hasEntities = currentData.entities && currentData.entities.length > 0;
+    const primaryType = currentData.primaryType || 'Unknown';
+    if (hasEntities && primaryType !== 'Unknown') {
+      chrome.runtime.sendMessage({
+        type: 'ACTIVATE_TRANSFORM',
+        payload: currentData
+      }, () => setTransformToggle(true));
+    }
+  }
 
   // --- Dyslexia Toggle ---
 
@@ -439,8 +456,8 @@ import {
   // Listen for live updates
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'TAB_ACTIVATED') {
-      handleSchemaData(message.payload);
       setTransformToggle(false);
+      handleSchemaData(message.payload);
       showAggregationSection(message.aggregation);
       if (message.nlweb) {
         updateNlwebSection(message.nlweb.endpoint, message.nlweb.method);
