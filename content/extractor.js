@@ -122,7 +122,7 @@ function parseRdfaItem(element) {
   if (vocab) {
     item['@vocab'] = vocab;
   }
-  // RDFa resource attribute functions as an @id
+  // RDFa resource (or href for A/LINK) functions as an @id
   let resource = element.getAttribute('resource');
   if (!resource && (element.tagName === 'A' || element.tagName === 'LINK')) {
     resource = element.getAttribute('href');
