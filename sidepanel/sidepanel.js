@@ -182,9 +182,8 @@ import {
     // Fetch and render schemamap navigation
     fetchSchemamapForSidepanel(data);
 
-    // Render raw data sections
+    // Render raw data sections (dev tools always rendered but only shown if toggled)
     const hasAnyRaw = (data.jsonLd?.length || 0) + (data.microdata?.length || 0) + (data.rdfa?.length || 0) > 0;
-    rawDataSection.hidden = !hasAnyRaw;
     if (hasAnyRaw) {
       renderSection('jsonld', data.jsonLd, true);
       renderSection('microdata', data.microdata);
@@ -396,6 +395,34 @@ import {
       endpoint: getNlwebEndpoint(),
       mode: 'summarize'
     });
+  });
+
+  // --- Dev Tools (Raw Schema Data) Visibility Toggle ---
+
+  let devToolsVisible = false;
+
+  function toggleDevTools() {
+    devToolsVisible = !devToolsVisible;
+    rawDataSection.hidden = !devToolsVisible;
+    chrome.storage.local.set({ uaDevToolsVisible: devToolsVisible });
+  }
+
+  // Keyboard shortcut: Ctrl+Shift+D (or Cmd+Shift+D on Mac) to toggle dev tools
+  document.addEventListener('keydown', (e) => {
+    const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+    const modKey = isMac ? e.metaKey : e.ctrlKey;
+    if (modKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+      e.preventDefault();
+      toggleDevTools();
+    }
+  });
+
+  // Restore dev tools visibility state
+  chrome.storage.local.get('uaDevToolsVisible', (result) => {
+    if (result.uaDevToolsVisible) {
+      devToolsVisible = true;
+      rawDataSection.hidden = false;
+    }
   });
 
   // --- Schema Aggregation ---

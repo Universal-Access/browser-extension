@@ -192,6 +192,18 @@ main {
   padding: 14px;
 }
 
+/* Dev Tools Section Styling */
+.dev-tools-section {
+  background: var(--sp-surface);
+  border: 2px dashed var(--sp-border);
+  opacity: 0.9;
+}
+
+.dev-tools-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
 .section-title {
   font-size: 0.94rem;
   font-weight: 700;
