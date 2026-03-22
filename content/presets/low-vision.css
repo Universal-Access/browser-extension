@@ -124,7 +124,7 @@
 #ua-accessible-overlay a:not(.ua-button):hover {
   color: var(--ua-color-link-hover, var(--ua-color-primary));
   text-decoration-thickness: 2px;
-  background: var(--ua-color-primary-light);
+  background: none;
   padding: 1px 3px;
   border-radius: 3px;
 }
